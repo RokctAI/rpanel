@@ -69,6 +69,16 @@
             "check": "command -v ufw",
             "install": "apt-get install -y ufw && ufw default deny incoming && ufw default allow outgoing && ufw allow ssh && ufw allow http && ufw allow https && echo 'y' | ufw enable",
             "description": "Uncomplicated Firewall"
+        },
+        "modsecurity": {
+            "check": "nginx -V 2>&1 | grep -q modsecurity",
+            "install": "apt-get install -y libnginx-mod-security2",
+            "description": "Web Application Firewall for Nginx"
+        },
+        "gpg": {
+            "check": "command -v gpg",
+            "install": "apt-get install -y gnupg",
+            "description": "GPG encryption for backups"
         }
     },
     "core_dependencies": {

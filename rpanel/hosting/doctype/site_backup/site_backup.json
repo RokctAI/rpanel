@@ -15,6 +15,7 @@
         "file_size",
         "section_break_2",
         "file_path",
+        "is_encrypted",
         "cloud_storage",
         "cloud_url",
         "section_break_3",
@@ -73,6 +74,13 @@
             "fieldname": "file_path",
             "fieldtype": "Data",
             "label": "File Path",
+            "read_only": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "is_encrypted",
+            "fieldtype": "Check",
+            "label": "Encrypted",
             "read_only": 1
         },
         {

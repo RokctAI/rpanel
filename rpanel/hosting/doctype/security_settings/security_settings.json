@@ -1,0 +1,111 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2025-01-22 22:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "security_section",
+        "enable_2fa",
+        "enforce_2fa_for_admins",
+        "2fa_issuer_name",
+        "column_break_1",
+        "2fa_enabled_users",
+        "backup_section",
+        "enable_backup_encryption",
+        "encryption_key_fingerprint",
+        "column_break_2",
+        "last_key_rotation"
+    ],
+    "fields": [
+        {
+            "fieldname": "security_section",
+            "fieldtype": "Section Break",
+            "label": "Two-Factor Authentication"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_2fa",
+            "fieldtype": "Check",
+            "label": "Enable Two-Factor Authentication"
+        },
+        {
+            "default": "0",
+            "depends_on": "enable_2fa",
+            "fieldname": "enforce_2fa_for_admins",
+            "fieldtype": "Check",
+            "label": "Enforce 2FA for System Managers"
+        },
+        {
+            "default": "RPanel",
+            "depends_on": "enable_2fa",
+            "fieldname": "2fa_issuer_name",
+            "fieldtype": "Data",
+            "label": "2FA Issuer Name"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "depends_on": "enable_2fa",
+            "fieldname": "2fa_enabled_users",
+            "fieldtype": "Int",
+            "label": "Users with 2FA Enabled",
+            "read_only": 1
+        },
+        {
+            "fieldname": "backup_section",
+            "fieldtype": "Section Break",
+            "label": "Backup Encryption"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_backup_encryption",
+            "fieldtype": "Check",
+            "label": "Enable Backup Encryption"
+        },
+        {
+            "depends_on": "enable_backup_encryption",
+            "fieldname": "encryption_key_fingerprint",
+            "fieldtype": "Data",
+            "label": "Encryption Key Fingerprint",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "depends_on": "enable_backup_encryption",
+            "fieldname": "last_key_rotation",
+            "fieldtype": "Datetime",
+            "label": "Last Key Rotation",
+            "read_only": 1
+        }
+    ],
+    "issingle": 1,
+    "links": [],
+    "modified": "2025-01-22 22:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Security Settings",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

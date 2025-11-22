@@ -1,3 +1,6 @@
+# Copyright (c) 2025, Rokct Holdings and contributors
+# For license information, please see license.txt
+
 app_include_js = [
     "/assets/rpanel/js/hosting_branding.js",
     "/assets/rpanel/js/control_branding.js"

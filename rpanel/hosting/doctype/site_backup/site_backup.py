@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Rendani Sinyage and contributors
+# Copyright (c) 2025, Rokct Holdings and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -47,9 +47,33 @@ class SiteBackup(Document):
             # Get file size
             file_size = os.path.getsize(backup_file)
             
+            # Check if encryption is enabled
+            security_settings = frappe.get_single('Security Settings')
+            is_encrypted = 0
+            
+            if security_settings.enable_backup_encryption:
+                try:
+                    from rpanel.hosting.backup_encryption import encrypt_backup
+                    
+                    # Encrypt the file
+                    encrypted_file = encrypt_backup(backup_file)
+                    
+                    # Remove original unencrypted file
+                    os.remove(backup_file)
+                    
+                    # Update path and size
+                    backup_file = encrypted_file
+                    file_size = os.path.getsize(backup_file)
+                    is_encrypted = 1
+                    
+                except Exception as e:
+                    frappe.log_error(f"Backup encryption failed: {str(e)}", "Backup Encryption Error")
+                    # Continue with unencrypted backup, but log error
+            
             # Update backup record
             self.db_set('file_path', backup_file)
             self.db_set('file_size', file_size)
+            self.db_set('is_encrypted', is_encrypted)
             self.db_set('status', 'Completed')
             frappe.db.commit()
             
@@ -162,14 +186,31 @@ class SiteBackup(Document):
             if not self.file_path or not os.path.exists(self.file_path):
                 frappe.throw("Backup file not found")
             
+            restore_file_path = self.file_path
+            is_decrypted = False
+            
+            # Decrypt if encrypted
+            if self.is_encrypted:
+                try:
+                    from rpanel.hosting.backup_encryption import decrypt_backup
+                    restore_file_path = decrypt_backup(self.file_path)
+                    is_decrypted = True
+                except Exception as e:
+                    frappe.throw(f"Decryption failed: {str(e)}")
+            
             website = frappe.get_doc('Hosted Website', self.website)
             
-            if self.backup_type == 'Full':
-                self.restore_full_backup(website)
-            elif self.backup_type == 'Database Only':
-                self.restore_database_backup(website)
-            elif self.backup_type == 'Files Only':
-                self.restore_files_backup(website)
+            try:
+                if self.backup_type == 'Full':
+                    self.restore_full_backup(website, restore_file_path)
+                elif self.backup_type == 'Database Only':
+                    self.restore_database_backup(website, restore_file_path)
+                elif self.backup_type == 'Files Only':
+                    self.restore_files_backup(website, restore_file_path)
+            finally:
+                # Clean up decrypted file
+                if is_decrypted and os.path.exists(restore_file_path):
+                    os.remove(restore_file_path)
             
             return {'success': True}
             
@@ -177,10 +218,10 @@ class SiteBackup(Document):
             frappe.log_error(f"Backup restore failed: {str(e)}")
             return {'success': False, 'error': str(e)}
     
-    def restore_full_backup(self, website):
+    def restore_full_backup(self, website, file_path):
         """Restore full backup"""
         # Extract backup
-        cmd = f"tar -xzf {self.file_path} -C {website.site_path}"
+        cmd = f"tar -xzf {file_path} -C {website.site_path}"
         subprocess.run(shlex.split(cmd), check=True)
         
         # Restore database
@@ -188,14 +229,14 @@ class SiteBackup(Document):
         cmd = f"mysql -u {website.db_user} -p{website.db_password} {website.db_name} < {db_file}"
         subprocess.run(cmd, shell=True, check=True)
     
-    def restore_database_backup(self, website):
+    def restore_database_backup(self, website, file_path):
         """Restore database backup"""
-        cmd = f"mysql -u {website.db_user} -p{website.db_password} {website.db_name} < {self.file_path}"
+        cmd = f"mysql -u {website.db_user} -p{website.db_password} {website.db_name} < {file_path}"
         subprocess.run(cmd, shell=True, check=True)
     
-    def restore_files_backup(self, website):
+    def restore_files_backup(self, website, file_path):
         """Restore files backup"""
-        cmd = f"tar -xzf {self.file_path} -C {website.site_path}"
+        cmd = f"tar -xzf {file_path} -C {website.site_path}"
         subprocess.run(shlex.split(cmd), check=True)
 
 

@@ -82,22 +82,74 @@ EOF
   # Node.js (required by Frappe)
   curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
   apt-get install -y nodejs
+  
+  # Install Yarn
   npm install -g yarn
+  
+  # Configure automatic security updates
+  echo -e "${GREEN}Configuring automatic security updates...${NC}"
+  cat > /etc/apt/apt.conf.d/50unattended-upgrades <<EOF
+Unattended-Upgrade::Allowed-Origins {
+    "\${distro_id}:\${distro_codename}-security";
+};
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+Unattended-Upgrade::MinimalSteps "true";
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Automatic-Reboot "false";
+EOF
+  
+  cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";
+EOF
+  
+  systemctl enable unattended-upgrades
+  systemctl start unattended-upgrades
+  echo -e "${GREEN}✓ Automatic security updates enabled${NC}"
 }
 
 # Helper to configure MariaDB (only for fresh mode)
 configure_mariadb() {
   echo -e "${GREEN}Configuring MariaDB...${NC}"
-  DB_ROOT_PASS="rpanel_secure_db_pass"
+  
+  # Generate random secure password
+  DB_ROOT_PASS=$(openssl rand -base64 32)
+  
+  # Secure MariaDB installation
   mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;" || true
+  mysql -e "DELETE FROM mysql.user WHERE User='';" || true
+  mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" || true
+  mysql -e "DROP DATABASE IF EXISTS test;" || true
+  mysql -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" || true
+  mysql -e "FLUSH PRIVILEGES;" || true
+  
+  # Save password securely
+  cat > /root/.my.cnf <<EOF
+[client]
+user=root
+password=$DB_ROOT_PASS
+EOF
+  chmod 600 /root/.my.cnf
+  
+  # Configure MariaDB for Frappe
   cat > /etc/mysql/mariadb.conf.d/frappe.cnf <<EOF
 [mysqld]
 character-set-client-handshake = FALSE
 character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
+max_allowed_packet = 256M
+innodb_buffer_pool_size = 1G
+innodb_log_file_size = 256M
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
 
-[mysql]
-default-character-set = utf8mb4
+# Security hardening
+bind-address = 127.0.0.1
+skip-networking = 0
+local-infile = 0
 EOF
   systemctl restart mariadb
 }
@@ -163,7 +215,8 @@ else
   fi
   cd ../..
 fi
-# Ensure site exists (only for fresh or bench mode)
+
+# Ensure site exists
 SITE_NAME="${DOMAIN_NAME:-rpanel.local}"
 if [ ! -d "sites/$SITE_NAME" ]; then
   bench new-site $SITE_NAME --admin-password admin --db-root-password $DB_ROOT_PASS --install-app rpanel || true

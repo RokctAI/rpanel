@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Rendani Sinyage and contributors
+# Copyright (c) 2025, Rokct Holdings and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -11,6 +11,11 @@ def after_install():
     check_and_install_system_dependencies()
     install_dependencies()
     create_default_settings()
+    
+    # Setup security features
+    print("Configuring security features...")
+    setup_security_features()
+    
     print("RPanel installed successfully!")
 
 def after_migrate():
@@ -161,5 +166,28 @@ def check_and_install_system_dependencies():
             except Exception as e:
                 print(f"✗ Failed to install {dep_name}: {str(e)}")
                 print(f"  You may need to install it manually: sudo {dep_info['install']}\n")
+
+
+def setup_security_features():
+    """Setup security features after installation"""
+    try:
+        # Setup Nginx rate limiting
+        from rpanel.hosting.nginx_manager import setup_nginx_rate_limiting
+        setup_nginx_rate_limiting()
+        print("✓ Nginx rate limiting configured")
+    except Exception as e:
+        print(f"Warning: Failed to setup Nginx rate limiting: {str(e)}")
+    
+    try:
+        # Setup ModSecurity if installed
+        result = subprocess.run('nginx -V 2>&1 | grep -q modsecurity', shell=True)
+        if result.returncode == 0:
+            from rpanel.hosting.modsecurity_manager import setup_modsecurity
+            setup_modsecurity()
+            print("✓ ModSecurity WAF configured")
+        else:
+            print("ℹ ModSecurity not installed, skipping WAF setup")
+    except Exception as e:
+        print(f"Warning: Failed to setup ModSecurity: {str(e)}")
     
     print("\n✓ System dependency installation complete")

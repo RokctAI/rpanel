@@ -72,6 +72,20 @@ RPanel works by orchestrating standard open-source technologies (Nginx, MariaDB,
 - Client portals
 - Custom domains
 
+### 🛡️ Enterprise Compliance Readiness
+RPanel is built to help you meet strict industry standards. While the software itself cannot be "certified" (only your organization can), RPanel provides the specific technical controls required for:
+
+- **SOC 2 Compliance:**
+  - **Access Control (CC6.1):** Native Two-Factor Authentication (2FA) enforcement for admins.
+  - **Data Protection (CC6.7):** GPG-encrypted backups (4096-bit RSA) ensure data confidentiality at rest.
+
+- **PCI-DSS Compliance:**
+  - **WAF (Req 6.6):** Integrated ModSecurity Web Application Firewall with OWASP Core Rule Set.
+  - **Vulnerability Management (Req 11.2):** Automated daily scanning for WordPress core, plugins, and malware.
+
+- **GDPR Compliance:**
+  - **Data Encryption (Art. 32):** Strong encryption for backups and SSL automation for data in transit.
+
 ## 💿 Installation
 
 RPanel can be installed in two ways: as a standalone control panel on a fresh server, or as an app on an existing Frappe Bench.
@@ -109,6 +123,28 @@ bench --site [your-site.com] install-app rpanel
 # 3. Run migrations
 bench --site [your-site.com] migrate
 ```
+
+### Option 3: Production Install (Stable Release)
+
+For production environments, install the latest stable release instead of the development branch:
+
+```bash
+# 1. Get latest release tag
+LATEST_VERSION=$(curl -s https://api.github.com/repos/RokctAI/rpanel/releases/latest | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+
+# 2. Install using bench
+cd ~/frappe-bench
+bench get-app https://github.com/RokctAI/rpanel.git --branch $LATEST_VERSION
+
+# 3. Install on your site
+bench --site [your-site.com] install-app rpanel
+bench --site [your-site.com] migrate
+```
+
+**Benefits of using stable releases:**
+- ✅ Tested and production-ready code
+- ✅ Predictable behavior
+- ✅ Easy rollback to previous versions
 
 ## ⚡ Quick Start
 
