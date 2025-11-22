@@ -2,7 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Frappe Framework](https://img.shields.io/badge/Frappe-v15-orange)](https://frappeframework.com)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
+[![Latest Version](https://img.shields.io/github/v/release/rokctAI/rpanel?label=Stable%20Version)](https://github.com/rokctAI/rpanel/releases)
+[![Build Status](https://github.com/rokctAI/rpanel/actions/workflows/auto_release.yml/badge.svg)](https://github.com/rokctAI/rpanel/actions)
+
 
 **RPanel** is a powerful, open-source web hosting control panel built on the Frappe Framework (v15). It is designed to be a complete alternative to cPanel/Plesk, offering a modern UI for managing websites, databases, emails, and servers.
 
