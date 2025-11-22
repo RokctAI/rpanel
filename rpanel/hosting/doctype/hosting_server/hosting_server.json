@@ -1,0 +1,166 @@
+{
+    "actions": [],
+    "autoname": "field:server_name",
+    "creation": "2025-11-22 10:35:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "server_name",
+        "server_ip",
+        "server_group",
+        "status",
+        "column_break_1",
+        "ssh_port",
+        "ssh_username",
+        "ssh_password",
+        "ssh_key",
+        "section_break_2",
+        "max_websites",
+        "current_websites",
+        "column_break_2",
+        "cpu_cores",
+        "ram_gb",
+        "disk_gb",
+        "section_break_3",
+        "last_health_check",
+        "health_status"
+    ],
+    "fields": [
+        {
+            "fieldname": "server_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Server Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "server_ip",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Server IP",
+            "reqd": 1
+        },
+        {
+            "fieldname": "server_group",
+            "fieldtype": "Select",
+            "label": "Server Group",
+            "options": "Production\nStaging\nDevelopment"
+        },
+        {
+            "default": "Active",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Active\nInactive\nMaintenance"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "22",
+            "fieldname": "ssh_port",
+            "fieldtype": "Int",
+            "label": "SSH Port"
+        },
+        {
+            "fieldname": "ssh_username",
+            "fieldtype": "Data",
+            "label": "SSH Username",
+            "reqd": 1
+        },
+        {
+            "fieldname": "ssh_password",
+            "fieldtype": "Password",
+            "label": "SSH Password"
+        },
+        {
+            "fieldname": "ssh_key",
+            "fieldtype": "Code",
+            "label": "SSH Private Key"
+        },
+        {
+            "fieldname": "section_break_2",
+            "fieldtype": "Section Break",
+            "label": "Capacity"
+        },
+        {
+            "default": "100",
+            "fieldname": "max_websites",
+            "fieldtype": "Int",
+            "label": "Max Websites"
+        },
+        {
+            "default": "0",
+            "fieldname": "current_websites",
+            "fieldtype": "Int",
+            "label": "Current Websites",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cpu_cores",
+            "fieldtype": "Int",
+            "label": "CPU Cores"
+        },
+        {
+            "fieldname": "ram_gb",
+            "fieldtype": "Int",
+            "label": "RAM (GB)"
+        },
+        {
+            "fieldname": "disk_gb",
+            "fieldtype": "Int",
+            "label": "Disk (GB)"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "section_break_3",
+            "fieldtype": "Section Break",
+            "label": "Health"
+        },
+        {
+            "fieldname": "last_health_check",
+            "fieldtype": "Datetime",
+            "label": "Last Health Check",
+            "read_only": 1
+        },
+        {
+            "fieldname": "health_status",
+            "fieldtype": "Data",
+            "label": "Health Status",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 10:35:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Hosting Server",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

@@ -1,0 +1,157 @@
+[
+    {
+        "doctype": "Workspace",
+        "name": "Hosting",
+        "title": "Hosting",
+        "icon": "server",
+        "module": "hosting",
+        "public": 1,
+        "is_standard": 0,
+        "extends_another_page": 0,
+        "hide_custom": 0,
+        "sequence_id": 10,
+        "charts": [],
+        "shortcuts": [
+            {
+                "label": "New Website",
+                "type": "DocType",
+                "link_to": "Hosted Website",
+                "doc_view": "New",
+                "color": "#4C6FFF",
+                "format": "New {}"
+            },
+            {
+                "label": "All Websites",
+                "type": "DocType",
+                "link_to": "Hosted Website",
+                "doc_view": "List",
+                "color": "#29CD42",
+                "format": "{} List"
+            },
+            {
+                "label": "Active Sites",
+                "type": "DocType",
+                "link_to": "Hosted Website",
+                "doc_view": "List",
+                "color": "#10B981",
+                "format": "{} List",
+                "stats_filter": "{\"status\": \"Active\"}"
+            },
+            {
+                "label": "SSL Expiring",
+                "type": "DocType",
+                "link_to": "Hosted Website",
+                "doc_view": "Report",
+                "color": "#F59E0B",
+                "format": "{} Report"
+            },
+            {
+                "label": "Settings",
+                "type": "DocType",
+                "link_to": "Hosting Settings",
+                "doc_view": "Form",
+                "color": "#8B5CF6",
+                "format": "{}"
+            }
+        ],
+        "links": [
+            {
+                "label": "Website Management",
+                "type": "Card Break"
+            },
+            {
+                "label": "Hosted Website",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosted Website",
+                "onboard": 1,
+                "description": "Manage hosted websites, domains, and configurations"
+            },
+            {
+                "label": "Active Websites",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosted Website",
+                "is_query_report": 0,
+                "description": "View all active hosted websites"
+            },
+            {
+                "label": "Pending Setup",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosted Website",
+                "is_query_report": 0,
+                "description": "Websites pending configuration"
+            },
+            {
+                "label": "SSL & Security",
+                "type": "Card Break"
+            },
+            {
+                "label": "SSL Certificates",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosted Website",
+                "is_query_report": 0,
+                "description": "Manage SSL certificates and renewal"
+            },
+            {
+                "label": "Expiring Certificates",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosted Website",
+                "is_query_report": 0,
+                "description": "SSL certificates expiring soon"
+            },
+            {
+                "label": "Email Management",
+                "type": "Card Break"
+            },
+            {
+                "label": "Email Accounts",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosted Email Account",
+                "description": "Configure email accounts for hosted domains"
+            },
+            {
+                "label": "Database Management",
+                "type": "Card Break"
+            },
+            {
+                "label": "Database Overview",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosted Website",
+                "is_query_report": 0,
+                "description": "View database configurations"
+            },
+            {
+                "label": "System Configuration",
+                "type": "Card Break"
+            },
+            {
+                "label": "Hosting Settings",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosting Settings",
+                "description": "Configure hosting paths, email, and SSL settings"
+            },
+            {
+                "label": "Nginx Configuration",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosting Settings",
+                "description": "Manage Nginx and web server settings"
+            },
+            {
+                "label": "Email Server Config",
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Hosting Settings",
+                "description": "Configure Exim email server settings"
+            }
+        ],
+        "cards": []
+    }
+]

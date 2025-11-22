@@ -1,0 +1,117 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-05-22 10:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "general_settings_section",
+  "nginx_config_path",
+  "web_root_base",
+  "email_settings_section",
+  "exim_passwd_file",
+  "exim_virtual_dir",
+  "ssl_settings_section",
+  "platform_cert_command",
+  "wildcard_cert_command",
+  "renew_platform_ssl",
+  "renew_wildcard_ssl",
+  "roundcube_section",
+  "install_roundcube"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_settings_section",
+   "fieldtype": "Section Break",
+   "label": "General Paths"
+  },
+  {
+   "default": "/etc/nginx/conf.d",
+   "fieldname": "nginx_config_path",
+   "fieldtype": "Data",
+   "label": "Nginx Config Path"
+  },
+  {
+   "default": "/var/www",
+   "fieldname": "web_root_base",
+   "fieldtype": "Data",
+   "label": "Web Root Base"
+  },
+  {
+   "fieldname": "email_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Email Configuration"
+  },
+  {
+   "default": "/etc/exim4/passwd",
+   "fieldname": "exim_passwd_file",
+   "fieldtype": "Data",
+   "label": "Exim Password File"
+  },
+  {
+   "default": "/etc/exim4/virtual",
+   "fieldname": "exim_virtual_dir",
+   "fieldtype": "Data",
+   "label": "Exim Virtual Directory"
+  },
+  {
+   "fieldname": "ssl_settings_section",
+   "fieldtype": "Section Break",
+   "label": "System SSL Management"
+  },
+  {
+   "default": "sudo certbot renew --cert-name platform.rokct.ai",
+   "fieldname": "platform_cert_command",
+   "fieldtype": "Data",
+   "label": "Platform Cert Command"
+  },
+  {
+   "default": "bench setup wildcard-ssl",
+   "fieldname": "wildcard_cert_command",
+   "fieldtype": "Data",
+   "label": "Wildcard Cert Command"
+  },
+  {
+   "fieldname": "renew_platform_ssl",
+   "fieldtype": "Button",
+   "label": "Renew Platform SSL"
+  },
+  {
+   "fieldname": "renew_wildcard_ssl",
+   "fieldtype": "Button",
+   "label": "Renew Wildcard SSL"
+  },
+  {
+   "fieldname": "roundcube_section",
+   "fieldtype": "Section Break",
+   "label": "Webmail"
+  },
+  {
+   "fieldname": "install_roundcube",
+   "fieldtype": "Button",
+   "label": "Install/Update Roundcube"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-05-22 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "hosting",
+ "name": "Hosting Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

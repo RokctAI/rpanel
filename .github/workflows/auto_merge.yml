@@ -1,0 +1,35 @@
+name: Auto‑merge PRs from allowed users
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+
+jobs:
+  enable-automerge:
+    runs-on: ubuntu-latest
+    env:
+      # GitHub usernames allowed to have their PRs auto‑merged (comma‑separated)
+      ALLOWED_USERS: "sinya,RendaniSinyage,nurudinso"
+    steps:
+      - name: Check author against allowed list
+        id: check_author
+        run: |
+          IFS=',' read -ra ALLOWED <<< "${{ env.ALLOWED_USERS }}"
+          AUTHOR="${{ github.event.pull_request.user.login }}"
+          echo "Author: $AUTHOR"
+          MATCH=false
+          for u in "${ALLOWED[@]}"; do
+            if [[ "$u" == "$AUTHOR" ]]; then
+              MATCH=true
+              break
+            fi
+          done
+          echo "allowed=$MATCH" >> $GITHUB_OUTPUT
+
+      - name: Enable auto‑merge
+        if: steps.check_author.outputs.allowed == 'true'
+        uses: peter-evans/enable-pull-request-automerge@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Choose merge method: squash, merge, or rebase
+          merge-method: squash

@@ -1,0 +1,151 @@
+{
+    "actions": [],
+    "autoname": "field:staging_name",
+    "creation": "2025-11-22 10:30:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "staging_name",
+        "production_website",
+        "status",
+        "column_break_1",
+        "staging_url",
+        "staging_path",
+        "staging_database",
+        "section_break_2",
+        "auto_sync",
+        "sync_frequency",
+        "last_sync",
+        "column_break_2",
+        "sync_database",
+        "sync_files",
+        "section_break_3",
+        "environment_variables"
+    ],
+    "fields": [
+        {
+            "fieldname": "staging_name",
+            "fieldtype": "Data",
+            "label": "Staging Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "production_website",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Production Website",
+            "options": "Hosted Website",
+            "reqd": 1
+        },
+        {
+            "default": "Active",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Active\nInactive\nSyncing"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "staging_url",
+            "fieldtype": "Data",
+            "label": "Staging URL",
+            "read_only": 1
+        },
+        {
+            "fieldname": "staging_path",
+            "fieldtype": "Data",
+            "label": "Staging Path",
+            "read_only": 1
+        },
+        {
+            "fieldname": "staging_database",
+            "fieldtype": "Data",
+            "label": "Staging Database",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_break_2",
+            "fieldtype": "Section Break",
+            "label": "Sync Settings"
+        },
+        {
+            "default": "0",
+            "fieldname": "auto_sync",
+            "fieldtype": "Check",
+            "label": "Auto Sync"
+        },
+        {
+            "depends_on": "auto_sync",
+            "default": "Daily",
+            "fieldname": "sync_frequency",
+            "fieldtype": "Select",
+            "label": "Sync Frequency",
+            "options": "Hourly\nDaily\nWeekly"
+        },
+        {
+            "fieldname": "last_sync",
+            "fieldtype": "Datetime",
+            "label": "Last Sync",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "1",
+            "fieldname": "sync_database",
+            "fieldtype": "Check",
+            "label": "Sync Database"
+        },
+        {
+            "default": "1",
+            "fieldname": "sync_files",
+            "fieldtype": "Check",
+            "label": "Sync Files"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "section_break_3",
+            "fieldtype": "Section Break",
+            "label": "Environment Variables"
+        },
+        {
+            "fieldname": "environment_variables",
+            "fieldtype": "Code",
+            "label": "Environment Variables",
+            "options": "JSON"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 10:30:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Staging Environment",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

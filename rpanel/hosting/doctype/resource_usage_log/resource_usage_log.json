@@ -1,0 +1,118 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:{website}-{timestamp}",
+    "creation": "2025-11-22 02:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "website",
+        "timestamp",
+        "column_break_1",
+        "cpu_usage",
+        "memory_usage",
+        "disk_usage",
+        "column_break_2",
+        "bandwidth_in",
+        "bandwidth_out",
+        "request_count",
+        "error_count"
+    ],
+    "fields": [
+        {
+            "fieldname": "website",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Website",
+            "options": "Hosted Website",
+            "reqd": 1
+        },
+        {
+            "default": "Now",
+            "fieldname": "timestamp",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Timestamp",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "description": "Percentage",
+            "fieldname": "cpu_usage",
+            "fieldtype": "Float",
+            "label": "CPU Usage (%)",
+            "precision": "2"
+        },
+        {
+            "description": "Megabytes",
+            "fieldname": "memory_usage",
+            "fieldtype": "Float",
+            "label": "Memory Usage (MB)",
+            "precision": "2"
+        },
+        {
+            "description": "Megabytes",
+            "fieldname": "disk_usage",
+            "fieldtype": "Float",
+            "label": "Disk Usage (MB)",
+            "precision": "2"
+        },
+        {
+            "fieldname": "column_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "description": "Megabytes",
+            "fieldname": "bandwidth_in",
+            "fieldtype": "Float",
+            "label": "Bandwidth In (MB)",
+            "precision": "2"
+        },
+        {
+            "description": "Megabytes",
+            "fieldname": "bandwidth_out",
+            "fieldtype": "Float",
+            "label": "Bandwidth Out (MB)",
+            "precision": "2"
+        },
+        {
+            "fieldname": "request_count",
+            "fieldtype": "Int",
+            "label": "Request Count"
+        },
+        {
+            "fieldname": "error_count",
+            "fieldtype": "Int",
+            "label": "Error Count"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 02:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Resource Usage Log",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

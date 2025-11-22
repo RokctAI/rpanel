@@ -1,0 +1,117 @@
+{
+    "actions": [],
+    "autoname": "field:rule_name",
+    "creation": "2025-11-22 10:50:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "rule_name",
+        "rule_type",
+        "action",
+        "column_break_1",
+        "ip_address",
+        "port",
+        "protocol",
+        "priority",
+        "section_break_2",
+        "enabled",
+        "description"
+    ],
+    "fields": [
+        {
+            "fieldname": "rule_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Rule Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "rule_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Rule Type",
+            "options": "Allow\nDeny",
+            "reqd": 1
+        },
+        {
+            "fieldname": "action",
+            "fieldtype": "Select",
+            "label": "Action",
+            "options": "Accept\nDrop\nReject",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "ip_address",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "IP Address/CIDR",
+            "reqd": 1
+        },
+        {
+            "default": "any",
+            "fieldname": "port",
+            "fieldtype": "Data",
+            "label": "Port"
+        },
+        {
+            "default": "tcp",
+            "fieldname": "protocol",
+            "fieldtype": "Select",
+            "label": "Protocol",
+            "options": "tcp\nudp\nany"
+        },
+        {
+            "default": "100",
+            "fieldname": "priority",
+            "fieldtype": "Int",
+            "label": "Priority"
+        },
+        {
+            "fieldname": "section_break_2",
+            "fieldtype": "Section Break"
+        },
+        {
+            "default": "1",
+            "fieldname": "enabled",
+            "fieldtype": "Check",
+            "in_list_view": 1,
+            "label": "Enabled"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Text",
+            "label": "Description"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 10:50:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Firewall Rule",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

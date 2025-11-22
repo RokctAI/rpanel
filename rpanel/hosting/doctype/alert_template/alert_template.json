@@ -1,0 +1,124 @@
+{
+    "actions": [],
+    "creation": "2025-11-22 10:30:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "template_name",
+        "category",
+        "enabled",
+        "column_break_1",
+        "language",
+        "priority",
+        "section_break_2",
+        "subject",
+        "body",
+        "section_break_3",
+        "variables",
+        "sample_data"
+    ],
+    "fields": [
+        {
+            "fieldname": "template_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Template Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "category",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Category",
+            "options": "SSL Expiry\nDisk Space\nCPU Usage\nMemory Usage\nUptime Alert\nBackup Failed\nSecurity Alert\nCustom",
+            "reqd": 1
+        },
+        {
+            "default": "1",
+            "fieldname": "enabled",
+            "fieldtype": "Check",
+            "label": "Enabled"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "en",
+            "fieldname": "language",
+            "fieldtype": "Select",
+            "label": "Language",
+            "options": "en\nes\nfr\nde"
+        },
+        {
+            "default": "Medium",
+            "fieldname": "priority",
+            "fieldtype": "Select",
+            "label": "Priority",
+            "options": "Low\nMedium\nHigh\nCritical"
+        },
+        {
+            "fieldname": "section_break_2",
+            "fieldtype": "Section Break",
+            "label": "Email Content"
+        },
+        {
+            "fieldname": "subject",
+            "fieldtype": "Data",
+            "label": "Subject",
+            "reqd": 1
+        },
+        {
+            "fieldname": "body",
+            "fieldtype": "HTML Editor",
+            "label": "Body",
+            "reqd": 1
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "section_break_3",
+            "fieldtype": "Section Break",
+            "label": "Template Variables"
+        },
+        {
+            "fieldname": "variables",
+            "fieldtype": "Code",
+            "label": "Available Variables",
+            "options": "JSON",
+            "read_only": 1
+        },
+        {
+            "fieldname": "sample_data",
+            "fieldtype": "Code",
+            "label": "Sample Data for Preview",
+            "options": "JSON"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 10:30:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Alert Template",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

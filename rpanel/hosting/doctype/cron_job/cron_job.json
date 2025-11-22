@@ -1,0 +1,145 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:job_name",
+    "creation": "2025-11-22 02:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "job_name",
+        "website",
+        "enabled",
+        "column_break_1",
+        "command",
+        "schedule",
+        "section_break_2",
+        "last_run",
+        "next_run",
+        "column_break_3",
+        "last_status",
+        "last_output",
+        "section_break_4",
+        "email_on_failure",
+        "notification_email"
+    ],
+    "fields": [
+        {
+            "fieldname": "job_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Job Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "website",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Website",
+            "options": "Hosted Website",
+            "reqd": 1
+        },
+        {
+            "default": "1",
+            "fieldname": "enabled",
+            "fieldtype": "Check",
+            "in_list_view": 1,
+            "label": "Enabled"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "command",
+            "fieldtype": "Small Text",
+            "label": "Command",
+            "reqd": 1
+        },
+        {
+            "description": "Cron expression (e.g., 0 2 * * * for daily at 2 AM)",
+            "fieldname": "schedule",
+            "fieldtype": "Data",
+            "label": "Schedule",
+            "reqd": 1
+        },
+        {
+            "fieldname": "section_break_2",
+            "fieldtype": "Section Break",
+            "label": "Execution Status"
+        },
+        {
+            "fieldname": "last_run",
+            "fieldtype": "Datetime",
+            "label": "Last Run",
+            "read_only": 1
+        },
+        {
+            "fieldname": "next_run",
+            "fieldtype": "Datetime",
+            "label": "Next Run",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_3",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "last_status",
+            "fieldtype": "Select",
+            "label": "Last Status",
+            "options": "Pending\nRunning\nSuccess\nFailed",
+            "read_only": 1
+        },
+        {
+            "fieldname": "last_output",
+            "fieldtype": "Text",
+            "label": "Last Output",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_break_4",
+            "fieldtype": "Section Break",
+            "label": "Notifications"
+        },
+        {
+            "default": "0",
+            "fieldname": "email_on_failure",
+            "fieldtype": "Check",
+            "label": "Email on Failure"
+        },
+        {
+            "depends_on": "email_on_failure",
+            "fieldname": "notification_email",
+            "fieldtype": "Data",
+            "label": "Notification Email"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 02:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Cron Job",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

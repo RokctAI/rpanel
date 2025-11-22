@@ -1,0 +1,171 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:domain",
+    "creation": "2024-05-22 10:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "domain",
+        "client",
+        "system_user",
+        "site_type",
+        "cms_type",
+        "apps_to_install",
+        "status",
+        "php_version",
+        "site_path",
+        "column_break_1",
+        "ssl_status",
+        "ssl_expiry",
+        "ssl_issuer",
+        "section_break_database",
+        "db_name",
+        "db_user",
+        "db_password",
+        "section_break_email",
+        "email_accounts"
+    ],
+    "fields": [
+        {
+            "fieldname": "domain",
+            "fieldtype": "Data",
+            "label": "Domain Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "client",
+            "fieldtype": "Link",
+            "label": "Hosting Client",
+            "options": "Hosting Client",
+            "reqd": 1
+        },
+        {
+            "fieldname": "system_user",
+            "fieldtype": "Data",
+            "label": "System User",
+            "description": "Linux system user for this website"
+        },
+        {
+            "default": "HTML",
+            "fieldname": "site_type",
+            "fieldtype": "Select",
+            "label": "Site Type",
+            "options": "HTML\nPHP\nCMS\nFrappe Tenant"
+        },
+        {
+            "depends_on": "eval:doc.site_type=='CMS'",
+            "default": "WordPress",
+            "fieldname": "cms_type",
+            "fieldtype": "Select",
+            "label": "CMS Type",
+            "options": "WordPress\nJoomla\nDrupal"
+        },
+        {
+            "depends_on": "eval:doc.site_type=='Frappe Tenant'",
+            "fieldname": "apps_to_install",
+            "fieldtype": "Table",
+            "label": "Apps to Install",
+            "options": "Hosted App"
+        },
+        {
+            "default": "Pending",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Pending\nActive\nSuspended\nError"
+        },
+        {
+            "default": "8.2",
+            "fieldname": "php_version",
+            "fieldtype": "Select",
+            "label": "PHP Version",
+            "options": "8.3\n8.2\n8.1\n7.4"
+        },
+        {
+            "fieldname": "site_path",
+            "fieldtype": "Data",
+            "label": "Site Path",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "ssl_status",
+            "fieldtype": "Data",
+            "label": "SSL Status",
+            "read_only": 1
+        },
+        {
+            "fieldname": "ssl_expiry",
+            "fieldtype": "Date",
+            "label": "SSL Expiry",
+            "read_only": 1
+        },
+        {
+            "fieldname": "ssl_issuer",
+            "fieldtype": "Data",
+            "label": "SSL Issuer",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_break_database",
+            "fieldtype": "Section Break",
+            "label": "Database Configuration"
+        },
+        {
+            "fieldname": "db_name",
+            "fieldtype": "Data",
+            "label": "Database Name"
+        },
+        {
+            "fieldname": "db_user",
+            "fieldtype": "Data",
+            "label": "Database User"
+        },
+        {
+            "fieldname": "db_password",
+            "fieldtype": "Password",
+            "label": "Database Password"
+        },
+        {
+            "fieldname": "section_break_email",
+            "fieldtype": "Section Break",
+            "label": "Email Accounts"
+        },
+        {
+            "fieldname": "email_accounts",
+            "fieldtype": "Table",
+            "label": "Email Accounts",
+            "options": "Hosted Email Account"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2024-05-22 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "hosting",
+    "name": "Hosted Website",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "title_field": "domain"
+}

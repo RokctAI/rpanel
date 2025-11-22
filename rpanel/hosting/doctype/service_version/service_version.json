@@ -1,0 +1,132 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:service_name",
+ "creation": "2025-01-22 14:15:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_name",
+  "service_type",
+  "column_break_3",
+  "server",
+  "section_break_5",
+  "current_version",
+  "latest_version",
+  "column_break_8",
+  "last_checked",
+  "update_available",
+  "section_break_11",
+  "auto_update",
+  "update_schedule"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Service Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "service_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Service Type",
+   "options": "PHP\nNginx\nMariaDB\nWordPress\nRoundcube\nphpMyAdmin\nClamAV\nFail2Ban\nCertbot\nExim4\nDovecot",
+   "reqd": 1
+  },
+  {
+   "fieldname": "current_version",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Current Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "latest_version",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Latest Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "update_available",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Update Available",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_checked",
+   "fieldtype": "Datetime",
+   "label": "Last Checked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "server",
+   "fieldtype": "Link",
+   "label": "Server",
+   "options": "Hosting Server",
+   "reqd": 1
+  },
+  {
+   "fieldname": "auto_update",
+   "fieldtype": "Check",
+   "label": "Auto Update"
+  },
+  {
+   "fieldname": "update_schedule",
+   "fieldtype": "Select",
+   "depends_on": "auto_update",
+   "label": "Update Schedule",
+   "options": "\nDaily\nWeekly\nMonthly"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Version Information"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_11",
+   "fieldtype": "Section Break",
+   "label": "Update Settings"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-22 14:15:00.000000",
+ "modified_by": "Administrator",
+ "module": "Hosting",
+ "name": "Service Version",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

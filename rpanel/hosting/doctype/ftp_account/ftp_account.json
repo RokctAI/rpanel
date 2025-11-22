@@ -1,0 +1,111 @@
+{
+    "actions": [],
+    "autoname": "field:username",
+    "creation": "2025-11-22 10:40:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "username",
+        "password",
+        "website",
+        "home_directory",
+        "column_break_1",
+        "quota_mb",
+        "enabled",
+        "permissions",
+        "section_break_2",
+        "connection_logs"
+    ],
+    "fields": [
+        {
+            "fieldname": "username",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Username",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "password",
+            "fieldtype": "Password",
+            "label": "Password",
+            "reqd": 1
+        },
+        {
+            "fieldname": "website",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Website",
+            "options": "Hosted Website",
+            "reqd": 1
+        },
+        {
+            "fieldname": "home_directory",
+            "fieldtype": "Data",
+            "label": "Home Directory",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "1000",
+            "fieldname": "quota_mb",
+            "fieldtype": "Int",
+            "label": "Quota (MB)"
+        },
+        {
+            "default": "1",
+            "fieldname": "enabled",
+            "fieldtype": "Check",
+            "in_list_view": 1,
+            "label": "Enabled"
+        },
+        {
+            "default": "Read/Write",
+            "fieldname": "permissions",
+            "fieldtype": "Select",
+            "label": "Permissions",
+            "options": "Read Only\nRead/Write\nFull"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "section_break_2",
+            "fieldtype": "Section Break",
+            "label": "Connection Logs"
+        },
+        {
+            "fieldname": "connection_logs",
+            "fieldtype": "Text",
+            "label": "Recent Connections",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 10:40:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "FTP Account",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}
