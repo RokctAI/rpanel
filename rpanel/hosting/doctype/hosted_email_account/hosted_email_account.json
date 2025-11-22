@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-05-22 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "email_user",
+  "password",
+  "forward_to",
+  "quota_mb"
+ ],
+ "fields": [
+  {
+   "fieldname": "email_user",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Email User (e.g., info)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password",
+   "reqd": 1
+  },
+  {
+   "fieldname": "forward_to",
+   "fieldtype": "Data",
+   "label": "Forward To (Optional)",
+   "options": "Email"
+  },
+  {
+   "default": "1024",
+   "fieldname": "quota_mb",
+   "fieldtype": "Int",
+   "label": "Quota (MB)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-05-22 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "hosting",
+ "name": "Hosted Email Account",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

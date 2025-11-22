@@ -1,0 +1,109 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:zone_name",
+    "creation": "2025-11-22 10:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "zone_name",
+        "website",
+        "column_break_1",
+        "cloudflare_enabled",
+        "cloudflare_zone_id",
+        "last_sync",
+        "section_break_2",
+        "dns_records",
+        "section_break_3",
+        "nameservers"
+    ],
+    "fields": [
+        {
+            "fieldname": "zone_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Zone Name",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "website",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Website",
+            "options": "Hosted Website"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "0",
+            "fieldname": "cloudflare_enabled",
+            "fieldtype": "Check",
+            "label": "Cloudflare Enabled"
+        },
+        {
+            "depends_on": "cloudflare_enabled",
+            "fieldname": "cloudflare_zone_id",
+            "fieldtype": "Data",
+            "label": "Cloudflare Zone ID",
+            "read_only": 1
+        },
+        {
+            "fieldname": "last_sync",
+            "fieldtype": "Datetime",
+            "label": "Last Sync",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_break_2",
+            "fieldtype": "Section Break",
+            "label": "DNS Records"
+        },
+        {
+            "fieldname": "dns_records",
+            "fieldtype": "Table",
+            "label": "DNS Records",
+            "options": "DNS Record"
+        },
+        {
+            "collapsible": 1,
+            "fieldname": "section_break_3",
+            "fieldtype": "Section Break",
+            "label": "Nameservers"
+        },
+        {
+            "fieldname": "nameservers",
+            "fieldtype": "Text",
+            "label": "Nameservers"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "DNS Zone",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

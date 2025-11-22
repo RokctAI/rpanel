@@ -1,0 +1,89 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:{website}-{check_time}",
+    "creation": "2025-11-22 02:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "website",
+        "check_time",
+        "is_up",
+        "column_break_1",
+        "status_code",
+        "response_time",
+        "error_message"
+    ],
+    "fields": [
+        {
+            "fieldname": "website",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Website",
+            "options": "Hosted Website",
+            "reqd": 1
+        },
+        {
+            "default": "Now",
+            "fieldname": "check_time",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Check Time",
+            "reqd": 1
+        },
+        {
+            "default": "0",
+            "fieldname": "is_up",
+            "fieldtype": "Check",
+            "in_list_view": 1,
+            "label": "Is Up"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status_code",
+            "fieldtype": "Int",
+            "label": "Status Code"
+        },
+        {
+            "description": "Milliseconds",
+            "fieldname": "response_time",
+            "fieldtype": "Float",
+            "label": "Response Time (ms)",
+            "precision": "2"
+        },
+        {
+            "fieldname": "error_message",
+            "fieldtype": "Text",
+            "label": "Error Message"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-11-22 02:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Hosting",
+    "name": "Uptime Check",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

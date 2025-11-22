@@ -1,0 +1,14 @@
+frappe
+croniter
+boto3
+google-cloud-storage
+dropbox
+dnspython
+paramiko
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+pyotp
+qrcode[pil]
+gnupg

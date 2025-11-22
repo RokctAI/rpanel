@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include rpanel *.css
+recursive-include rpanel *.csv
+recursive-include rpanel *.html
+recursive-include rpanel *.ico
+recursive-include rpanel *.js
+recursive-include rpanel *.json
+recursive-include rpanel *.md
+recursive-include rpanel *.png
+recursive-include rpanel *.py
+recursive-include rpanel *.svg
+recursive-include rpanel *.txt
+recursive-exclude rpanel *.pyc
