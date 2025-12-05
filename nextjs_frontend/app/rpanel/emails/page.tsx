@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Mail, Plus, Trash2 } from "lucide-react";
 import { getEmailAccounts, createEmailAccount, deleteEmailAccount } from "@/app/actions/handson/rpanel/manage-email";
+import { getClientWebsites } from "@/app/actions/handson/rpanel/get-client-websites";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,30 +15,46 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RPanelNav } from "@/components/custom/nav/rpanel-nav";
 
 export default function EmailsPage() {
   const [emails, setEmails] = useState<any[]>([]);
+  const [websites, setWebsites] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
   // Create Form State
   const [newEmailUser, setNewEmailUser] = useState("");
   const [newEmailPass, setNewEmailPass] = useState("");
-  const [selectedWebsite, setSelectedWebsite] = useState(""); // Needs logic to pick website
+  const [selectedWebsite, setSelectedWebsite] = useState("");
 
-  const fetchEmails = async () => {
+  const fetchData = async () => {
     setIsLoading(true);
-    const res = await getEmailAccounts(""); // Backend needs to infer client
-    if (res.success) {
-      setEmails(res.data);
-      if (res.data.length > 0) setSelectedWebsite(res.data[0].website_name);
+    // Fetch Emails
+    const emailRes = await getEmailAccounts("");
+    if (emailRes.success) {
+      setEmails(emailRes.data);
+    }
+    // Fetch Websites for dropdown
+    const siteRes = await getClientWebsites();
+    if (siteRes.message?.success) {
+        setWebsites(siteRes.message.websites);
+        if (siteRes.message.websites.length > 0 && !selectedWebsite) {
+            setSelectedWebsite(siteRes.message.websites[0].name);
+        }
     }
     setIsLoading(false);
   };
 
   useEffect(() => {
-    fetchEmails();
+    fetchData();
   }, []);
 
   const handleCreate = async () => {
@@ -51,7 +68,7 @@ export default function EmailsPage() {
       if (res.success) {
           setNewEmailUser("");
           setNewEmailPass("");
-          fetchEmails();
+          fetchData();
       } else {
           alert("Failed: " + res.error);
       }
@@ -61,7 +78,7 @@ export default function EmailsPage() {
   const handleDelete = async (websiteName: string, emailUser: string) => {
       if (confirm(`Delete ${emailUser}?`)) {
           await deleteEmailAccount(websiteName, emailUser);
-          fetchEmails();
+          fetchData();
       }
   };
 
@@ -79,9 +96,29 @@ export default function EmailsPage() {
             <DialogContent>
                 <DialogHeader><DialogTitle>Create Email Account</DialogTitle></DialogHeader>
                 <div className="space-y-4 py-4">
-                    <Input placeholder="Username (e.g. info)" value={newEmailUser} onChange={e => setNewEmailUser(e.target.value)} />
-                    <Input type="password" placeholder="Password" value={newEmailPass} onChange={e => setNewEmailPass(e.target.value)} />
-                    {/* Website selection would go here */}
+                    <div>
+                        <label className="text-sm font-medium">Website</label>
+                        <Select value={selectedWebsite} onValueChange={setSelectedWebsite}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select website" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {websites.map((site) => (
+                                    <SelectItem key={site.name} value={site.name}>
+                                        {site.domain}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium">Username</label>
+                        <Input placeholder="e.g. info" value={newEmailUser} onChange={e => setNewEmailUser(e.target.value)} />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium">Password</label>
+                        <Input type="password" placeholder="Password" value={newEmailPass} onChange={e => setNewEmailPass(e.target.value)} />
+                    </div>
                 </div>
                 <DialogFooter>
                     <Button onClick={handleCreate} disabled={isCreating}>Create</Button>

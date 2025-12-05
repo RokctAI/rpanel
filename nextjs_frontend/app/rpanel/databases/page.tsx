@@ -15,15 +15,6 @@ export default function DatabasesPage() {
 
   const fetchDBs = async () => {
     setIsLoading(true);
-    // Note: getDatabases needs clientName. We can get it from an API or pass session user email
-    // if backend supports it. Currently backend expects clientName.
-    // For MVP, we might need to fetch client name first or update backend action.
-    // Let's assume user.name or similar is available or update backend to infer it.
-    // Backend update: infer from session.
-
-    // TEMPORARY FIX: Pass "inference_needed" or similar if backend handles it,
-    // or fetch profile first.
-    // Assuming backend action `getDatabases` is updated to handle session inference (I will update it).
     const res = await getDatabases("");
     if (res.success) {
       setDatabases(res.data);
