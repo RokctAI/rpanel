@@ -50,8 +50,17 @@ class HostingClient(Document):
 
 
 @frappe.whitelist()
-def get_client_usage(client_name):
+def get_client_usage(client_name=None):
     """Get client resource usage"""
+    if not client_name:
+        if frappe.session.user == 'Guest':
+             frappe.throw("Please log in")
+
+        # Try to find client by email
+        client_name = frappe.db.get_value("Hosting Client", {"email": frappe.session.user}, "name")
+        if not client_name:
+             frappe.throw("No Hosting Client found for this user")
+
     client = frappe.get_doc('Hosting Client', client_name)
     
     # Get website count
@@ -106,12 +115,63 @@ def create_client_portal_user(client_name):
 
 
 @frappe.whitelist()
-def get_client_websites(client_name):
+def get_client_websites(client_name=None):
     """Get all websites for a client"""
+    if not client_name:
+        if frappe.session.user == 'Guest':
+             frappe.throw("Please log in")
+
+        client_name = frappe.db.get_value("Hosting Client", {"email": frappe.session.user}, "name")
+        if not client_name:
+             frappe.throw("No Hosting Client found for this user")
+
     websites = frappe.get_all(
         'Hosted Website',
         filters={'client': client_name},
-        fields=['name', 'domain', 'status', 'ssl_status', 'disk_usage_mb']
+        fields=['name', 'domain', 'status', 'ssl_status', 'disk_usage_mb', 'php_version', 'site_type', 'cms_type']
     )
     
-    return {'success': True, 'websites': websites}
+    return {'success': True, 'websites': websites, 'client_name': client_name}
+
+@frappe.whitelist()
+def get_client_databases(client_name=None):
+    """Get all databases for a client"""
+    if not client_name:
+        if frappe.session.user == 'Guest':
+             frappe.throw("Please log in")
+        client_name = frappe.db.get_value("Hosting Client", {"email": frappe.session.user}, "name")
+        if not client_name:
+             frappe.throw("No Hosting Client found")
+
+    websites = frappe.get_all(
+        'Hosted Website',
+        filters={'client': client_name, 'site_type': 'CMS'},
+        fields=['name', 'domain', 'db_name', 'db_user']
+    )
+    return {'success': True, 'databases': websites}
+
+@frappe.whitelist()
+def get_client_emails(client_name=None):
+    """Get all email accounts for a client"""
+    if not client_name:
+        if frappe.session.user == 'Guest':
+             frappe.throw("Please log in")
+        client_name = frappe.db.get_value("Hosting Client", {"email": frappe.session.user}, "name")
+        if not client_name:
+             frappe.throw("No Hosting Client found")
+
+    websites = frappe.get_all('Hosted Website', filters={'client': client_name}, fields=['name', 'domain'])
+    emails = []
+
+    for site in websites:
+        site_doc = frappe.get_doc('Hosted Website', site.name)
+        if site_doc.email_accounts:
+            for acc in site_doc.email_accounts:
+                emails.append({
+                    'email_user': acc.email_user,
+                    'domain': site.domain,
+                    'website_name': site.name,
+                    'quota_mb': acc.quota_mb
+                })
+
+    return {'success': True, 'emails': emails}
