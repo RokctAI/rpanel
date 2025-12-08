@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Rokct Holdings and contributors
+# Copyright (c) 2025, Rokct Intelligence (pty) Ltd and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -206,3 +206,54 @@ def execute_scheduled_cron_jobs():
             job_doc.execute()
         except Exception as e:
             frappe.log_error(f"Scheduled cron job execution failed: {str(e)}", f"Cron Job: {job.name}")
+
+@frappe.whitelist()
+def get_cron_jobs(website=None):
+    """Get all cron jobs for a website"""
+    filters = {}
+    if website:
+        filters['website'] = website
+
+    jobs = frappe.get_all(
+        'Cron Job',
+        filters=filters,
+        fields=['name', 'website', 'command', 'schedule', 'last_status', 'enabled', 'description']
+    )
+
+    # Format status
+    for job in jobs:
+        job['status'] = 'Active' if job.enabled else 'Disabled'
+
+    return jobs
+
+@frappe.whitelist()
+def create_cron_job(website, command, schedule, description=None):
+    """Create a new cron job"""
+    job = frappe.get_doc({
+        'doctype': 'Cron Job',
+        'website': website,
+        'command': command,
+        'schedule': schedule,
+        'description': description,
+        'enabled': 1
+    })
+    job.insert()
+    return {'success': True, 'name': job.name}
+
+@frappe.whitelist()
+def update_cron_job(name, website, command, schedule, description=None):
+    """Update an existing cron job"""
+    job = frappe.get_doc('Cron Job', name)
+    job.website = website
+    job.command = command
+    job.schedule = schedule
+    if description:
+        job.description = description
+    job.save()
+    return {'success': True}
+
+@frappe.whitelist()
+def delete_cron_job(name):
+    """Delete a cron job"""
+    frappe.delete_doc('Cron Job', name)
+    return {'success': True}
