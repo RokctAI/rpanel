@@ -15,7 +15,7 @@ frappe.listview_settings['Site Backup'] = {
                         frappe.call({
                             method: 'rpanel.hosting.doctype.site_backup.site_backup.delete_backup',
                             args: {
-                                backup_name: item.name
+                                backup_id: item.name
                             }
                         });
                     });
