@@ -9,7 +9,7 @@ frappe.ui.form.on('Site Backup', {
                         frappe.call({
                             method: 'rpanel.hosting.doctype.site_backup.site_backup.restore_backup',
                             args: {
-                                backup_name: frm.doc.name
+                                backup_id: frm.doc.name
                             },
                             callback: function (r) {
                                 if (r.message && r.message.success) {
@@ -45,7 +45,7 @@ frappe.ui.form.on('Site Backup', {
                         frappe.call({
                             method: 'rpanel.hosting.doctype.site_backup.site_backup.delete_backup',
                             args: {
-                                backup_name: frm.doc.name
+                                backup_id: frm.doc.name
                             },
                             callback: function (r) {
                                 if (r.message && r.message.success) {
