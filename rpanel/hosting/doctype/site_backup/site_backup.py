@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Rokct Holdings and contributors
+# Copyright (c) 2025, Rokct Intelligence (pty) Ltd and contributors
 # For license information, please see license.txt
 
 import frappe
@@ -241,11 +241,19 @@ class SiteBackup(Document):
 
 
 @frappe.whitelist()
-def create_backup(website_name, backup_type='Full', upload_to_cloud=False, cloud_storage='None'):
+def create_backup(website, backup_type='Full', upload_to_cloud=False, cloud_storage='None'):
     """Create a new backup"""
+    if website == 'local_control_site':
+        if "System Manager" not in frappe.get_roles():
+            frappe.throw("Access Denied")
+        # Trigger standard bench backup
+        from frappe.utils.backups import new_backup
+        new_backup(ignore_conf=False, force=True, verbose=False)
+        return {'success': True, 'message': 'Backup started in background'}
+
     backup = frappe.get_doc({
         'doctype': 'Site Backup',
-        'website': website_name,
+        'website': website,
         'backup_type': backup_type,
         'cloud_storage': cloud_storage if upload_to_cloud else 'None'
     })
@@ -256,16 +264,16 @@ def create_backup(website_name, backup_type='Full', upload_to_cloud=False, cloud
 
 
 @frappe.whitelist()
-def restore_backup(backup_name):
+def restore_backup(backup_id):
     """Restore a backup"""
-    backup = frappe.get_doc('Site Backup', backup_name)
+    backup = frappe.get_doc('Site Backup', backup_id)
     return backup.restore_backup()
 
 
 @frappe.whitelist()
-def delete_backup(backup_name):
+def delete_backup(backup_id):
     """Delete a backup file and record"""
-    backup = frappe.get_doc('Site Backup', backup_name)
+    backup = frappe.get_doc('Site Backup', backup_id)
     
     # Delete file if exists
     if backup.file_path and os.path.exists(backup.file_path):
@@ -276,6 +284,10 @@ def delete_backup(backup_name):
     
     return {'success': True}
 
+@frappe.whitelist()
+def get_backups(website=None):
+    """Alias for list_backups to match frontend call"""
+    return list_backups(website)
 
 @frappe.whitelist()
 def list_backups(website_name=None):
