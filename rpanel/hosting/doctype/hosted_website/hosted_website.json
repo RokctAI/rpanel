@@ -14,6 +14,9 @@
         "apps_to_install",
         "status",
         "php_version",
+        "php_mode",
+        "admin_email",
+        "aliases",
         "site_path",
         "column_break_1",
         "ssl_status",
@@ -82,6 +85,24 @@
             "fieldtype": "Select",
             "label": "PHP Version",
             "options": "8.3\n8.2\n8.1\n7.4"
+        },
+        {
+            "default": "Apache module",
+            "fieldname": "php_mode",
+            "fieldtype": "Select",
+            "label": "PHP Mode",
+            "options": "Apache module\nPHP-FPM\nReverse proxy"
+        },
+        {
+            "fieldname": "admin_email",
+            "fieldtype": "Data",
+            "label": "Admin Email",
+            "options": "Email"
+        },
+        {
+            "fieldname": "aliases",
+            "fieldtype": "Data",
+            "label": "Aliases"
         },
         {
             "fieldname": "site_path",
