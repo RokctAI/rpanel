@@ -10,8 +10,15 @@ from datetime import datetime, timedelta
 @frappe.whitelist()
 def get_nginx_access_log(website_name, lines=100):
     """Get Nginx access log for a website"""
-    website = frappe.get_doc('Hosted Website', website_name)
-    log_file = f"/var/log/nginx/{website.domain}_access.log"
+    if website_name == 'local_control_site':
+        if "System Manager" not in frappe.get_roles():
+            frappe.throw("Access Denied")
+        # For local site, maybe return Frappe web logs or global nginx logs if accessible
+        # Using frappe.log.web for now as proxy
+        log_file = os.path.join(frappe.utils.get_bench_path(), 'logs', 'web.log')
+    else:
+        website = frappe.get_doc('Hosted Website', website_name)
+        log_file = f"/var/log/nginx/{website.domain}_access.log"
     
     return read_log_file(log_file, lines)
 
@@ -19,8 +26,14 @@ def get_nginx_access_log(website_name, lines=100):
 @frappe.whitelist()
 def get_nginx_error_log(website_name, lines=100):
     """Get Nginx error log for a website"""
-    website = frappe.get_doc('Hosted Website', website_name)
-    log_file = f"/var/log/nginx/{website.domain}_error.log"
+    if website_name == 'local_control_site':
+        if "System Manager" not in frappe.get_roles():
+            frappe.throw("Access Denied")
+        # For local site, use frappe.log
+        log_file = os.path.join(frappe.utils.get_bench_path(), 'logs', 'frappe.web.log')
+    else:
+        website = frappe.get_doc('Hosted Website', website_name)
+        log_file = f"/var/log/nginx/{website.domain}_error.log"
     
     return read_log_file(log_file, lines)
 
@@ -28,8 +41,14 @@ def get_nginx_error_log(website_name, lines=100):
 @frappe.whitelist()
 def get_php_error_log(website_name, lines=100):
     """Get PHP error log for a website"""
-    website = frappe.get_doc('Hosted Website', website_name)
-    log_file = os.path.join(website.site_path, 'error.log')
+    if website_name == 'local_control_site':
+        if "System Manager" not in frappe.get_roles():
+            frappe.throw("Access Denied")
+        # Local site is python, return worker logs
+        log_file = os.path.join(frappe.utils.get_bench_path(), 'logs', 'worker.log')
+    else:
+        website = frappe.get_doc('Hosted Website', website_name)
+        log_file = os.path.join(website.site_path, 'error.log')
     
     return read_log_file(log_file, lines)
 
@@ -37,14 +56,20 @@ def get_php_error_log(website_name, lines=100):
 @frappe.whitelist()
 def get_application_log(website_name, log_type='debug', lines=100):
     """Get application-specific logs (WordPress, Laravel, etc.)"""
-    website = frappe.get_doc('Hosted Website', website_name)
-    
-    # WordPress debug log
-    if website.cms_type == 'WordPress':
-        log_file = os.path.join(website.site_path, 'wp-content', 'debug.log')
+    if website_name == 'local_control_site':
+        if "System Manager" not in frappe.get_roles():
+            frappe.throw("Access Denied")
+        # Local site scheduler logs
+        log_file = os.path.join(frappe.utils.get_bench_path(), 'logs', 'schedule.log')
     else:
-        # Generic application log
-        log_file = os.path.join(website.site_path, 'storage', 'logs', 'laravel.log')
+        website = frappe.get_doc('Hosted Website', website_name)
+
+        # WordPress debug log
+        if website.cms_type == 'WordPress':
+            log_file = os.path.join(website.site_path, 'wp-content', 'debug.log')
+        else:
+            # Generic application log
+            log_file = os.path.join(website.site_path, 'storage', 'logs', 'laravel.log')
     
     return read_log_file(log_file, lines)
 
@@ -84,16 +109,30 @@ def tail_log(website_name, log_type, since_timestamp=None):
     """Get new log entries since timestamp (for live updates)"""
     
     # Get log file path
-    website = frappe.get_doc('Hosted Website', website_name)
-    
-    if log_type == 'nginx_access':
-        log_file = f"/var/log/nginx/{website.domain}_access.log"
-    elif log_type == 'nginx_error':
-        log_file = f"/var/log/nginx/{website.domain}_error.log"
-    elif log_type == 'php_error':
-        log_file = os.path.join(website.site_path, 'error.log')
+    if website_name == 'local_control_site':
+        if "System Manager" not in frappe.get_roles():
+            frappe.throw("Access Denied")
+
+        bench_path = frappe.utils.get_bench_path()
+        if log_type == 'nginx_access':
+            log_file = os.path.join(bench_path, 'logs', 'web.log')
+        elif log_type == 'nginx_error':
+            log_file = os.path.join(bench_path, 'logs', 'frappe.web.log')
+        elif log_type == 'php_error':
+            log_file = os.path.join(bench_path, 'logs', 'worker.log')
+        else:
+            log_file = os.path.join(bench_path, 'logs', 'schedule.log')
     else:
-        log_file = os.path.join(website.site_path, 'wp-content', 'debug.log')
+        website = frappe.get_doc('Hosted Website', website_name)
+
+        if log_type == 'nginx_access':
+            log_file = f"/var/log/nginx/{website.domain}_access.log"
+        elif log_type == 'nginx_error':
+            log_file = f"/var/log/nginx/{website.domain}_error.log"
+        elif log_type == 'php_error':
+            log_file = os.path.join(website.site_path, 'error.log')
+        else:
+            log_file = os.path.join(website.site_path, 'wp-content', 'debug.log')
     
     if not os.path.exists(log_file):
         return {'success': False, 'error': 'Log file not found'}
@@ -190,17 +229,27 @@ def clear_log(website_name, log_type):
 @frappe.whitelist()
 def get_log_stats(website_name):
     """Get statistics about all logs"""
-    website = frappe.get_doc('Hosted Website', website_name)
     
     stats = {}
     
-    # Check each log file
-    logs = {
-        'nginx_access': f"/var/log/nginx/{website.domain}_access.log",
-        'nginx_error': f"/var/log/nginx/{website.domain}_error.log",
-        'php_error': os.path.join(website.site_path, 'error.log'),
-        'application': os.path.join(website.site_path, 'wp-content', 'debug.log')
-    }
+    if website_name == 'local_control_site':
+        if "System Manager" not in frappe.get_roles():
+            frappe.throw("Access Denied")
+        bench_path = frappe.utils.get_bench_path()
+        logs = {
+            'nginx_access': os.path.join(bench_path, 'logs', 'web.log'),
+            'nginx_error': os.path.join(bench_path, 'logs', 'frappe.web.log'),
+            'php_error': os.path.join(bench_path, 'logs', 'worker.log'),
+            'application': os.path.join(bench_path, 'logs', 'schedule.log')
+        }
+    else:
+        website = frappe.get_doc('Hosted Website', website_name)
+        logs = {
+            'nginx_access': f"/var/log/nginx/{website.domain}_access.log",
+            'nginx_error': f"/var/log/nginx/{website.domain}_error.log",
+            'php_error': os.path.join(website.site_path, 'error.log'),
+            'application': os.path.join(website.site_path, 'wp-content', 'debug.log')
+        }
     
     for log_type, log_file in logs.items():
         if os.path.exists(log_file):
