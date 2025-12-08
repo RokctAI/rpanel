@@ -64,7 +64,7 @@ install_system_deps() {
   
   # Email services (needed for RPanel control panel to send notifications)
   echo -e "${GREEN}Installing email services...${NC}"
-  apt-get install -y exim4 exim4-daemon-heavy
+  apt-get install -y exim4 exim4-daemon-heavy opendkim opendkim-tools
   
   # Configure Exim4 for internet mail
   debconf-set-selections <<EOF
