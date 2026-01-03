@@ -151,7 +151,7 @@ def check_and_install_system_dependencies():
     
     # Update package list first
     try:
-        subprocess.run('apt-get update', shell=True, check=True)
+        subprocess.run('sudo apt-get update', shell=True, check=True)
     except Exception as e:
         print(f"Warning: apt-get update failed: {str(e)}")
     
@@ -161,11 +161,13 @@ def check_and_install_system_dependencies():
             dep_info = dependencies[dep_name]
             print(f"{dep_name} is missing, installing...")
             try:
-                subprocess.run(dep_info['install'], shell=True, check=True)
+                # Add sudo to the installation command
+                install_cmd = f"sudo {dep_info['install']}"
+                subprocess.run(install_cmd, shell=True, check=True)
                 print(f"✓ {dep_name} installed successfully\n")
             except Exception as e:
                 print(f"✗ Failed to install {dep_name}: {str(e)}")
-                print(f"  You may need to install it manually: sudo {dep_info['install']}\n")
+                print(f"  You may need to install it manually: {install_cmd}\n")
 
 
 def setup_security_features():
