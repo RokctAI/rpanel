@@ -1,7 +1,10 @@
 import subprocess
 import os
-import crypt
 import frappe
+import secrets
+import string
+
+# Removed 'import crypt' (incompatible with Python 3.13+)
 
 def run_certbot(domain, webroot):
     """Issues a certificate for the domain using webroot challenge"""
@@ -18,7 +21,7 @@ def run_certbot(domain, webroot):
             "-d", f"www.{domain}",
             "--non-interactive",
             "--agree-tos",
-            "--email", f"admin@{domain}" # Or a central admin email? Using domain admin for now.
+            "--email", f"admin@{domain}" 
         ]
 
         subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -59,11 +62,27 @@ def update_exim_config(domain, accounts):
         # Add new entries
         for acc in accounts:
             full_user = f"{acc['user']}@{domain}"
-            # Generate Crypt Hash
-            # Salt should be random.
-            salt = crypt.mksalt(crypt.METHOD_SHA512)
-            hashed = crypt.crypt(acc['password'], salt)
-            new_lines.append(f"{full_user}:{hashed}\n")
+            
+            # --- SECURE HASH REPLACEMENT FOR CRYPT ---
+            # Generate random 16-char salt
+            salt = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
+            
+            # Use openssl to generate SHA-512 crypt hash ($6$)
+            # We pass password via stdin to prevent exposure in 'ps aux'
+            try:
+                proc = subprocess.run(
+                    ['openssl', 'passwd', '-6', '-salt', salt, '-stdin'],
+                    input=acc['password'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                hashed = proc.stdout.strip()
+                new_lines.append(f"{full_user}:{hashed}\n")
+            except subprocess.CalledProcessError as e:
+                frappe.log_error(f"Password hashing failed for {full_user}: {e.stderr}")
+                continue
+            # -----------------------------------------
 
         # Write back (requires sudo, so write to temp and move)
         temp_passwd = f"/tmp/exim_passwd_{domain}"
@@ -71,7 +90,7 @@ def update_exim_config(domain, accounts):
             f.writelines(new_lines)
 
         subprocess.run(["sudo", "mv", temp_passwd, passwd_file], check=True)
-        subprocess.run(["sudo", "chown", "root:exim", passwd_file], check=False) # specific to distro
+        subprocess.run(["sudo", "chown", "root:exim", passwd_file], check=False) 
         subprocess.run(["sudo", "chmod", "640", passwd_file], check=False)
 
         # 2. Update Virtual Map (Aliases/Forwarding)
@@ -94,7 +113,7 @@ def update_exim_config(domain, accounts):
                 # Ensure Maildir exists
                 if not os.path.exists(mail_path):
                     subprocess.run(["sudo", "mkdir", "-p", mail_path], check=True)
-                    subprocess.run(["sudo", "chown", "-R", "exim:exim", mail_path], check=False) # User might be mail or exim
+                    subprocess.run(["sudo", "chown", "-R", "exim:exim", mail_path], check=False)
 
         temp_virtual = f"/tmp/exim_virtual_{domain}"
         with open(temp_virtual, "w") as f:
@@ -103,7 +122,7 @@ def update_exim_config(domain, accounts):
         subprocess.run(["sudo", "mv", temp_virtual, domain_file], check=True)
 
         # 3. Reload
-        subprocess.run(["sudo", "update-exim4.conf"], check=False) # Debian specific
+        subprocess.run(["sudo", "update-exim4.conf"], check=False) 
         subprocess.run(["sudo", "systemctl", "reload", "exim4"], check=True)
 
         return True, "Email configuration updated."
