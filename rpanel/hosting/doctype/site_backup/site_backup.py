@@ -10,6 +10,7 @@ from datetime import datetime
 import boto3
 from google.cloud import storage as gcs_storage
 import dropbox
+from rpanel.hosting.mysql_utils import run_mysqldump, run_mysql_restore
 
 class SiteBackup(Document):
     def before_save(self):
@@ -120,8 +121,13 @@ class SiteBackup(Document):
     def dump_database(self, website, backup_dir, backup_name):
         """Dump database to SQL file"""
         db_file = os.path.join(backup_dir, f"{backup_name}_db.sql")
-        cmd = f"mysqldump -u {website.db_user} -p{website.db_password} {website.db_name} > {db_file}"
-        subprocess.run(cmd, shell=True, check=True)
+        # Secure: Password hidden from process list via temp config file
+        run_mysqldump(
+            database=website.db_name,
+            output_file=db_file,
+            user=website.db_user,
+            password=website.db_password
+        )
         return db_file
     
     def upload_to_cloud(self, backup_file):
@@ -226,13 +232,23 @@ class SiteBackup(Document):
         
         # Restore database
         db_file = os.path.join(website.site_path, f"*_db.sql")
-        cmd = f"mysql -u {website.db_user} -p{website.db_password} {website.db_name} < {db_file}"
-        subprocess.run(cmd, shell=True, check=True)
+        # Secure: Password hidden from process list
+        run_mysql_restore(
+            database=website.db_name,
+            input_file=db_file,
+            user=website.db_user,
+            password=website.db_password
+        )
     
     def restore_database_backup(self, website, file_path):
         """Restore database backup"""
-        cmd = f"mysql -u {website.db_user} -p{website.db_password} {website.db_name} < {file_path}"
-        subprocess.run(cmd, shell=True, check=True)
+        # Secure: Password hidden from process list
+        run_mysql_restore(
+            database=website.db_name,
+            input_file=file_path,
+            user=website.db_user,
+            password=website.db_password
+        )
     
     def restore_files_backup(self, website, file_path):
         """Restore files backup"""
