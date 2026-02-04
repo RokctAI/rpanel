@@ -9,9 +9,11 @@ class TestHostedWebsite(unittest.TestCase):
     def setUp(self):
         # We simulate a document. In a real bench environment we might use frappe.get_doc,
         # but for unit testing controller logic, we can instantiate and mock.
-        # Instantiate without name to avoid DB lookup (init as new doc)
-        self.doc = HostedWebsite("Hosted Website")
-        self.doc.name = "test-website-doc"
+        # Instantiate with dict to avoid DB lookup (init as new doc)
+        self.doc = HostedWebsite({
+            "doctype": "Hosted Website",
+            "name": "test-website-doc"
+        })
         self.doc.domain = "test.example.com"
         self.doc.system_user = "testuser"
         self.doc.status = "Active"
