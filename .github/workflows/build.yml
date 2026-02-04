@@ -48,6 +48,7 @@ jobs:
     uses: RokctAI/shared-workflows/.github/workflows/universal-pipeline.yml@main
     with:
       project_type: ${{ needs.detect.outputs.is_flutter == 'true' && 'flutter' || (needs.detect.outputs.is_node == 'true' && 'node' || 'frappe') }}
+      install-payments: true
       # Quality Gate Toggles
       run_security: true
       run_lint: true
