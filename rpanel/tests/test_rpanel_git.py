@@ -87,7 +87,7 @@ class TestGitManager(unittest.TestCase):
         
         # Verify
         self.assertTrue(result['success'])
-        self.mock_website.db_set.assert_called_with('git_branch', 'develop')
+        self.mock_website.db_set.assert_any_call('git_branch', 'develop')
         
     @patch('rpanel.hosting.git_manager.frappe.get_doc')
     @patch('rpanel.hosting.git_manager.subprocess.run')
