@@ -24,6 +24,14 @@ class TestHostedWebsite(unittest.TestCase):
         # Mock specific attributes that might be used
         self.doc.email_accounts = []
         self.doc.ssl_status = None
+        
+        # Mock DB methods to avoid hitting database for non-existent doc
+        self.doc.save = MagicMock()
+        self.doc.db_set = MagicMock()
+        self.doc.db_update = MagicMock()
+        self.doc.check_client_quota = MagicMock()
+        self.doc.load_from_db = MagicMock()
+        self.doc.reload = MagicMock()
 
     @patch('rpanel.hosting.doctype.hosted_website.hosted_website.SystemUserManager')
     @patch('rpanel.hosting.doctype.hosted_website.hosted_website.PHPFPMManager')
