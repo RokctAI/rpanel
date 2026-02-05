@@ -1,5 +1,9 @@
 name: Build (Smart)
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ main, develop ]
@@ -30,6 +34,10 @@ on:
       db-type:
         type: string
         default: 'postgres'
+      version_format:
+        type: string
+        default: '##.##.##'
+        description: "Format for version bumping (e.g. ##.##.## or ##.##.#)"
 
 jobs:
   # --- 1. DETECT PROJECT TYPE ---
@@ -76,4 +84,5 @@ jobs:
       mariadb-version: ${{ inputs.mariadb-version }}
       postgres-version: ${{ inputs.postgres-version }}
       db-type: ${{ inputs.db-type }}
+      version_format: ${{ inputs.version_format || '##.##.##' }}
     secrets: inherit
