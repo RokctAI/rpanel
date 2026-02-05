@@ -20,7 +20,7 @@ on:
         default: '15'
       db-type:
         type: string
-        default: 'mariadb'
+        default: 'postgres'
 
 jobs:
   release:
@@ -48,5 +48,5 @@ jobs:
       python-version: ${{ inputs.python-version || '3.14' }}
       mariadb-version: ${{ inputs.mariadb-version || '10.6' }}
       postgres-version: ${{ inputs.postgres-version || '15' }}
-      db-type: ${{ inputs.db-type || 'mariadb' }}
+      db-type: ${{ inputs.db-type || 'postgres' }}
     secrets: inherit
