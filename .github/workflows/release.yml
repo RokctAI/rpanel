@@ -8,7 +8,7 @@ on:
     inputs:
       node-version:
         type: string
-        default: '22'
+        default: '24'
       python-version:
         type: string
         default: '3.14'
@@ -44,7 +44,7 @@ jobs:
       # Brain Endpoint 
       brain_endpoint: https://platform.rokct.ai/api/method/brain.api.generate_release_notes
       # Environment configuration
-      node-version: ${{ inputs.node-version || '22' }}
+      node-version: ${{ inputs.node-version || '24' }}
       python-version: ${{ inputs.python-version || '3.14' }}
       mariadb-version: ${{ inputs.mariadb-version || '10.6' }}
       postgres-version: ${{ inputs.postgres-version || '15' }}
