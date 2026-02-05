@@ -17,7 +17,7 @@ on:
         - appbundle
       node-version:
         type: string
-        default: '22'
+        default: '24'
       python-version:
         type: string
         default: '3.14'
