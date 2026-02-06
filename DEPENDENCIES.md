@@ -38,6 +38,7 @@ All installation scripts read from this file:
 
 ### System Dependencies (Hosting Services)
 - Web servers (nginx)
+- Databases (mariadb, postgresql)
 - Email (exim4, dovecot)
 - SSL (certbot)
 - PHP versions (8.1, 8.2, 8.3)
@@ -48,5 +49,6 @@ All installation scripts read from this file:
 - Python 3
 - Redis
 - MariaDB
+- PostgreSQL (New Fleet Standard)
 - Node.js
 - Yarn
