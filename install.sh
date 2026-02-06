@@ -30,28 +30,36 @@ fi
 
 echo -e "${GREEN}Deploy mode: $MODE${NC}"
 
-# Prompt for domain in fresh mode
-if [[ "$MODE" == "fresh" ]]; then
-  echo -e "${BLUE}=================================================${NC}"
-  echo -e "${BLUE}Domain Configuration${NC}"
-  echo -e "${BLUE}=================================================${NC}"
-  echo ""
-  read -p "Enter your domain name (or press Enter for rpanel.local): " DOMAIN_NAME
+# Non-interactive mode for CI
+if [[ "$CI" == "true" || "$NON_INTERACTIVE" == "true" ]]; then
+  echo -e "${GREEN}CI environment detected. Using automated defaults.${NC}"
   DOMAIN_NAME=${DOMAIN_NAME:-rpanel.local}
-  echo -e "${GREEN}Using domain: $DOMAIN_NAME${NC}"
-  echo ""
-  
-  echo -e "${BLUE}=================================================${NC}"
-  echo -e "${BLUE}Hosting Mode${NC}"
-  echo -e "${BLUE}=================================================${NC}"
-  echo ""
-  echo "Will this server also host websites?"
-  echo "  Yes - Install hosting services (PHP, Nginx, email, etc.) on this server"
-  echo "  No  - Use this as a control panel only (manage remote servers)"
-  echo ""
-  read -p "Host websites on this server? (Y/n): " SELF_HOSTED
   SELF_HOSTED=${SELF_HOSTED:-Y}
-  echo ""
+  SKIP_SSL=true
+else
+  # Prompt for domain in fresh mode
+  if [[ "$MODE" == "fresh" ]]; then
+    echo -e "${BLUE}=================================================${NC}"
+    echo -e "${BLUE}Domain Configuration${NC}"
+    echo -e "${BLUE}=================================================${NC}"
+    echo ""
+    read -p "Enter your domain name (or press Enter for rpanel.local): " DOMAIN_NAME
+    DOMAIN_NAME=${DOMAIN_NAME:-rpanel.local}
+    echo -e "${GREEN}Using domain: $DOMAIN_NAME${NC}"
+    echo ""
+    
+    echo -e "${BLUE}=================================================${NC}"
+    echo -e "${BLUE}Hosting Mode${NC}"
+    echo -e "${BLUE}=================================================${NC}"
+    echo ""
+    echo "Will this server also host websites?"
+    echo "  Yes - Install hosting services (PHP, Nginx, email, etc.) on this server"
+    echo "  No  - Use this as a control panel only (manage remote servers)"
+    echo ""
+    read -p "Host websites on this server? (Y/n): " SELF_HOSTED
+    SELF_HOSTED=${SELF_HOSTED:-Y}
+    echo ""
+  fi
 fi
 
 # Helper to install system packages (only for fresh mode)
@@ -80,7 +88,7 @@ EOF
   apt-get install -y certbot python3-certbot-nginx
   
   # Node.js (required by Frappe)
-  curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+  curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
   apt-get install -y nodejs
   
   # Install Yarn
@@ -242,7 +250,7 @@ if [[ "$MODE" == "fresh" && ("$SELF_HOSTED" == "Y" || "$SELF_HOSTED" == "y") ]];
 fi
 
 # Setup SSL if domain is not localhost/rpanel.local
-if [[ "$MODE" == "fresh" && "$DOMAIN_NAME" != "rpanel.local" && "$DOMAIN_NAME" != "localhost" ]]; then
+if [[ "$MODE" == "fresh" && "$DOMAIN_NAME" != "rpanel.local" && "$DOMAIN_NAME" != "localhost" && "$SKIP_SSL" != "true" ]]; then
   echo -e "${GREEN}Setting up SSL for $DOMAIN_NAME...${NC}"
   echo -e "${BLUE}Note: Make sure $DOMAIN_NAME points to this server's IP address${NC}"
   read -p "Press Enter to continue with SSL setup (or Ctrl+C to skip)..."
@@ -295,8 +303,8 @@ echo -e "${GREEN}Step 1/6: Updating system and installing dependencies...${NC}"
 apt-get update && apt-get upgrade -y
 apt-get install -y git python3-dev python3-pip python3-venv redis-server software-properties-common mariadb-server mariadb-client xvfb libfontconfig wkhtmltopdf curl
 
-# Install Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+# Install Node.js 24
+curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
 apt-get install -y nodejs
 
 # Install Yarn
