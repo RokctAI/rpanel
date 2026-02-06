@@ -36,7 +36,7 @@ RPanel works by orchestrating standard open-source technologies (Nginx, PostgreS
 ### 💾 Database Management
 - **PostgreSQL First**: Native PostgreSQL support as the core engine
 - **MariaDB/MySQL**: Full compatibility for legacy sites and opt-in selection
-- **WordPress Bridge**: Automated [PG4WP](https://github.com/wp-plugins/postgresql-for-wordpress) installation for WP on PostgreSQL
+- **WordPress Bridge**: Automated [PG4WP](https://github.com/PostgreSQL-For-Wordpress/postgresql-for-wordpress) installation for WP on PostgreSQL
 - phpMyAdmin & pgAdmin integration ready
 - Database user management with automatic secure credentials
 
