@@ -35,7 +35,7 @@ jobs:
   release:
     permissions:
       contents: write
-    uses: RokctAI/shared-workflows/.github/workflows/universal-pipeline.yml@main
+    uses: RokctAI/shared-workflows/.github/workflows/universal-pipeline.yml@latest
     with:
       project_type: 'frappe'
       install-payments: true
