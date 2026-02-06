@@ -22,6 +22,17 @@ else
     echo "✓ Nginx already installed"
 fi
 
+# Install PostgreSQL (if not installed)
+echo "[3/12] Checking PostgreSQL..."
+if ! command -v psql &> /dev/null; then
+    echo "Installing PostgreSQL..."
+    apt install -y postgresql postgresql-contrib
+    systemctl enable postgresql
+    systemctl start postgresql
+else
+    echo "✓ PostgreSQL already installed"
+fi
+
 # MariaDB should already be installed from main installer
 
 # Install PHP versions (if not installed)
@@ -31,7 +42,7 @@ if ! dpkg -l | grep -q php8.3-fpm; then
     apt install -y software-properties-common
     add-apt-repository -y ppa:ondrej/php
     apt update
-    apt install -y php8.3-fpm php8.3-mysql php8.3-curl php8.3-gd php8.3-mbstring php8.3-xml php8.3-zip
+    apt install -y php8.3-fpm php8.3-mysql php8.3-pgsql php8.3-curl php8.3-gd php8.3-mbstring php8.3-xml php8.3-zip
     systemctl enable php8.3-fpm
     systemctl start php8.3-fpm
 else
@@ -40,7 +51,7 @@ fi
 
 if ! dpkg -l | grep -q php8.2-fpm; then
     echo "Installing PHP 8.2..."
-    apt install -y php8.2-fpm php8.2-mysql php8.2-curl php8.2-gd php8.2-mbstring php8.2-xml php8.2-zip
+    apt install -y php8.2-fpm php8.2-mysql php8.2-pgsql php8.2-curl php8.2-gd php8.2-mbstring php8.2-xml php8.2-zip
     systemctl enable php8.2-fpm
     systemctl start php8.2-fpm
 else
@@ -49,7 +60,7 @@ fi
 
 if ! dpkg -l | grep -q php8.1-fpm; then
     echo "Installing PHP 8.1..."
-    apt install -y php8.1-fpm php8.1-mysql php8.1-curl php8.1-gd php8.1-mbstring php8.1-xml php8.1-zip
+    apt install -y php8.1-fpm php8.1-mysql php8.1-pgsql php8.1-curl php8.1-gd php8.1-mbstring php8.1-xml php8.1-zip
     systemctl enable php8.1-fpm
     systemctl start php8.1-fpm
 else
@@ -160,6 +171,7 @@ echo ""
 echo "Installed/Verified services:"
 echo "  ✓ Nginx"
 echo "  ✓ MariaDB"
+echo "  ✓ PostgreSQL"
 echo "  ✓ PHP (8.3, 8.2, 8.1)"
 echo "  ✓ phpMyAdmin"
 echo "  ✓ Certbot (Let's Encrypt)"
