@@ -304,10 +304,15 @@ require_once ABSPATH . 'wp-settings.php';
             # We can use a pre-installed version on the server or download it.
             # For now, let's assume we maintain a cached copy in /var/lib/rpanel/plugins/
             bridge_source = "/var/lib/rpanel/plugins/pg4wp"
+            
+            # Cleanup if old repo exists but is empty (archived repo issues)
+            if os.path.exists(bridge_source) and not os.listdir(bridge_source):
+                subprocess.run(["sudo", "rm", "-rf", bridge_source], check=True)
+
             if not os.path.exists(bridge_source):
                 # Download if missing
                 subprocess.run([
-                    "sudo", "git", "clone", "https://github.com/wp-plugins/postgresql-for-wordpress.git", 
+                    "sudo", "git", "clone", "https://github.com/PostgreSQL-For-Wordpress/postgresql-for-wordpress.git", 
                     bridge_source
                 ], check=True)
             
