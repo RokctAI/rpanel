@@ -12,12 +12,17 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0;0m'
 
+# Hardcoded administrative password (as requested)
+DB_ROOT_PASS="rpanel_secure_db_pass"
+
 echo -e "${BLUE}=================================================${NC}"
 echo -e "${BLUE}       RPanel Flexible Installer               ${NC}"
 echo -e "${BLUE}=================================================${NC}"
 
 # Determine deployment mode
 MODE="${DEPLOY_MODE:-fresh}"
+DB_TYPE="${DB_TYPE:-mariadb}"
+
 if [[ "$MODE" != "fresh" && "$MODE" != "bench" ]]; then
   echo -e "${RED}Invalid DEPLOY_MODE: $MODE. Use 'fresh' or 'bench'.${NC}"
   echo ""
@@ -64,11 +69,17 @@ fi
 
 # Helper to install system packages (only for fresh mode)
 install_system_deps() {
-  echo -e "${GREEN}Installing system packages...${NC}"
-  apt-get update && apt-get upgrade -y
-  
+  # PHP PPA for modern Ubuntu ( Noble/Jammy compatibility )
+  if [[ "$CI" == "true" || "$NON_INTERACTIVE" == "true" ]]; then
+    add-apt-repository -y ppa:ondrej/php
+  fi
+
   # Core dependencies for Frappe/RPanel
-  apt-get install -y git python3-dev python3-pip python3-venv redis-server software-properties-common mariadb-server mariadb-client xvfb libfontconfig wkhtmltopdf curl
+  if [[ "$DB_TYPE" == "postgres" ]]; then
+    apt-get install -y git python3-dev python3-pip python3-venv redis-server software-properties-common postgresql postgresql-client libpq-dev xvfb libfontconfig wkhtmltopdf curl
+  else
+    apt-get install -y git python3-dev python3-pip python3-venv redis-server software-properties-common mariadb-server mariadb-client xvfb libfontconfig wkhtmltopdf curl
+  fi
   
   # Email services (needed for RPanel control panel to send notifications)
   echo -e "${GREEN}Installing email services...${NC}"
@@ -122,9 +133,6 @@ EOF
 configure_mariadb() {
   echo -e "${GREEN}Configuring MariaDB...${NC}"
   
-  # Generate random secure password
-  DB_ROOT_PASS=$(openssl rand -base64 32)
-  
   # Secure MariaDB installation
   mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;" || true
   mysql -e "DELETE FROM mysql.user WHERE User='';" || true
@@ -162,6 +170,30 @@ EOF
   systemctl restart mariadb
 }
 
+# Helper to configure PostgreSQL (only for fresh mode)
+configure_postgresql() {
+  echo -e "${GREEN}Configuring PostgreSQL...${NC}"
+  
+  # Set postgres user password
+  sudo -u postgres psql -c "ALTER USER postgres PASSWORD '$DB_ROOT_PASS';"
+  
+  # Allow password authentication for local connections
+  # Note: Frappe needs this to connect to the postgres engine
+  # Improved major version detection
+  PG_VERSION=$(psql --version | grep -oE '[0-9]+' | head -1)
+  PG_CONF="/etc/postgresql/$PG_VERSION/main/pg_hba.conf"
+  
+  if [ -f "$PG_CONF" ]; then
+    echo "Found PostgreSQL config at $PG_CONF. Enabling md5 authentication..."
+    # Change local peer/ident to md5 for Frappe compatibility
+    sed -i '/^local/s/peer/md5/' "$PG_CONF"
+    sed -i '/^host/s/ident/md5/' "$PG_CONF"
+    systemctl restart postgresql
+  else
+    echo -e "${RED}Warning: Could not find PostgreSQL config at $PG_CONF. Manual configuration may be required.${NC}"
+  fi
+}
+
 # Helper to create frappe system user (only for fresh mode)
 create_frappe_user() {
   echo -e "${GREEN}Creating frappe system user...${NC}"
@@ -179,7 +211,11 @@ install_bench() {
 cd /home/frappe
 if [ ! -d "frappe-bench" ]; then
   pip3 install frappe-bench
-  bench init frappe-bench --frappe-branch version-15
+  if [[ "$DB_TYPE" == "postgres" ]]; then
+    bench init frappe-bench --frappe-branch version-15 --db-type postgres
+  else
+    bench init frappe-bench --frappe-branch version-15
+  fi
 fi
 EOF
 }
@@ -193,7 +229,11 @@ fetch_latest_tag() {
 case "$MODE" in
   fresh)
     install_system_deps
-    configure_mariadb
+    if [[ "$DB_TYPE" == "postgres" ]]; then
+      configure_postgresql
+    else
+      configure_mariadb
+    fi
     create_frappe_user
     install_bench
     ;;
@@ -227,7 +267,11 @@ fi
 # Ensure site exists
 SITE_NAME="${DOMAIN_NAME:-rpanel.local}"
 if [ ! -d "sites/$SITE_NAME" ]; then
-  bench new-site $SITE_NAME --admin-password admin --db-root-password $DB_ROOT_PASS --install-app rpanel || true
+  if [[ "$DB_TYPE" == "postgres" ]]; then
+    bench new-site $SITE_NAME --db-type postgres --admin-password admin --db-root-password $DB_ROOT_PASS --install-app rpanel || true
+  else
+    bench new-site $SITE_NAME --admin-password admin --db-root-password $DB_ROOT_PASS --install-app rpanel || true
+  fi
 fi
 bench --site $SITE_NAME install-app rpanel
 EOF
@@ -276,114 +320,5 @@ echo -e "${GREEN}Email service (Exim4) is configured and running.${NC}"
 echo -e "${GREEN}RPanel can now send email notifications.${NC}"
 
 
-# RPanel Standalone Installer
-# Installs system dependencies, Frappe Bench, and RPanel on a fresh server.
-# Supported OS: Ubuntu 22.04 LTS, Debian 11/12
-
-set -e
-
-# Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-NC='\033[0;m'
-
-echo -e "${BLUE}=================================================${NC}"
-echo -e "${BLUE}       RPanel Standalone Installer               ${NC}"
-echo -e "${BLUE}=================================================${NC}"
-
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then 
-    echo -e "${RED}Please run as root (use sudo)${NC}"
-    exit 1
-fi
-
-# 1. System Updates & Dependencies
-echo -e "${GREEN}Step 1/6: Updating system and installing dependencies...${NC}"
-apt-get update && apt-get upgrade -y
-apt-get install -y git python3-dev python3-pip python3-venv redis-server software-properties-common mariadb-server mariadb-client xvfb libfontconfig wkhtmltopdf curl
-
-# Install Node.js 24
-curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
-apt-get install -y nodejs
-
-# Install Yarn
-npm install -g yarn
-
-# 2. Configure MariaDB
-echo -e "${GREEN}Step 2/6: Configuring Database...${NC}"
-DB_ROOT_PASS="rpanel_secure_db_pass"
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;" || true
-cat > /etc/mysql/mariadb.conf.d/frappe.cnf <<EOF
-[mysqld]
-character-set-client-handshake = FALSE
-character-set-server = utf8mb4
-collation-server = utf8mb4_unicode_ci
-
-[mysql]
-default-character-set = utf8mb4
-EOF
-systemctl restart mariadb
-
-# 3. Create Frappe User
-echo -e "${GREEN}Step 3/6: Creating 'frappe' user...${NC}"
-if ! id -u frappe > /dev/null 2>&1; then
-    useradd -m -s /bin/bash frappe
-    usermod -aG sudo frappe
-    echo "frappe ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-    # 4. Install Bench (as frappe user) - moved here
-    echo -e "${GREEN}Step 4/6: Installing Frappe Bench...${NC}"
-    sudo -u frappe -H bash <<EOF
-cd /home/frappe
-if [ ! -d "frappe-bench" ]; then
-    pip3 install frappe-bench
-    bench init frappe-bench --frappe-branch version-15
-fi
-EOF
-fi
-
-# 5. Install RPanel (fetch latest release tag)
-echo -e "${GREEN}Step 5/6: Installing RPanel...${NC}"
-# Determine latest release tag via helper script
-LATEST_TAG=$(python3 /home/frappe/frappe-bench/apps/rpanel/scripts/get_latest_release.py 2>/dev/null || echo "")
-if [ -z "$LATEST_TAG" ]; then
-    echo -e "${RED}Could not determine latest release – falling back to cloning main branch${NC}"
-    TAG_OPTION=""
-else
-    echo -e "${BLUE}Installing RPanel $LATEST_TAG${NC}"
-    TAG_OPTION="--branch $LATEST_TAG"
-fi
-
-sudo -u frappe -H bash <<EOF
-cd /home/frappe/frappe-bench
-# Get RPanel app if not exists
-if [ ! -d "apps/rpanel" ]; then
-    bench get-app https://github.com/RokctAI/rpanel.git $TAG_OPTION
-else
-    cd apps/rpanel
-    git fetch --tags
-    if [ -n "$TAG_OPTION" ]; then
-        git checkout $LATEST_TAG
-    fi
-    cd ../..
-fi
-# Create site if not exists
-if [ ! -d "sites/rpanel.local" ]; then
-    bench new-site rpanel.local --admin-password admin --db-root-password $DB_ROOT_PASS --install-app rpanel || true
-fi
-# Install RPanel on site
-bench --site rpanel.local install-app rpanel
-EOF
-
-# 5.5 Setup production (only for production installs)
-echo -e "${GREEN}Step 5.5/6: Configuring production services...${NC}"
-sudo bench setup production frappe
-
-
-# 6. Finalize
-echo -e "${GREEN}Step 6/6: Finalizing setup...${NC}"
-echo -e "${BLUE}=================================================${NC}"
-echo -e "${GREEN}RPanel installation complete!${NC}"
-echo -e "${BLUE}URL: http://$(curl -s ifconfig.me)${NC}"
-echo -e "${BLUE}Admin Password: admin${NC}"
-echo -e "${BLUE}=================================================${NC}"
+# Final output
+echo -e "${GREEN}Installation complete!${NC}"
