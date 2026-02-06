@@ -85,4 +85,5 @@ jobs:
       postgres-version: ${{ inputs.postgres-version }}
       db-type: ${{ inputs.db-type }}
       version_format: ${{ inputs.version_format || '##.##.##' }}
+      bootstrap: true
     secrets: inherit
