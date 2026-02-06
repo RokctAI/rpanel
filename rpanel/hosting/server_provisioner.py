@@ -11,6 +11,7 @@ def provision_server(server_name):
     Automatically install and configure all required services on a remote server
     - Nginx
     - MariaDB
+    - PostgreSQL
     - PHP-FPM (multiple versions)
     - phpMyAdmin
     - Certbot (Let's Encrypt)
@@ -63,14 +64,28 @@ else
     echo "✓ MariaDB already installed"
 fi
 
+# Install PostgreSQL (if not installed)
+echo "[4/12] Checking PostgreSQL..."
+if ! command -v psql &> /dev/null; then
+    echo "Installing PostgreSQL..."
+    apt install -y postgresql postgresql-contrib
+    systemctl enable postgresql
+    systemctl start postgresql
+    
+    # Setup standard rpanel role if needed
+    # sudo -u postgres psql -c "CREATE ROLE rpanel WITH LOGIN SUPERUSER PASSWORD 'rpanel_secured';"
+else
+    echo "✓ PostgreSQL already installed"
+fi
+
 # Install PHP versions (if not installed)
-echo "[4/12] Checking PHP versions..."
+echo "[5/12] Checking PHP versions..."
 if ! dpkg -l | grep -q php8.3-fpm; then
     echo "Installing PHP 8.3..."
     apt install -y software-properties-common
     add-apt-repository -y ppa:ondrej/php
     apt update
-    apt install -y php8.3-fpm php8.3-mysql php8.3-curl php8.3-gd php8.3-mbstring php8.3-xml php8.3-zip
+    apt install -y php8.3-fpm php8.3-mysql php8.3-pgsql php8.3-curl php8.3-gd php8.3-mbstring php8.3-xml php8.3-zip
     systemctl enable php8.3-fpm
     systemctl start php8.3-fpm
 else
@@ -79,7 +94,7 @@ fi
 
 if ! dpkg -l | grep -q php8.2-fpm; then
     echo "Installing PHP 8.2..."
-    apt install -y php8.2-fpm php8.2-mysql php8.2-curl php8.2-gd php8.2-mbstring php8.2-xml php8.2-zip
+    apt install -y php8.2-fpm php8.2-mysql php8.2-pgsql php8.2-curl php8.2-gd php8.2-mbstring php8.2-xml php8.2-zip
     systemctl enable php8.2-fpm
     systemctl start php8.2-fpm
 else
@@ -88,7 +103,7 @@ fi
 
 if ! dpkg -l | grep -q php8.1-fpm; then
     echo "Installing PHP 8.1..."
-    apt install -y php8.1-fpm php8.1-mysql php8.1-curl php8.1-gd php8.1-mbstring php8.1-xml php8.1-zip
+    apt install -y php8.1-fpm php8.1-mysql php8.1-pgsql php8.1-curl php8.1-gd php8.1-mbstring php8.1-xml php8.1-zip
     systemctl enable php8.1-fpm
     systemctl start php8.1-fpm
 else
@@ -224,6 +239,7 @@ echo ""
 echo "Installed/Verified services:"
 echo "  ✓ Nginx"
 echo "  ✓ MariaDB"
+echo "  ✓ PostgreSQL"
 echo "  ✓ PHP (8.3, 8.2, 8.1)"
 echo "  ✓ phpMyAdmin"
 echo "  ✓ Certbot (Let's Encrypt)"
@@ -276,7 +292,7 @@ def check_server_services(server_name):
     check_script = """
     echo "Checking installed services..."
     
-    services=("nginx" "mariadb" "php8.3-fpm" "php8.2-fpm" "exim4" "certbot" "fail2ban" "ufw")
+    services=("nginx" "mariadb" "postgresql" "php8.3-fpm" "php8.2-fpm" "exim4" "certbot" "fail2ban" "ufw")
     
     for service in "${services[@]}"; do
         if systemctl is-active --quiet $service 2>/dev/null || command -v $service &> /dev/null; then
