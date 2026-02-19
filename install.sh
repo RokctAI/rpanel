@@ -199,10 +199,12 @@ configure_postgresql() {
     sed -i '/^host/s/ident/md5/' "$PG_CONF"
     systemctl restart postgresql
     
-    # Pre-enable pgvector in template1 so all new bench sites have it
+    # Pre-enable extensions in template1 so all new bench sites have them
     # This solves permission errors for non-superuser site accounts
-    echo -e "${GREEN}Enabling pgvector in template1...${NC}"
+    echo -e "${GREEN}Enabling pgvector, cube, earthdistance in template1...${NC}"
     sudo -u postgres psql -d template1 -c "CREATE EXTENSION IF NOT EXISTS vector;"
+    sudo -u postgres psql -d template1 -c "CREATE EXTENSION IF NOT EXISTS cube;"
+    sudo -u postgres psql -d template1 -c "CREATE EXTENSION IF NOT EXISTS earthdistance;"
   else
     echo -e "${RED}Warning: Could not find PostgreSQL config at $PG_CONF. Manual configuration may be required.${NC}"
   fi
