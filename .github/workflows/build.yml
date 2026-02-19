@@ -91,6 +91,9 @@ jobs:
       db-type: 'postgres'
       version_format: ${{ inputs.version_format || '##.##.##' }}
       bootstrap: true
+      # --- Credentials ---
+      # For Golden Seed generation: Ensures CI DB password matches Monorepo .env/production.env
+      db-password: ${{ secrets.DB_ROOT_PASSWORD }}
     secrets: inherit
 
   docker-release:
