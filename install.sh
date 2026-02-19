@@ -239,7 +239,7 @@ export PATH=\$PATH:/home/frappe/.local/bin
 cd /home/frappe
 if [ ! -d "frappe-bench" ]; then
   pip3 install frappe-bench --user
-  bench init frappe-bench --frappe-branch version-15 --python python3.14 $( [[ "$DB_TYPE" == "postgres" ]] && echo "--db-type postgres" )
+  bench init frappe-bench --frappe-branch version-16 --python python3.14 $( [[ "$DB_TYPE" == "postgres" ]] && echo "--db-type postgres" )
 fi
 EOF
 }
