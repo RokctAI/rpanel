@@ -204,7 +204,20 @@ EOF
 
 # Helper to configure PostgreSQL (only for fresh mode)
 configure_postgresql() {
-  echo -e "${GREEN}Configuring PostgreSQL...${NC}"
+  # Ensure PostgreSQL is started and enabled
+  systemctl enable postgresql || true
+  systemctl start postgresql || true
+  
+  # Wait for PostgreSQL socket to be ready (critical for CI)
+  echo "Waiting for PostgreSQL to start..."
+  for i in {1..30}; do
+    if sudo -u postgres psql -c "select 1" >/dev/null 2>&1; then
+      echo "PostgreSQL is ready."
+      break
+    fi
+    echo -n "."
+    sleep 1
+  done
   
   # Set postgres user password
   sudo -u postgres psql -c "ALTER USER postgres PASSWORD '$DB_ROOT_PASS';"
