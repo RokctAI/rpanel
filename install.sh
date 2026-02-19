@@ -114,8 +114,9 @@ EOF
   # SSL/TLS (for securing the control panel domain)
   apt-get install -y certbot python3-certbot-nginx
   
-  # Node.js (Stable version for Frappe/RPanel)
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  # Node.js (Frappe v16 requires Node >= 24)
+  # Using nodesource setup_current to get the latest stable (23/24)
+  curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
   apt-get install -y nodejs
   
   # Install Yarn
@@ -154,13 +155,14 @@ configure_mariadb() {
   echo -e "${GREEN}Configuring MariaDB...${NC}"
   
   # Secure MariaDB installation
-  # We use sudo and force the unix_socket to avoid 1045 access denied in restricted CI environments
-  sudo mariadb -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;" || true
-  sudo mariadb -e "DELETE FROM mysql.user WHERE User='';" || true
-  sudo mariadb -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" || true
-  sudo mariadb -e "DROP DATABASE IF EXISTS test;" || true
-  sudo mariadb -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" || true
-  sudo mariadb -e "FLUSH PRIVILEGES;" || true
+  # We use sudo and force the unix_socket to bypass password prompts for root
+  # This is the most resilient way in CI/GitHub Actions
+  sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;" || true
+  sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e "DELETE FROM mysql.user WHERE User='';" || true
+  sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" || true
+  sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e "DROP DATABASE IF EXISTS test;" || true
+  sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" || true
+  sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e "FLUSH PRIVILEGES;" || true
   
   # Save password securely
   cat > /root/.my.cnf <<EOF
