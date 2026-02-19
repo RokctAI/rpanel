@@ -90,7 +90,7 @@ install_system_deps() {
     apt-get install -y git python3-dev python3-pip python3-venv redis-server software-properties-common mariadb-server mariadb-client xvfb libfontconfig wkhtmltopdf curl
   fi
   
-  # Email services (needed for RPanel control panel to send notifications)
+  # Configure Exim4 for internet mail
   echo -e "${GREEN}Installing email services...${NC}"
   apt-get install -y exim4 exim4-daemon-heavy opendkim opendkim-tools
   
@@ -101,8 +101,8 @@ exim4-config exim4/dc_other_hostnames string
 exim4-config exim4/dc_local_interfaces string 127.0.0.1 ; ::1
 EOF
   dpkg-reconfigure -f noninteractive exim4-config
-  systemctl enable exim4
-  systemctl start exim4
+  systemctl enable exim4 || true
+  systemctl start exim4 || true
   
   # SSL/TLS (for securing the control panel domain)
   apt-get install -y certbot python3-certbot-nginx
@@ -115,8 +115,9 @@ EOF
   npm install -g yarn
   
   # Configure automatic security updates
-  echo -e "${GREEN}Configuring automatic security updates...${NC}"
-  cat > /etc/apt/apt.conf.d/50unattended-upgrades <<EOF
+  if [[ "$CI" != "true" ]]; then
+    echo -e "${GREEN}Configuring automatic security updates...${NC}"
+    cat > /etc/apt/apt.conf.d/50unattended-upgrades <<EOF
 Unattended-Upgrade::Allowed-Origins {
     "\${distro_id}:\${distro_codename}-security";
 };
@@ -126,16 +127,19 @@ Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
 Unattended-Upgrade::Remove-Unused-Dependencies "true";
 Unattended-Upgrade::Automatic-Reboot "false";
 EOF
-  
-  cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
+    
+    cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 APT::Periodic::AutocleanInterval "7";
 EOF
-  
-  systemctl enable unattended-upgrades
-  systemctl start unattended-upgrades
-  echo -e "${GREEN}✓ Automatic security updates enabled${NC}"
+    
+    systemctl enable unattended-upgrades || true
+    systemctl start unattended-upgrades || true
+    echo -e "${GREEN}✓ Automatic security updates enabled${NC}"
+  else
+    echo -e "${GREEN}CI environment: Skipping automatic security updates configuration${NC}"
+  fi
 }
 
 # Helper to configure MariaDB (only for fresh mode)
