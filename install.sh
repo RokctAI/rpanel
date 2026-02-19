@@ -122,7 +122,7 @@ EOF
   apt-get install -y certbot python3-certbot-nginx
   
   # Node.js (Frappe v16 recommends Node 20 or 22 LTS)
-  # Node 25+ has shown compatibility issues with esbuild.js in some environments
+  # Switched to Node 22 (Active LTS) for maximum stability
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
   
@@ -132,11 +132,13 @@ EOF
   ln -sf /usr/bin/npm /usr/local/bin/npm
   ln -sf /usr/bin/npx /usr/local/bin/npx
   
-  # Verify Node version
+  # Enable Corepack (Recommended for modern Node)
+  corepack enable
+  corepack prepare yarn@1.22.22 --activate
+
+  # Verify Node/Yarn version
   node -v
-  
-  # Install Yarn
-  npm install -g yarn
+  yarn -v
   
   # Configure automatic security updates
   if [[ "$CI" != "true" ]]; then
@@ -278,7 +280,8 @@ export PATH=\$PATH:/home/frappe/.local/bin
 cd /home/frappe
 if [ ! -d "frappe-bench" ]; then
   python3.14 -m pip install frappe-bench --user
-  bench init frappe-bench --frappe-branch version-16 --python python3.14 --skip-assets --skip-redis-config-generation
+  # Added --verbose to capture yarn/build errors in detail
+  bench init frappe-bench --frappe-branch version-16 --python python3.14 --skip-assets --skip-redis-config-generation --verbose
 fi
 EOF
 }
