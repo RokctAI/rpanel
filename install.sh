@@ -87,8 +87,12 @@ install_system_deps() {
     add-apt-repository -y ppa:deadsnakes/ppa
     apt-get update
 
-    # Install Postgres 15 + pgvector + Python 3.14 + Compat tools
-    apt-get install -y git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server software-properties-common postgresql-15 postgresql-15-pgvector postgresql-client-15 libpq-dev xvfb libfontconfig wkhtmltopdf curl
+    # Install Postgres (Latest available) + Python 3.14 + Compat tools
+    apt-get install -y git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server software-properties-common postgresql postgresql-client libpq-dev xvfb libfontconfig wkhtmltopdf curl
+    
+    # Detect PG version and install matching pgvector
+    PG_V=$(psql --version | grep -oE '[0-9]+' | head -1)
+    apt-get install -y postgresql-$PG_V-pgvector
   else
     # Add Python 3.14 (Standard Fleet Version)
     add-apt-repository -y ppa:deadsnakes/ppa
