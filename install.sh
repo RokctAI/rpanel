@@ -154,12 +154,13 @@ configure_mariadb() {
   echo -e "${GREEN}Configuring MariaDB...${NC}"
   
   # Secure MariaDB installation
-  sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;" || true
-  sudo mysql -e "DELETE FROM mysql.user WHERE User='';" || true
-  sudo mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" || true
-  sudo mysql -e "DROP DATABASE IF EXISTS test;" || true
-  sudo mysql -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" || true
-  sudo mysql -e "FLUSH PRIVILEGES;" || true
+  # We use sudo and force the unix_socket to avoid 1045 access denied in restricted CI environments
+  sudo mariadb -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;" || true
+  sudo mariadb -e "DELETE FROM mysql.user WHERE User='';" || true
+  sudo mariadb -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" || true
+  sudo mariadb -e "DROP DATABASE IF EXISTS test;" || true
+  sudo mariadb -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" || true
+  sudo mariadb -e "FLUSH PRIVILEGES;" || true
   
   # Save password securely
   cat > /root/.my.cnf <<EOF
@@ -234,8 +235,8 @@ create_frappe_user() {
 # Helper to install Bench (fresh or bench mode)
 install_bench() {
   echo -e "${GREEN}Installing Bench...${NC}"
-  sudo -u frappe -H bash <<EOF
-export HOME=/home/frappe
+  # We use -i and explicit env to ensure HOME doesn't leak from the runner user
+  sudo -u frappe -i -H env HOME=/home/frappe XDG_CONFIG_HOME=/home/frappe/.config XDG_DATA_HOME=/home/frappe/.local/share bash <<EOF
 export PATH=\$PATH:/home/frappe/.local/bin
 cd /home/frappe
 if [ ! -d "frappe-bench" ]; then
@@ -276,8 +277,7 @@ else
   TAG_OPTION="--branch $LATEST_TAG"
 fi
 
-sudo -u frappe -H bash <<EOF
-export HOME=/home/frappe
+sudo -u frappe -i -H env HOME=/home/frappe XDG_CONFIG_HOME=/home/frappe/.config XDG_DATA_HOME=/home/frappe/.local/share bash <<EOF
 export PATH=\$PATH:/home/frappe/.local/bin
 cd /home/frappe/frappe-bench
 if [ ! -d "apps/rpanel" ]; then
