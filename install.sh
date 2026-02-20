@@ -3,7 +3,7 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
-INSTALLER_VERSION="v8.4-HEALTH-CHECK"
+INSTALLER_VERSION="v8.5-FAIL2BAN"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
@@ -434,7 +434,8 @@ fi
 # Production setup
 echo -e "${GREEN}Configuring production services...${NC}"
 
-# 1. Ensure Supervisor is ready
+# 1. Ensure production prerequisites are ready (fail2ban + supervisor)
+run_quiet "Installing fail2ban" apt-get install -y -qq -o=Dpkg::Use-Pty=0 fail2ban
 run_quiet "Installing Supervisor" apt-get install -y -qq -o=Dpkg::Use-Pty=0 supervisor
 run_quiet "Starting Supervisor" systemctl restart supervisor
 
