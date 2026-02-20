@@ -133,9 +133,9 @@ def get_branches(website_name):
             return {'success': False, 'error': 'Not a Git repository'}
         
         # Get branches
-        cmd = f"git -C {website.site_path} branch -r"
+        cmd = ["git", "-C", website.site_path, "branch", "-r"]
         result = subprocess.run(
-            shlex.split(cmd),
+            cmd,
             capture_output=True,
             text=True,
             timeout=30
@@ -161,10 +161,14 @@ def get_deployment_history(website_name, limit=10):
             return {'success': False, 'error': 'Not a Git repository'}
         
         # Get Git log
-        cmd = f"git -C {website.site_path} log --pretty=format:'%H|%an|%ae|%ad|%s' --date=iso -n {limit}"
+        # Security: Use list to prevent parsing errors and command injection
+        cmd = [
+            "git", "-C", website.site_path, "log", 
+            "--pretty=format:%H|%an|%ae|%ad|%s", 
+            "--date=iso", "-n", str(limit)
+        ]
         result = subprocess.run(
             cmd,
-            shell=True,
             capture_output=True,
             text=True,
             timeout=30
@@ -297,28 +301,27 @@ def get_git_status(website_name):
             return {'success': False, 'error': 'Not a Git repository'}
         
         # Get status
-        cmd = f"git -C {website.site_path} status --porcelain"
+        cmd = ["git", "-C", website.site_path, "status", "--porcelain"]
         result = subprocess.run(
-            shlex.split(cmd),
+            cmd,
             capture_output=True,
             text=True,
             timeout=30
         )
         
         # Get current branch
-        branch_cmd = f"git -C {website.site_path} rev-parse --abbrev-ref HEAD"
+        cmd = ["git", "-C", website.site_path, "rev-parse", "--abbrev-ref", "HEAD"]
         branch_result = subprocess.run(
-            shlex.split(branch_cmd),
+            cmd,
             capture_output=True,
             text=True,
             timeout=10
         )
         
         # Get latest commit
-        commit_cmd = f"git -C {website.site_path} log -1 --pretty=format:'%H|%s|%an|%ad' --date=short"
+        cmd = ["git", "-C", website.site_path, "log", "-1", "--pretty=format:%H|%s|%an|%ad", "--date=short"]
         commit_result = subprocess.run(
-            commit_cmd,
-            shell=True,
+            cmd,
             capture_output=True,
             text=True,
             timeout=10
