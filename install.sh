@@ -3,7 +3,7 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
-INSTALLER_VERSION="v8.3-PYTHONPATH-BRIDGE"
+INSTALLER_VERSION="v8.4-HEALTH-CHECK"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
@@ -439,12 +439,12 @@ run_quiet "Installing Supervisor" apt-get install -y -qq -o=Dpkg::Use-Pty=0 supe
 run_quiet "Starting Supervisor" systemctl restart supervisor
 
 # 2. THE CI MASTER FIX: Login shell with explicit PYTHONPATH
-# We find where bench lives and force the login shell to see it before running setup
 run_quiet "Generating production config" sudo -i -u frappe bash <<EOF
 export PATH="/home/frappe/.local/bin:\$PATH"
 export PYTHONPATH=\$(python3.14 -m site --user-site 2>/dev/null || echo "/home/frappe/.local/lib/python3.14/site-packages")
 cd /home/frappe/frappe-bench
-sudo env "PATH=\$PATH" "PYTHONPATH=\$PYTHONPATH" /home/frappe/.local/bin/bench setup production frappe --yes --user frappe
+# THE FIX: Removed the invalid '--user' flag. 'frappe' is passed directly as the user argument.
+sudo env "PATH=\$PATH" "PYTHONPATH=\$PYTHONPATH" /home/frappe/.local/bin/bench setup production frappe --yes
 EOF
 
 # 3. Final Verification and Emergency Linking
