@@ -330,6 +330,8 @@ case "$MODE" in
 esac
 
 # Install/Update RPanel app
+# Note: On fresh installs, rpanel app doesn't exist yet, so fetch_latest_tag 
+# returns empty and we download the default branch (usually main/master).
 LATEST_TAG=$(fetch_latest_tag || echo "")
 if [ -z "$LATEST_TAG" ]; then
   TAG_OPTION=""
@@ -347,7 +349,6 @@ else
 fi
 
 run_quiet "Setting up Redis config" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench setup redis"
-run_quiet "Generating Procfile" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench setup procfile"
 
 SITE_NAME="${DOMAIN_NAME:-rpanel.local}"
 if [ ! -d "/home/frappe/frappe-bench/sites/$SITE_NAME" ]; then
