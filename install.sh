@@ -3,7 +3,7 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
-INSTALLER_VERSION="v8.0-CI-GIGA-CLEAN"
+INSTALLER_VERSION="v8.1-VENV-REDIRECT"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
@@ -340,8 +340,8 @@ if [ ! -d "frappe-bench" ]; then
   yarn config set ignore-engines true >> "$INSTALL_LOG" 2>&1
   
   # Initialize bench with Python 3.14
-  # Using --verbose inside the log for easier debugging
-  bench init frappe-bench --frappe-branch version-16 --python python3.14 --skip-assets --skip-redis-config-generation --verbose
+  # Using absolute path to bench binary
+  /home/frappe/.local/bin/bench init frappe-bench --frappe-branch version-16 --python python3.14 --skip-assets --skip-redis-config-generation --verbose
   
   # Crucial for Postgres: Install the driver inside the bench virtualenv
   if [[ "$DB_TYPE" == "postgres" ]]; then
@@ -438,12 +438,12 @@ echo -e "${GREEN}Configuring production services...${NC}"
 run_quiet "Installing Supervisor" apt-get install -y -qq -o=Dpkg::Use-Pty=0 supervisor
 run_quiet "Starting Supervisor" systemctl restart supervisor
 
-# Define the absolute path to the bench binary
-BENCH_BIN="/home/frappe/.local/bin/bench"
+# 2. THE CI MASTER FIX: Use the Bench Virtualenv Python directly
+# This guarantees that the 'bench' module is found because we use the internal env.
+# We run as sudo to ensure /etc/ permissions.
+BENCH_VENV_PYTHON="/home/frappe/frappe-bench/env/bin/python"
 
-# 2. THE FINAL CI BRIDGE: Execute the bench binary as root but using the full path.
-# This bypasses 'python -m bench' and lets the binary's hashbang find its own environment.
-run_quiet "Generating production config" sudo -H env PATH="/home/frappe/.local/bin:$PATH" "$BENCH_BIN" setup production frappe --yes --user frappe
+run_quiet "Generating production config" sudo "$BENCH_VENV_PYTHON" -m bench setup production frappe --yes --user frappe
 
 # 3. Manual override if Bench fails to link (the "Nuclear Option")
 if [ ! -f /etc/nginx/conf.d/frappe.conf ] && [ -f /home/frappe/frappe-bench/config/nginx.conf ]; then
