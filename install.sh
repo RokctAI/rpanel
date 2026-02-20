@@ -189,6 +189,25 @@ EOF
   fi
 }
 
+# Helper to setup swap for low-memory environments (prevents OOM kills like 143)
+setup_swap() {
+  if [[ "$MODE" == "fresh" && ! -f /swapfile ]]; then
+    # Check if we have less than 4GB of RAM
+    local total_mem=$(free -m | grep -i mem | awk '{print $2}')
+    if [[ -n "$total_mem" && "$total_mem" -lt 4000 ]]; then
+      echo -e "${GREEN}Low memory detected (${total_mem}MB). Creating 2GB swap file...${NC}"
+      fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048
+      chmod 600 /swapfile
+      mkswap /swapfile
+      swapon /swapfile || true
+      if ! grep -q "/swapfile" /etc/fstab; then
+        echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+      fi
+      echo -e "${GREEN}✓ Swap enabled${NC}"
+    fi
+  fi
+}
+
 # Helper to configure MariaDB (only for fresh mode)
 configure_mariadb() {
   echo -e "${GREEN}Configuring MariaDB...${NC}"
@@ -321,6 +340,7 @@ fetch_latest_tag() {
 # Main logic per mode
 case "$MODE" in
   fresh)
+    setup_swap
     install_system_deps
     if [[ "$DB_TYPE" == "postgres" ]]; then
       configure_postgresql
@@ -347,8 +367,9 @@ else
 fi
 
 # Define common sudo prefix for bench commands
-# Increased NODE_OPTIONS memory limit to 4GB and limited workers to 1 to prevent OOM kills (SIGTERM 143)
-BENCH_SUDO="sudo -u frappe -i -H env CI=${CI:-false} NODE_OPTIONS='--max-old-space-size=4096' ESBUILD_WORKERS=1 MAX_WORKERS=1 HOME=/home/frappe XDG_CONFIG_HOME=/home/frappe/.config XDG_DATA_HOME=/home/frappe/.local/share PATH=/usr/bin:/usr/local/bin:/home/frappe/.local/bin:$PATH"
+# Ultra-conservative limits: 2.5GB Node memory, Single-core, Single-worker
+# This is required to prevent SIGTERM (143) OOM kills in CI/small VPS environments.
+BENCH_SUDO="sudo -u frappe -i -H env CI=${CI:-false} NODE_OPTIONS='--max-old-space-size=2560' ESBUILD_WORKERS=1 MAX_WORKERS=1 CPU_COUNT=1 HOME=/home/frappe XDG_CONFIG_HOME=/home/frappe/.config XDG_DATA_HOME=/home/frappe/.local/share PATH=/usr/bin:/usr/local/bin:/home/frappe/.local/bin:$PATH"
 
 if [ ! -d "/home/frappe/frappe-bench/apps/rpanel" ]; then
   run_quiet "Downloading RPanel app" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench get-app https://github.com/RokctAI/rpanel.git $TAG_OPTION --skip-assets"
