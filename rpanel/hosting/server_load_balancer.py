@@ -16,7 +16,7 @@ def get_server_by_group(group_name):
 
 
 @frappe.whitelist()
-def get_optimal_server_with_load_balancing(group='Production', algorithm='least_loaded'):
+def get_optimal_server_with_load_balancing(group='Production', algorithm='least_loaded'):  # noqa: C901
     """Get optimal server using load balancing algorithm"""
     servers = frappe.get_all(
         'Hosting Server',
