@@ -16,7 +16,7 @@ from rpanel.hosting.postgres_utils import create_pg_database, run_psql_command
 from rpanel.hosting.service_intelligence import ServiceIntelligence
 
 class HostedWebsite(Document):
-    def validate(self):
+    def validate(self):  # noqa: C901
         # 0. Check client quota (before creating new site)
         if self.is_new():
             self.check_client_quota()
@@ -114,7 +114,7 @@ class HostedWebsite(Document):
         self.deprovision_site()
 
     @frappe.whitelist()
-    def provision_site(self):
+    def provision_site(self):  # noqa: C901
         """Creates directory and basic config"""
         if self.status != "Active":
             return
@@ -266,7 +266,7 @@ class HostedWebsite(Document):
         import requests
         try:
             salts = requests.get('https://api.wordpress.org/secret-key/1.1/salt/').text
-        except:
+        except requests.RequestException:
             salts = ""
             # Log warning
 
@@ -384,7 +384,7 @@ require_once ABSPATH . 'wp-settings.php';
     ssl_certificate_key {key_path};
 """
             # Force redirect to HTTPS
-            ssl_block = f"""
+            ssl_block = """
     if ($scheme != "https") {{
         return 301 https://$host$request_uri;
     }}
