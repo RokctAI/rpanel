@@ -1,9 +1,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock, mock_open
-import frappe
 from rpanel.hosting.nginx_manager import NginxManager
-from rpanel.hosting.git_manager import clone_repository, pull_latest
 from rpanel.hosting.database_manager import execute_query, get_tables
 from rpanel.hosting.system_user_manager import SystemUserManager
 from rpanel.hosting.email_manager import generate_dkim_keys, get_spf_record

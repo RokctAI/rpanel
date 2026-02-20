@@ -13,10 +13,7 @@ How to use:
 
 import frappe
 import subprocess
-import os
 import requests
-import sys
-from frappe.installer import install_app as frappe_install_app
 
 
 def get_latest_rpanel_release():

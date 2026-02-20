@@ -1,8 +1,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-import frappe
-from rpanel.hosting.git_manager import clone_repository, pull_latest, switch_branch, get_branches, rollback_deployment
+from rpanel.hosting.git_manager import clone_repository, pull_latest, switch_branch, rollback_deployment
 
 
 class TestGitManager(unittest.TestCase):

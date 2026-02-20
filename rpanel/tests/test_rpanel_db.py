@@ -1,7 +1,6 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-import frappe
 from rpanel.hosting.database_manager import export_database, import_database, optimize_database
 
 

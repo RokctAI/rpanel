@@ -7,7 +7,7 @@ Prevents password exposure in process lists by using temporary config files.
 import os
 import tempfile
 import subprocess
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 import frappe
 
 

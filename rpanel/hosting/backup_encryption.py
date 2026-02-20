@@ -10,7 +10,6 @@ Handles GPG encryption/decryption of backups before uploading to cloud storage.
 import frappe
 import gnupg
 import os
-from pathlib import Path
 
 
 class BackupEncryptionManager:

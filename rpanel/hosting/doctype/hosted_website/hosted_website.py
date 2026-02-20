@@ -10,7 +10,7 @@ from rpanel.hosting.utils import run_certbot, update_exim_config
 from rpanel.hosting.mysql_utils import run_mysql_command
 from rpanel.hosting.system_user_manager import SystemUserManager
 from rpanel.hosting.php_fpm_manager import PHPFPMManager
-from rpanel.hosting.postgres_utils import create_pg_database, run_psql_command
+from rpanel.hosting.postgres_utils import create_pg_database
 from rpanel.hosting.service_intelligence import ServiceIntelligence
 
 

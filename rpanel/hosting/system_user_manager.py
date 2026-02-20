@@ -8,7 +8,6 @@ Ensures users are only deleted when no websites reference them.
 import os
 import subprocess
 import frappe
-from frappe.model.document import Document
 
 
 class SystemUserManager:

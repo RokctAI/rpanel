@@ -4,8 +4,6 @@
 import frappe
 import os
 import base64
-from pathlib import Path
-from frappe.utils import get_files_path, cstr
 
 
 @frappe.whitelist()

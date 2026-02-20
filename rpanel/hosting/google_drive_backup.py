@@ -3,11 +3,9 @@
 
 import frappe
 import os
-from google.oauth2.credentials import Credentials
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-from datetime import datetime
 
 
 @frappe.whitelist()

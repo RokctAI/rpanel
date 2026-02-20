@@ -7,7 +7,6 @@ import shutil
 import subprocess
 import shlex
 from rpanel.hosting.mysql_utils import run_mysql_command
-from rpanel.hosting.postgres_utils import run_psql_command
 
 
 @frappe.whitelist()

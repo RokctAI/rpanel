@@ -6,8 +6,6 @@ from datetime import datetime
 import smtplib
 import subprocess
 import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 
 @frappe.whitelist()
