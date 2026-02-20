@@ -3,7 +3,7 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
-INSTALLER_VERSION="v7.2-ULTRA-HARDENED"
+INSTALLER_VERSION="v7.3-HEADLESS-RELIABLE"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
@@ -362,7 +362,15 @@ fetch_latest_tag() {
 # Main logic per mode
 case "$MODE" in
   fresh)
-    setup_swap
+    if [[ "$CI" == "true" ]]; then
+      echo -e "${GREEN}CI detected: Forcing 4GB swap for asset compilation stability...${NC}"
+      fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
+      chmod 600 /swapfile
+      mkswap /swapfile
+      swapon /swapfile || true
+    else
+      setup_swap
+    fi
     install_system_deps
     if [[ "$DB_TYPE" == "postgres" ]]; then
       configure_postgresql
@@ -420,8 +428,8 @@ fi
 
 # Production setup
 echo -e "${GREEN}Configuring production services...${NC}"
-# Use --yes for non-interactive config and ensure sudo is available
-run_quiet "Generating production config" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench setup production frappe --yes"
+# Use direct sudo --yes for non-interactive config to ensure it has root privileges to write /etc/nginx and /etc/supervisor
+run_quiet "Generating production config" sudo -u frappe -i -H bench setup production frappe --yes
 # Force nginx restart to apply build results (even if partial)
 run_quiet "Restarting Nginx" systemctl restart nginx
 
