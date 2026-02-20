@@ -347,7 +347,8 @@ else
 fi
 
 # Define common sudo prefix for bench commands
-BENCH_SUDO="sudo -u frappe -i -H env CI=${CI:-false} HOME=/home/frappe XDG_CONFIG_HOME=/home/frappe/.config XDG_DATA_HOME=/home/frappe/.local/share PATH=/usr/bin:/usr/local/bin:/home/frappe/.local/bin:$PATH"
+# Increased NODE_OPTIONS memory limit to 4GB to prevent OOM kills during asset compilation (SIGTERM 143)
+BENCH_SUDO="sudo -u frappe -i -H env CI=${CI:-false} NODE_OPTIONS='--max-old-space-size=4096' HOME=/home/frappe XDG_CONFIG_HOME=/home/frappe/.config XDG_DATA_HOME=/home/frappe/.local/share PATH=/usr/bin:/usr/local/bin:/home/frappe/.local/bin:$PATH"
 
 if [ ! -d "/home/frappe/frappe-bench/apps/rpanel" ]; then
   run_quiet "Downloading RPanel app" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench get-app https://github.com/RokctAI/rpanel.git $TAG_OPTION --skip-assets"
@@ -366,7 +367,8 @@ fi
 run_quiet "Registering RPanel app" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && grep -q '^rpanel$' sites/apps.txt || (echo '' >> sites/apps.txt && echo 'rpanel' >> sites/apps.txt)"
 
 run_quiet "Installing RPanel into site" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench --site $SITE_NAME install-app rpanel"
-run_quiet "Building application assets" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench build --app rpanel"
+# Use --hard-link to save disk space/IO and --production for optimized build
+run_quiet "Building application assets" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench build --app rpanel --production --hard-link"
 
 # Production setup
 echo -e "${GREEN}Configuring production services...${NC}"
