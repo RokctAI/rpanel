@@ -3,6 +3,9 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
+INSTALLER_VERSION="v7.2-ULTRA-HARDENED"
+
+echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
 set -e
 
@@ -21,6 +24,8 @@ export CPU_COUNT=1
 export GENERATE_SOURCEMAP=false
 export NODE_ENV=production
 export YARN_NETWORK_TIMEOUT=300000
+export YARN_MEMORY_LIMIT=2048
+export GOGC=50
 
 # Log file for verbose output
 INSTALL_LOG="/tmp/rpanel_install.log"
