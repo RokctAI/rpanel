@@ -7,14 +7,21 @@ import sys
 
 def after_install():
     """Run after RPanel installation"""
-    print("Installing RPanel dependencies...")
-    check_and_install_system_dependencies()
-    install_dependencies()
+    import os
+    
+    if os.environ.get('CI') or os.environ.get('NON_INTERACTIVE'):
+        print("CI/Non-Interactive environment detected: Skipping system dependency installs in after_install")
+    else:
+        print("Installing RPanel dependencies...")
+        check_and_install_system_dependencies()
+        install_dependencies()
+    
     create_default_settings()
     
     # Setup security features
-    print("Configuring security features...")
-    setup_security_features()
+    if not (os.environ.get('CI') or os.environ.get('NON_INTERACTIVE')):
+        print("Configuring security features...")
+        setup_security_features()
     
     # Setup pgvector
     print("Configuring Database Extensions...")
