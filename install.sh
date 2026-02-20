@@ -96,15 +96,17 @@ install_system_deps() {
   if [[ "$DB_TYPE" == "postgres" ]]; then
     # Install PGDG Repo for latest Postgres + pgvector
     echo -e "${GREEN}Configuring PostgreSQL PGDG Repo...${NC}"
-    run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg
+    run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg software-properties-common
     install -d /usr/share/postgresql-common/pgdg
     run_quiet "Downloading PostgreSQL key" curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
     sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
     
+    # Add Python 3.14 (Required for Frappe v16)
+    run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
 
     # Install Essential System Tools
-    run_quiet "Installing system tools" apt-get install -y git software-properties-common curl redis-server xvfb libfontconfig wkhtmltopdf
+    run_quiet "Installing system tools" apt-get install -y git curl redis-server xvfb libfontconfig wkhtmltopdf
     
     # Install Python 3.14 (Required for Frappe v16)
     run_quiet "Installing Python 3.14" apt-get install -y python3.14-dev python3.14-venv python3-pip python-is-python3
@@ -112,9 +114,11 @@ install_system_deps() {
     # Install Postgres 16 (Native to Noble) + Matching Contrib & Vector
     run_quiet "Installing PostgreSQL 16 & Extensions" apt-get install -y postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector libpq-dev
   else
+    run_quiet "Installing repo tools" apt-get install -y software-properties-common
+    run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
     
-    run_quiet "Installing system dependencies" apt-get install -y git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server software-properties-common mariadb-server mariadb-client xvfb libfontconfig wkhtmltopdf curl build-essential
+    run_quiet "Installing system dependencies" apt-get install -y git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf
   fi
   
   # Configure Exim4 for internet mail
