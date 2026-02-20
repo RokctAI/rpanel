@@ -244,8 +244,8 @@ def setup_security_features():
     try:
         # Setup ModSecurity if installed
         # Check for compiled module OR Ubuntu package
-        result = subprocess.run('nginx -V 2>&1 | grep -q modsecurity', shell=True)
-        pkg_result = subprocess.run('dpkg -l | grep -q libnginx-mod-http-modsecurity', shell=True)
+        result = subprocess.run('nginx -V 2>&1 | grep -q modsecurity', shell=True)  # nosec B602 — pipe required for version check
+        pkg_result = subprocess.run('dpkg -l | grep -q libnginx-mod-http-modsecurity', shell=True)  # nosec B602 — pipe required
         
         if result.returncode == 0 or pkg_result.returncode == 0:
             from rpanel.hosting.modsecurity_manager import setup_modsecurity
@@ -269,11 +269,11 @@ def setup_security_features():
         subprocess.run(["sudo", "sed", "-i", "s/<VirtualHost \*:80>/<VirtualHost \*:8080>/g", "/etc/apache2/sites-available/000-default.conf"], check=False)
         
         print("Stopping Apache2 service...")
-        subprocess.run("sudo systemctl stop apache2 || true", shell=True)
-        subprocess.run("sudo systemctl disable apache2 || true", shell=True)
+        subprocess.run(['sudo', 'systemctl', 'stop', 'apache2'], check=False)
+        subprocess.run(['sudo', 'systemctl', 'disable', 'apache2'], check=False)
         
         print("Restarting Nginx service...")
-        subprocess.run("sudo systemctl restart nginx", shell=True, check=True)
+        subprocess.run(['sudo', 'systemctl', 'restart', 'nginx'], check=True)
         print("✓ Nginx restarted successfully (Port 80 reclaimed)")
     except Exception as e:
         print(f"Warning: Could not restart Nginx: {e}")
