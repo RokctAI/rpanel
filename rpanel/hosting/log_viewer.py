@@ -148,9 +148,9 @@ def tail_log(website_name, log_type, since_timestamp=None):
                 return {'success': True, 'lines': [], 'has_updates': False}
         
         # Read last 50 lines
-        cmd = f"tail -n 50 {log_file}"
+        cmd = ["tail", "-n", "50", log_file]
         result = subprocess.run(
-            shlex.split(cmd),
+            cmd,
             capture_output=True,
             text=True,
             timeout=10
@@ -258,9 +258,9 @@ def get_log_stats(website_name):
                 size_bytes = os.path.getsize(log_file)
                 size_mb = round(size_bytes / (1024 * 1024), 2)
                 
-                # Get line count
-                cmd = f"wc -l {log_file}"
-                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                # Get line count (Avoid shell=True)
+                cmd = ["wc", "-l", log_file]
+                result = subprocess.run(cmd, capture_output=True, text=True)
                 line_count = int(result.stdout.split()[0]) if result.returncode == 0 else 0
                 
                 # Get last modified time
@@ -286,10 +286,10 @@ def read_log_file(log_file, lines=100):
         return {'success': False, 'error': 'Log file not found'}
     
     try:
-        # Use tail to get last N lines
-        cmd = f"tail -n {lines} {log_file}"
+        # Use tail to get last N lines (Avoid shell=True)
+        cmd = ["tail", "-n", str(lines), log_file]
         result = subprocess.run(
-            shlex.split(cmd),
+            cmd,
             capture_output=True,
             text=True,
             timeout=30
