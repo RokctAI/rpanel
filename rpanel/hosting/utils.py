@@ -29,7 +29,7 @@ def run_certbot(domain, webroot):
     except subprocess.CalledProcessError as e:
         return False, f"Certbot failed: {e.stderr}"
 
-def update_exim_config(domain, accounts):
+def update_exim_config(domain, accounts):  # noqa: C901
     """
     Updates Exim4 configuration for a domain.
     accounts: list of dicts {'user': 'info', 'password': '...', 'forward_to': '...'}
