@@ -346,7 +346,8 @@ else
   run_quiet "Updating RPanel app" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench/apps/rpanel && git fetch --tags && [ -n \"$TAG_OPTION\" ] && git checkout $LATEST_TAG"
 fi
 
-run_quiet "Generating build configuration" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench setup build_config"
+run_quiet "Setting up Redis config" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench setup redis"
+run_quiet "Generating Procfile" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench setup procfile"
 
 SITE_NAME="${DOMAIN_NAME:-rpanel.local}"
 if [ ! -d "/home/frappe/frappe-bench/sites/$SITE_NAME" ]; then
