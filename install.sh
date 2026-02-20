@@ -132,13 +132,12 @@ EOF
   ln -sf /usr/bin/npm /usr/local/bin/npm
   ln -sf /usr/bin/npx /usr/local/bin/npx
   
-  # Enable Corepack (Recommended for modern Node)
-  corepack enable
-  corepack prepare yarn@1.22.22 --activate
-
+  # Install Yarn globally (Standard for Bench/Frappe compatibility)
+  npm install -g yarn@1.22.22
+  
   # Verify Node/Yarn version
   node -v
-  yarn -v
+  yarn -v || { echo -e "${RED}Yarn installation failed!${NC}"; exit 1; }
   
   # Configure automatic security updates
   if [[ "$CI" != "true" ]]; then
@@ -280,7 +279,8 @@ export PATH=\$PATH:/home/frappe/.local/bin
 cd /home/frappe
 if [ ! -d "frappe-bench" ]; then
   python3.14 -m pip install frappe-bench --user
-  # Added --verbose to capture yarn/build errors in detail
+  # Added --verbose for diagnostics and ensuring yarn is definitely available
+  export YARN_NETWORK_TIMEOUT=100000
   bench init frappe-bench --frappe-branch version-16 --python python3.14 --skip-assets --skip-redis-config-generation --verbose
 fi
 EOF
