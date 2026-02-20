@@ -110,7 +110,7 @@ def check_ssl_health(website_name):
     try:
         import ssl
         import socket
-        from datetime import datetime
+        
         
         context = ssl.create_default_context()
         
@@ -184,12 +184,11 @@ def get_ssl_expiry_date(cert_path):
         if result.returncode == 0:
             # Parse: notAfter=Dec  1 00:00:00 2025 GMT
             date_str = result.stdout.split('=')[1].strip()
-            from datetime import datetime
             expiry = datetime.strptime(date_str, '%b %d %H:%M:%S %Y %Z')
             return expiry.strftime('%Y-%m-%d')
         
         return None
-    except:
+    except Exception:
         return None
 
 
