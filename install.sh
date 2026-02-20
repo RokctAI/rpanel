@@ -3,7 +3,7 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
-INSTALLER_VERSION="v7.3-HEADLESS-RELIABLE"
+INSTALLER_VERSION="v7.4-SWAP-RELIABLE"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
@@ -364,6 +364,8 @@ case "$MODE" in
   fresh)
     if [[ "$CI" == "true" ]]; then
       echo -e "${GREEN}CI detected: Forcing 4GB swap for asset compilation stability...${NC}"
+      # Turn off existing swap to avoid "Text file busy"
+      swapoff /swapfile >> "$INSTALL_LOG" 2>&1 || true
       fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
       chmod 600 /swapfile
       mkswap /swapfile
