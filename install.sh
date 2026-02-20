@@ -81,6 +81,8 @@ run_quiet() {
   else
     echo -e "${RED}✗ FAILED${NC}"
     echo -e "${RED}Check $INSTALL_LOG for details.${NC}"
+    echo -e "${YELLOW}Last 20 lines of $INSTALL_LOG:${NC}"
+    tail -n 20 "$INSTALL_LOG" | sed 's/^/    /'
     exit 1
   fi
 }
@@ -118,7 +120,7 @@ install_system_deps() {
     run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
     
-    run_quiet "Installing system dependencies" apt-get install -y git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf
+    run_quiet "Installing system dependencies" apt-get install -y git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf libjpeg-dev zlib1g-dev
   fi
   
   # Configure Exim4 for internet mail
@@ -357,7 +359,7 @@ run_quiet "Setting up Redis config" $BENCH_SUDO bash -c "cd /home/frappe/frappe-
 
 SITE_NAME="${DOMAIN_NAME:-rpanel.local}"
 if [ ! -d "/home/frappe/frappe-bench/sites/$SITE_NAME" ]; then
-  run_quiet "Creating site: $SITE_NAME" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench new-site $SITE_NAME --admin-password admin --db-root-password $DB_ROOT_PASS $( [[ \"$DB_TYPE\" == \"postgres\" ]] && echo \"--db-type postgres\" ) || true"
+  run_quiet "Creating site: $SITE_NAME" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench new-site $SITE_NAME --admin-password admin --db-root-password $DB_ROOT_PASS $( [[ \"$DB_TYPE\" == \"postgres\" ]] && echo \"--db-type postgres\" )"
 fi
 
 run_quiet "Installing RPanel into site" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && bench --site $SITE_NAME install-app rpanel"
