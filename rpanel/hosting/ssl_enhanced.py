@@ -201,7 +201,7 @@ def update_nginx_ssl_config(domain, cert_file, key_file):
         config = f.read()
     
     # Update SSL paths
-    config = config.replace('/etc/letsencrypt/live/', f'/etc/nginx/ssl/')
+    config = config.replace('/etc/letsencrypt/live/', '/etc/nginx/ssl/')
     
     # Write updated config
     with open(config_file, 'w') as f:
