@@ -52,7 +52,7 @@ class FTPAccount(Document):
             
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"System command failed: {e}")
-            frappe.throw(f"Failed to setup FTP user. Check logs.")
+            frappe.throw("Failed to setup FTP user. Check logs.")
         except Exception as e:
             frappe.log_error(f"FTP user creation failed: {str(e)}")
             frappe.throw("An error occurred while creating the FTP account.")
