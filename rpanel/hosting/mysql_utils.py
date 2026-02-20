@@ -194,7 +194,7 @@ host={host}
         
         return config_path
         
-    except Exception as e:
+    except Exception:
         # Clean up on error
         if os.path.exists(config_path):
             os.remove(config_path)
