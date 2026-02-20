@@ -78,7 +78,7 @@ def retry_failed_emails():
                 doc.status = 'Not Sent'
                 doc.save()
                 count += 1
-            except:
+            except Exception:
                 pass
         
         frappe.db.commit()
@@ -200,7 +200,7 @@ def get_spf_record(domain, ip_address=None):
         import socket
         try:
             ip_address = socket.gethostbyname(socket.gethostname())
-        except:
+        except (socket.error, OSError):
             ip_address = 'SERVER_IP'
             
     return {
