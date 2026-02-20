@@ -25,19 +25,22 @@ class FirewallRule(Document):
     def apply_rule(self):
         """Apply UFW firewall rule"""
         try:
-            # Build UFW command
+            # Build UFW command as a list
+            cmd = ["sudo", "ufw"]
             if self.rule_type == 'Allow':
-                cmd = f"ufw allow from {self.ip_address}"
+                cmd.append("allow")
+                cmd.extend(["from", self.ip_address])
                 if self.port != 'any':
-                    cmd += f" to any port {self.port}"
+                    cmd.extend(["to", "any", "port", str(self.port)])
                 if self.protocol != 'any':
-                    cmd += f" proto {self.protocol}"
+                    cmd.extend(["proto", self.protocol])
             else:  # Deny
-                cmd = f"ufw deny from {self.ip_address}"
+                cmd.append("deny")
+                cmd.extend(["from", self.ip_address])
                 if self.port != 'any':
-                    cmd += f" to any port {self.port}"
+                    cmd.extend(["to", "any", "port", str(self.port)])
             
-            subprocess.run(f"sudo {cmd}", shell=True, check=True)
+            subprocess.run(cmd, check=True)
             
         except Exception as e:
             frappe.log_error(f"Firewall rule apply failed: {str(e)}")
@@ -45,8 +48,8 @@ class FirewallRule(Document):
     def remove_rule(self):
         """Remove UFW firewall rule"""
         try:
-            cmd = f"ufw delete {self.rule_type.lower()} from {self.ip_address}"
-            subprocess.run(f"sudo {cmd}", shell=True, check=True)
+            cmd = ["sudo", "ufw", "delete", self.rule_type.lower(), "from", self.ip_address]
+            subprocess.run(cmd, check=True)
         except Exception as e:
             frappe.log_error(f"Firewall rule remove failed: {str(e)}")
 
