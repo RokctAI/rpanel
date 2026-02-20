@@ -157,7 +157,7 @@ def get_error_logs(website_name, limit=100):
     """Get recent error logs from Nginx"""
     
     website = frappe.get_doc('Hosted Website', website_name)
-    settings = frappe.get_single('Hosting Settings')
+    settings = frappe.get_single('Hosting Settings')  # noqa: F841
     
     # Construct error log path
     error_log = f"/var/log/nginx/{website.domain}_error.log"
