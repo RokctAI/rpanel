@@ -3,7 +3,7 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
-INSTALLER_VERSION="v7.8-PYTHONPATH-FIX"
+INSTALLER_VERSION="v7.9-PYTHON-MODULE-FIX"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
@@ -124,25 +124,25 @@ install_system_deps() {
     run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
 
-    # Install Essential System Tools (-qq for clean logs)
-    run_quiet "Installing system tools" apt-get install -y -qq git curl redis-server xvfb libfontconfig wkhtmltopdf
+    # Install Essential System Tools (-qq for clean logs, kill PTY for one-liners)
+    run_quiet "Installing system tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git curl redis-server xvfb libfontconfig wkhtmltopdf
     
     # Install Python 3.14 (Required for Frappe v16)
-    run_quiet "Installing Python 3.14" apt-get install -y -qq python3.14-dev python3.14-venv python3-pip python-is-python3
+    run_quiet "Installing Python 3.14" apt-get install -y -qq -o=Dpkg::Use-Pty=0 python3.14-dev python3.14-venv python3-pip python-is-python3
     
     # Install Postgres 16 (Native to Noble) + Matching Contrib & Vector
-    run_quiet "Installing PostgreSQL 16 & Extensions" apt-get install -y -qq postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector libpq-dev
+    run_quiet "Installing PostgreSQL 16 & Extensions" apt-get install -y -qq -o=Dpkg::Use-Pty=0 postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector libpq-dev
   else
-    run_quiet "Installing repo tools" apt-get install -y -qq software-properties-common
+    run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 software-properties-common
     run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
     
-    run_quiet "Installing system dependencies" apt-get install -y -qq git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf libjpeg-dev zlib1g-dev
+    run_quiet "Installing system dependencies" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf libjpeg-dev zlib1g-dev
   fi
   
   # Configure Exim4 for internet mail
   echo -e "${GREEN}Installing email services...${NC}"
-  run_quiet "Installing Exim4 & OpenDKIM" apt-get install -y -qq exim4 exim4-daemon-heavy opendkim opendkim-tools
+  run_quiet "Installing Exim4 & OpenDKIM" apt-get install -y -qq -o=Dpkg::Use-Pty=0 exim4 exim4-daemon-heavy opendkim opendkim-tools
   
   # Configure Exim4 for internet mail
   debconf-set-selections <<EOF
@@ -435,19 +435,17 @@ fi
 echo -e "${GREEN}Configuring production services...${NC}"
 
 # Ensure Supervisor is explicitly installed (Mandatory for production config generation)
-run_quiet "Installing Supervisor" apt-get install -y -qq supervisor
+run_quiet "Installing Supervisor" apt-get install -y -qq -o=Dpkg::Use-Pty=0 supervisor
 run_quiet "Starting Supervisor" systemctl restart supervisor
-
-# Define the absolute path to bench
-BENCH_BIN="/home/frappe/.local/bin/bench"
 
 # 1. Identify the frappe user's site-packages to prevent ModuleNotFoundError
 # This ensures root can "see" the bench library installed by the frappe user
 FRAPPE_PYTHON_PATH=$(sudo -u frappe -i -H python3 -c "import site; print(site.getusersitepackages())")
 
-# 2. Run production setup as root but targeting the frappe user.
-# We use 'env' to inject PYTHONPATH for the 'ModuleNotFoundError' fix.
-run_quiet "Generating production config" sudo -H env PATH="/home/frappe/.local/bin:$PATH" PYTHONPATH="$FRAPPE_PYTHON_PATH" "$BENCH_BIN" setup production frappe --yes --user frappe
+# 2. THE ULTIMATE FIX: Call the bench module through the frappe user's python
+# This avoids ModuleNotFoundError by using the specific environment where bench is installed.
+# We run as root so it has the permissions to write to /etc/nginx and /etc/supervisor.
+run_quiet "Generating production config" sudo -H env PATH="/home/frappe/.local/bin:$PATH" PYTHONPATH="$FRAPPE_PYTHON_PATH" python3 -m bench setup production frappe --yes --user frappe
 
 # 3. Manual override if Bench fails to link (the "Nuclear Option")
 if [ ! -f /etc/nginx/conf.d/frappe.conf ] && [ -f /home/frappe/frappe-bench/config/nginx.conf ]; then
