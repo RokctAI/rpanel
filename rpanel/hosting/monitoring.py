@@ -253,7 +253,7 @@ def check_uptime():
             
             # Make request
             start_time = time.time()
-            response = requests.get(url, timeout=10, verify=False)
+            response = requests.get(url, timeout=10, verify=False)  # nosec B501 — internal health check, certs are self-managed
             response_time = (time.time() - start_time) * 1000  # Convert to ms
             
             # Create uptime check

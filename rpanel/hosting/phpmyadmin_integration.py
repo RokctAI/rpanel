@@ -4,6 +4,7 @@
 import frappe
 import subprocess
 import os
+import glob
 
 @frappe.whitelist()
 def setup_phpmyadmin(website_name):
@@ -15,16 +16,20 @@ def setup_phpmyadmin(website_name):
         phpmyadmin_path = "/usr/share/phpmyadmin"
         if not os.path.exists(phpmyadmin_path):
             # Download latest phpMyAdmin
-            cmd = "cd /tmp && wget https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz"
-            subprocess.run(cmd, shell=True, check=True)
-            
+            subprocess.run([
+                "wget", "https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz",
+                "-O", "/tmp/phpMyAdmin-latest-all-languages.tar.gz"
+            ], check=True)
+
             # Extract
-            cmd = "cd /tmp && tar -xzf phpMyAdmin-latest-all-languages.tar.gz"
-            subprocess.run(cmd, shell=True, check=True)
-            
-            # Move to /usr/share
-            cmd = "mv /tmp/phpMyAdmin-*-all-languages /usr/share/phpmyadmin"
-            subprocess.run(cmd, shell=True, check=True)
+            subprocess.run([
+                "tar", "-xzf", "/tmp/phpMyAdmin-latest-all-languages.tar.gz", "-C", "/tmp"
+            ], check=True)
+
+            # Move to /usr/share (resolve wildcard in Python)
+            matches = glob.glob("/tmp/phpMyAdmin-*-all-languages")
+            if matches:
+                os.rename(matches[0], phpmyadmin_path)
         
         # Create symlink in website directory
         pma_link = os.path.join(website.site_path, 'phpmyadmin')
@@ -49,7 +54,7 @@ $cfg['SaveDir'] = '';
             f.write(config)
         
         # Set permissions
-        subprocess.run(f"chown -R www-data:www-data {pma_link}", shell=True, check=True)
+        subprocess.run(["chown", "-R", "www-data:www-data", pma_link], check=True)
         
         pma_url = f"https://{website.domain}/phpmyadmin"
         

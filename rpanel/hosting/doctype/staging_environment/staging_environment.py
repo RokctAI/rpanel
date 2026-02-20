@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 import os
+import shutil
 import subprocess
 import shlex
 from datetime import datetime
@@ -30,8 +31,7 @@ def create_staging(production_website_name):
         os.makedirs(staging_path, exist_ok=True)
         
         # Copy production files to staging
-        cmd = f"cp -r {production.site_path}/* {staging_path}/"
-        subprocess.run(cmd, shell=True, check=True)
+        shutil.copytree(production.site_path, staging_path, dirs_exist_ok=True)
         
         # Create staging database
         create_staging_database(production.db_name, staging_db, production.db_user, production.db_password)
@@ -76,8 +76,10 @@ def sync_to_staging(staging_name, sync_database=True, sync_files=True):
         
         # Sync files
         if sync_files:
-            cmd = f"rsync -av --delete {production.site_path}/ {staging.staging_path}/"
-            subprocess.run(cmd, shell=True, check=True)
+            subprocess.run([
+                "rsync", "-av", "--delete",
+                f"{production.site_path}/", f"{staging.staging_path}/"
+            ], check=True)
         
         # Sync database
         if sync_database:
@@ -108,8 +110,10 @@ def push_to_production(staging_name):
                    website_name=production.name, backup_type='Full')
         
         # Sync files from staging to production
-        cmd = f"rsync -av --delete {staging.staging_path}/ {production.site_path}/"
-        subprocess.run(cmd, shell=True, check=True)
+        subprocess.run([
+            "rsync", "-av", "--delete",
+            f"{staging.staging_path}/", f"{production.site_path}/"
+        ], check=True)
         
         # Sync database from staging to production
         sync_staging_database(staging.staging_database, production.db_name)
@@ -129,8 +133,7 @@ def delete_staging(staging_name):
     try:
         # Remove staging directory
         if os.path.exists(staging.staging_path):
-            cmd = f"rm -rf {staging.staging_path}"
-            subprocess.run(cmd, shell=True, check=True)
+            shutil.rmtree(staging.staging_path)
         
         # Drop staging database
         drop_staging_database(staging.staging_database)

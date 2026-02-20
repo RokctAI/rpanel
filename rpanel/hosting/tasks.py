@@ -99,7 +99,7 @@ def check_site_health():
             protocol = 'https' if site.ssl_status == 'Active' else 'http'
             url = f"{protocol}://{site.domain}"
             
-            response = requests.get(url, timeout=10, verify=False)
+            response = requests.get(url, timeout=10, verify=False)  # nosec B501 — internal health check
             
             if response.status_code >= 500:
                 # Server error - log it

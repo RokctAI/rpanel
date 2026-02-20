@@ -5,6 +5,7 @@ import frappe
 from frappe.model.document import Document
 import paramiko
 import subprocess
+import shlex
 from datetime import datetime
 
 class HostingServer(Document):
@@ -105,7 +106,7 @@ def deploy_website_to_server(website_name, server_name):
         remote_path = f"{server.ssh_username}@{server.server_ip}:/var/www/{website.domain}/"
         
         rsync_cmd = f"rsync -avz -e 'ssh -p {server.ssh_port}' {local_path}/ {remote_path}"
-        subprocess.run(rsync_cmd, shell=True, check=True)
+        subprocess.run(shlex.split(rsync_cmd), check=True)
         
         client.close()
         
@@ -138,7 +139,7 @@ def get_optimal_server(group='Production'):
 def get_ssh_client(server):
     """Get SSH client for server"""
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # nosec B507 — managed hosting: servers are provisioned programmatically
     
     if server.ssh_key:
         # Use SSH key

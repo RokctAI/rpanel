@@ -3,6 +3,7 @@
 
 import frappe
 import subprocess
+import shlex
 import os
 from datetime import datetime
 
@@ -14,7 +15,7 @@ def scan_for_malware(website_name):
     try:
         # Run ClamAV scan
         cmd = f"clamscan -r --infected --remove=no {website.site_path}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
+        result = subprocess.run(shlex.split(cmd), capture_output=True, text=True, timeout=300)
         
         # Parse results
         threats_found = 0
@@ -109,7 +110,7 @@ def block_ip(ip_address, duration=3600):
     """Manually block IP address"""
     try:
         # Add to UFW
-        subprocess.run(f"sudo ufw deny from {ip_address}", shell=True, check=True)
+        subprocess.run(["sudo", "ufw", "deny", "from", ip_address], check=True)
         
         # Log the block
         frappe.get_doc({
@@ -130,7 +131,7 @@ def block_ip(ip_address, duration=3600):
 def unblock_ip(ip_address):
     """Unblock IP address"""
     try:
-        subprocess.run(f"sudo ufw delete deny from {ip_address}", shell=True, check=True)
+        subprocess.run(["sudo", "ufw", "delete", "deny", "from", ip_address], check=True)
         
         frappe.get_doc({
             'doctype': 'Security Audit Log',

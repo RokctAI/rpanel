@@ -3,6 +3,7 @@
 
 import frappe
 import os
+import shutil
 import subprocess
 import shlex
 from rpanel.hosting.mysql_utils import run_mysql_command
@@ -20,11 +21,10 @@ def import_wordpress(website_name, source_path):
             subprocess.run(shlex.split(cmd), check=True)
         else:
             # Copy directory
-            cmd = f"cp -r {source_path}/* {website.site_path}/"
-            subprocess.run(cmd, shell=True, check=True)
-        
+            shutil.copytree(source_path, website.site_path, dirs_exist_ok=True)
+
         # Set permissions
-        subprocess.run(f"chown -R www-data:www-data {website.site_path}", shell=True, check=True)
+        subprocess.run(["chown", "-R", "www-data:www-data", website.site_path], check=True)
         
         return {'success': True, 'message': 'WordPress imported'}
     except Exception as e:
@@ -39,12 +39,11 @@ def export_wordpress(website_name, include_uploads=True):
     try:
         export_path = f"/tmp/{website.domain}_export.zip"
         
-        if include_uploads:
-            cmd = f"cd {website.site_path} && zip -r {export_path} ."
-        else:
-            cmd = f"cd {website.site_path} && zip -r {export_path} . -x 'wp-content/uploads/*'"
-        
-        subprocess.run(cmd, shell=True, check=True)
+        cmd = ["zip", "-r", export_path, "."]
+        if not include_uploads:
+            cmd.extend(["-x", "wp-content/uploads/*"])
+
+        subprocess.run(cmd, cwd=website.site_path, check=True)
         
         return {'success': True, 'file_path': export_path}
     except Exception as e:

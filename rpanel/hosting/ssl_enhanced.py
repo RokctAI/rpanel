@@ -3,6 +3,7 @@
 
 import frappe
 import subprocess
+import shlex
 import os
 from datetime import datetime, timedelta
 
@@ -29,7 +30,7 @@ def issue_wildcard_ssl(website_name):
         
         # Issue wildcard certificate
         cmd = f"certbot certonly --dns-cloudflare --dns-cloudflare-credentials {creds_file} -d {domain} -d *.{domain} --non-interactive --agree-tos --email admin@{domain}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        result = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
         
         # Clean up
         os.remove(creds_file)
@@ -152,8 +153,10 @@ def renew_ssl_certificate(website_name):
             return issue_wildcard_ssl(website_name)
         else:
             # Standard renewal
-            cmd = f"certbot renew --cert-name {website.domain}"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(
+                ["certbot", "renew", "--cert-name", website.domain],
+                capture_output=True, text=True
+            )
             
             if result.returncode == 0:
                 cert_path = f"/etc/letsencrypt/live/{website.domain}/fullchain.pem"
@@ -173,8 +176,10 @@ def renew_ssl_certificate(website_name):
 def get_ssl_expiry_date(cert_path):
     """Get SSL certificate expiry date"""
     try:
-        cmd = f"openssl x509 -enddate -noout -in {cert_path}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        result = subprocess.run(
+            ["openssl", "x509", "-enddate", "-noout", "-in", cert_path],
+            capture_output=True, text=True
+        )
         
         if result.returncode == 0:
             # Parse: notAfter=Dec  1 00:00:00 2025 GMT

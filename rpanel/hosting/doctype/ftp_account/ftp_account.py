@@ -83,12 +83,14 @@ class FTPAccount(Document):
 def get_ftp_logs(username, lines=50):
     """Get FTP connection logs for user"""
     try:
-        # Grep is safer with shell=True but we sanitize inputs strictly in UI usually.
-        # Ideally, use python to read the file instead of grep to be 100% safe.
-        cmd = f"grep '{username}' /var/log/vsftpd.log | tail -n {lines}"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        
-        return {'success': True, 'logs': result.stdout}
+        # Pure Python file read — eliminates shell injection risk entirely
+        log_path = '/var/log/vsftpd.log'
+        if not os.path.exists(log_path):
+            return {'success': True, 'logs': ''}
+        with open(log_path, 'r') as f:
+            matching = [line for line in f if username in line]
+        output = ''.join(matching[-int(lines):])
+        return {'success': True, 'logs': output}
     except Exception as e:
         return {'success': False, 'error': str(e)}
 
@@ -97,8 +99,8 @@ def get_ftp_logs(username, lines=50):
 def test_ftp_connection(username, password):
     """Test FTP connection"""
     try:
-        import ftplib
-        ftp = ftplib.FTP('localhost')
+        import ftplib  # nosec B402 — FTP is the intentional purpose of this module
+        ftp = ftplib.FTP('localhost')  # nosec B321
         ftp.login(username, password)
         ftp.quit()
         

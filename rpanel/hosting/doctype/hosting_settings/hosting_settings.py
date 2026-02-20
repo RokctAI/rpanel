@@ -67,7 +67,7 @@ class HostingSettings(Document):
                  subprocess.run(["sudo", "mkdir", "-p", target_dir], check=True)
 
             # Sync files
-            subprocess.run(f"sudo rsync -a {src}/ {target_dir}/", shell=True, check=True)
+            subprocess.run(["sudo", "rsync", "-a", f"{src}/", f"{target_dir}/"], check=True)
 
             # Cleanup
             subprocess.run(["sudo", "rm", "-rf", tmp_extract, tmp_tar], check=True)
@@ -79,8 +79,8 @@ class HostingSettings(Document):
             # Roundcube's SQL uses CREATE TABLE (no if not exists in older versions).
             # Let's try run it; if fails, assume already done.
             try:
-                cmd = f"sudo mysql {db_name} < {sql_path}"
-                subprocess.run(cmd, shell=True, check=True)
+                with open(sql_path, 'r') as sql_file:
+                    subprocess.run(["sudo", "mysql", db_name], stdin=sql_file, check=True)
             except subprocess.CalledProcessError:
                 pass # Assume tables exist
 
