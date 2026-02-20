@@ -118,7 +118,7 @@ def create_default_settings():
             print(f"Note: Could not create default settings: {str(e)}")
 
 
-def check_and_install_system_dependencies():
+def check_and_install_system_dependencies():  # noqa: C901
     """
     Check for and install missing system dependencies when RPanel is installed via bench install-app
     Gets MariaDB password from common_site_config.json
@@ -157,10 +157,10 @@ def check_and_install_system_dependencies():
         with open(config_path, 'r') as f:
             config = json.load(f)
         
-        db_password = config.get('db_password') or config.get('root_password', '')
+        db_password = config.get('db_password') or config.get('root_password', '')  # noqa: F841
     except Exception as e:
         print(f"Warning: Could not read MariaDB password from config: {str(e)}")
-        db_password = ''
+        db_password = ''  # noqa: F841
     
     # Check which dependencies are missing
     missing_deps = []
@@ -266,7 +266,7 @@ def setup_security_features():
         # Change Listen 80 to Listen 8080 in ports.conf
         subprocess.run(["sudo", "sed", "-i", "s/Listen 80/Listen 8080/g", "/etc/apache2/ports.conf"], check=False)
         # Change <VirtualHost *:80> to <VirtualHost *:8080> in default site
-        subprocess.run(["sudo", "sed", "-i", "s/<VirtualHost \*:80>/<VirtualHost \*:8080>/g", "/etc/apache2/sites-available/000-default.conf"], check=False)
+        subprocess.run(["sudo", "sed", "-i", r"s/<VirtualHost \*:80>/<VirtualHost \*:8080>/g", "/etc/apache2/sites-available/000-default.conf"], check=False)
         
         print("Stopping Apache2 service...")
         subprocess.run(['sudo', 'systemctl', 'stop', 'apache2'], check=False)
