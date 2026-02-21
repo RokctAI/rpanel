@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: postgres.Dockerfile
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-admin}
+      - POSTGRES_USER=postgres
+    volumes:
+      - rpanel-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - rpanel-redis-data:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: full
+    environment:
+      - MODE=full
+      - SITE_NAME=${SITE_NAME:-platform.rokct.ai}
+      - DB_ROOT_PASSWORD=${DB_PASSWORD:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+    volumes:
+      - rpanel-sites:/home/frappe/frappe-bench/sites
+      - rpanel-logs:/home/frappe/frappe-bench/logs
+      - /var/www:/var/www # Map for customer sites management
+      - /etc/nginx/conf.d:/etc/nginx/conf.d # Map to manage host Nginx
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
+
+volumes:
+  rpanel-db-data:
+  rpanel-redis-data:
+  rpanel-sites:
+  rpanel-logs:
