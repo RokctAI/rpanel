@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: postgres.Dockerfile
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-admin}
+      - POSTGRES_USER=postgres
+    volumes:
+      - rpanel-iot-db-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    volumes:
+      - rpanel-iot-redis-data:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: lean
+    environment:
+      - MODE=iot
+      - SITE_NAME=${SITE_NAME:-drone.local}
+      - DB_ROOT_PASSWORD=${DB_PASSWORD:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+    volumes:
+      - rpanel-iot-sites:/home/frappe/frappe-bench/sites
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 1G # Reserve more for AI logic but save on Web/Node overhead
+
+volumes:
+  rpanel-iot-db-data:
+  rpanel-iot-redis-data:
+  rpanel-iot-sites:
