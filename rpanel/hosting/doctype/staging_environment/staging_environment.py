@@ -107,7 +107,7 @@ def push_to_production(staging_name):
     try:
         # Create backup of production first
         frappe.call('rpanel.hosting.doctype.site_backup.site_backup.create_backup',
-                   website_name=production.name, backup_type='Full')
+                    website_name=production.name, backup_type='Full')
 
         # Sync files from staging to production
         subprocess.run([

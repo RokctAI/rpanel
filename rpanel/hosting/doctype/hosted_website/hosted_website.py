@@ -81,7 +81,7 @@ class HostedWebsite(Document):
 
     def after_insert(self):
         if self.status == "Active":
-             self.provision_site()
+            self.provision_site()
 
     def on_update(self):
         if self.status == "Active":
@@ -169,7 +169,7 @@ class HostedWebsite(Document):
             # 5. Issue SSL
             # Check if SSL is already valid
             if not self.ssl_status or self.ssl_status != "Active":
-                 self.issue_ssl()
+                self.issue_ssl()
 
             frappe.msgprint(f"Site {self.domain} provisioned successfully.")
 
@@ -339,7 +339,7 @@ require_once ABSPATH . 'wp-settings.php';
     def issue_ssl(self):
         # Webroot must exist first
         if not os.path.exists(self.site_path):
-             frappe.throw("Site directory does not exist. Cannot issue SSL.")
+            frappe.throw("Site directory does not exist. Cannot issue SSL.")
 
         success, msg = run_certbot(self.domain, self.site_path)
         if success:
@@ -447,21 +447,21 @@ server {{
         """Updates Exim4/Dovecot files based on email accounts"""
         accounts = []
         for row in self.email_accounts:
-             accounts.append({
-                 'user': row.email_user,
-                 'password': row.get_password('password'),  # Safe retrieval
-                 'forward_to': row.forward_to
-             })
+            accounts.append({
+                'user': row.email_user,
+                'password': row.get_password('password'),  # Safe retrieval
+                'forward_to': row.forward_to
+            })
 
         success, msg = update_exim_config(self.domain, accounts)
         if not success:
-             frappe.msgprint(f"Email Update Warning: {msg}")
+            frappe.msgprint(f"Email Update Warning: {msg}")
 
     def setup_database(self):
         """Creates database and user based on engine"""
         # Double check validation
         if not re.match(r'^[a-zA-Z0-9_]+$', self.db_name) or not re.match(r'^[a-zA-Z0-9_]+$', self.db_user):
-             frappe.throw("Invalid Database Name or User")
+            frappe.throw("Invalid Database Name or User")
 
         if not self.db_password:
             self.db_password = frappe.generate_hash(length=12)
@@ -474,8 +474,8 @@ server {{
                 self.setup_postgresql()
 
         except Exception as e:
-             frappe.log_error(f"Database setup failed: {e}")
-             frappe.throw(f"Failed to setup {self.db_engine} database: {e}")
+            frappe.log_error(f"Database setup failed: {e}")
+            frappe.throw(f"Failed to setup {self.db_engine} database: {e}")
 
     def setup_mariadb(self):
         """Specific MariaDB setup logic"""
@@ -532,7 +532,7 @@ server {{
                 subprocess.run(["sudo", "mv", self.site_path, archive_path], check=True)
 
         except Exception as e:
-             frappe.log_error(f"Deprovisioning failed: {e}")
+            frappe.log_error(f"Deprovisioning failed: {e}")
 
     def suspend_site(self):
         """Updates Nginx to show suspension page"""

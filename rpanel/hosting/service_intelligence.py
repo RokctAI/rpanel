@@ -42,7 +42,7 @@ class ServiceIntelligence:
             if os.path.exists('/etc/php'):
                 # Look for directories like 8.1, 8.2, 8.3 in /etc/php
                 versions = [d for d in os.listdir('/etc/php')
-                           if re.match(r'^[0-9]\.[0-9]$', d) and os.path.isdir(os.path.join('/etc/php', d))]
+                            if re.match(r'^[0-9]\.[0-9]$', d) and os.path.isdir(os.path.join('/etc/php', d))]
         except Exception:
             pass
         return sorted(versions, reverse=True)

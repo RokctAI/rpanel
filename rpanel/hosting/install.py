@@ -32,9 +32,9 @@ def check_and_install_dependencies():
 
     # Install missing packages
     if missing_packages:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("ROKCT Hosting Module: Installing dependencies...")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         for package in missing_packages:
             try:
@@ -46,9 +46,9 @@ def check_and_install_dependencies():
             except subprocess.CalledProcessError as e:
                 print(f"✗ Failed to install {package}: {str(e)}")
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("Dependency installation complete!")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
     else:
         print("\n✓ All hosting module dependencies are already installed\n")
 

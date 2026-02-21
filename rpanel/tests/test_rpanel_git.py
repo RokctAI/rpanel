@@ -52,7 +52,7 @@ class TestGitManager(unittest.TestCase):
         mock_get_doc.return_value = self.mock_website
         mock_exists.return_value = True  # Directory exists
         with patch('rpanel.hosting.git_manager.os.listdir', return_value=['file.txt']):
-             result = clone_repository(self.website_name, self.repo_url)
+            result = clone_repository(self.website_name, self.repo_url)
 
         self.assertFalse(result['success'])
         self.assertIn("not empty", result['error'])

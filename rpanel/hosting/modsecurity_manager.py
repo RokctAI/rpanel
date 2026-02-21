@@ -345,15 +345,15 @@ SecRule REQUEST_URI "@rx \\?author=[0-9]+" \\
             lines = result.stdout.splitlines()
 
             for line in lines[-limit:]:
-                    if domain and domain not in line:
-                        continue
+                if domain and domain not in line:
+                    continue
 
-                    # Extract basic info (this is simplified)
-                    if 'ModSecurity' in line:
-                        blocked.append({
-                            'timestamp': line[:23] if len(line) > 23 else '',
-                            'message': line.strip()
-                        })
+                # Extract basic info (this is simplified)
+                if 'ModSecurity' in line:
+                    blocked.append({
+                        'timestamp': line[:23] if len(line) > 23 else '',
+                        'message': line.strip()
+                    })
 
         except Exception as e:
             frappe.log_error(f"Error reading ModSecurity audit log: {str(e)}")

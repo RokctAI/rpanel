@@ -29,8 +29,8 @@ class HostingSettings(Document):
         target_dir = "/var/www/roundcube"
 
         if os.path.exists(os.path.join(target_dir, "config", "config.inc.php")):
-             frappe.msgprint("Roundcube appears to be already installed.")
-             # We could offer update logic here
+            frappe.msgprint("Roundcube appears to be already installed.")
+            # We could offer update logic here
 
         frappe.msgprint("Starting Roundcube Installation...")
         try:
@@ -64,7 +64,7 @@ class HostingSettings(Document):
             src = os.path.join(tmp_extract, extracted_folder)
 
             if not os.path.exists(target_dir):
-                 subprocess.run(["sudo", "mkdir", "-p", target_dir], check=True)
+                subprocess.run(["sudo", "mkdir", "-p", target_dir], check=True)
 
             # Sync files
             subprocess.run(["sudo", "rsync", "-a", f"{src}/", f"{target_dir}/"], check=True)
@@ -104,7 +104,7 @@ $config['skin'] = 'elastic';
 
             tmp_conf = "/tmp/rc_config.inc.php"
             with open(tmp_conf, "w") as f:
-                 f.write(config_content)
+                f.write(config_content)
 
             dest_conf = os.path.join(target_dir, "config", "config.inc.php")
             subprocess.run(["sudo", "mv", tmp_conf, dest_conf], check=True)

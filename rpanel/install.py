@@ -212,8 +212,8 @@ def check_and_install_system_dependencies():  # noqa: C901
                     # Handle pipes within parts
                     if '|' in part:
                         pipe_parts = part.split('|')
-                            # Add sudo after pipe if not present
-                        part = '|'.join([p if i==0 else f" sudo {p.strip()}" for i, p in enumerate(pipe_parts)])
+                        # Add sudo after pipe if not present
+                        part = '|'.join([p if i == 0 else f" sudo {p.strip()}" for i, p in enumerate(pipe_parts)])
 
                     # Add sudo if not present (handling env as well)
                     if not part.startswith('sudo'):
