@@ -101,7 +101,6 @@ jobs:
       bootstrap: true
       # --- Credentials ---
       # For Golden Seed generation: Ensures CI DB password matches Monorepo .env/production.env
-      db-password: ${{ secrets.DB_ROOT_PASSWORD }}
     secrets: inherit
 
   docker-release:
