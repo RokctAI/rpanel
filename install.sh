@@ -71,7 +71,7 @@ else
     DOMAIN_NAME=${DOMAIN_NAME:-rpanel.local}
     echo -e "${GREEN}Using domain: $DOMAIN_NAME${NC}"
     echo ""
-    
+
     echo -e "${BLUE}=================================================${NC}"
     echo -e "${BLUE}Hosting Mode${NC}"
     echo -e "${BLUE}=================================================${NC}"
@@ -93,7 +93,7 @@ run_quiet() {
   echo -n -e "${BLUE}  - $msg... ${NC}"
   # Security: Set DEBIAN_FRONTEND=noninteractive for all system commands to avoid UI traps
   # Propagate stdin to the command to support heredocs
-  if DEBIAN_FRONTEND=noninteractive "$@" <&0 >> "$INSTALL_LOG" 2>&1; then
+  if DEBIAN_FRONTEND=noninteractive "$@" <&0 >>"$INSTALL_LOG" 2>&1; then
     echo -e "${GREEN}✓ DONE${NC}"
   else
     echo -e "${RED}✗ FAILED${NC}"
@@ -119,31 +119,31 @@ install_system_deps() {
     install -d /usr/share/postgresql-common/pgdg
     run_quiet "Downloading PostgreSQL key" curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
     sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-    
+
     # Add Python 3.14 (Required for Frappe v16)
     run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
 
     # Install Essential System Tools (-qq for clean logs, kill PTY for one-liners)
     run_quiet "Installing system tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git curl redis-server xvfb libfontconfig wkhtmltopdf
-    
+
     # Install Python 3.14 (Required for Frappe v16)
     run_quiet "Installing Python 3.14" apt-get install -y -qq -o=Dpkg::Use-Pty=0 python3.14-dev python3.14-venv python3-pip python-is-python3
-    
+
     # Install Postgres 16 (Native to Noble) + Matching Contrib & Vector
     run_quiet "Installing PostgreSQL 16 & Extensions" apt-get install -y -qq -o=Dpkg::Use-Pty=0 postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector libpq-dev
   else
     run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 software-properties-common
     run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
-    
+
     run_quiet "Installing system dependencies" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf libjpeg-dev zlib1g-dev
   fi
-  
+
   # Configure Exim4 for internet mail
   echo -e "${GREEN}Installing email services...${NC}"
   run_quiet "Installing Exim4 & OpenDKIM" apt-get install -y -qq -o=Dpkg::Use-Pty=0 exim4 exim4-daemon-heavy opendkim opendkim-tools
-  
+
   # Configure Exim4 for internet mail
   debconf-set-selections <<EOF
 exim4-config exim4/dc_eximconfig_configtype select internet site; mail is sent and received directly using SMTP
@@ -151,37 +151,40 @@ exim4-config exim4/dc_other_hostnames string
 exim4-config exim4/dc_local_interfaces string 127.0.0.1 ; ::1
 EOF
   run_quiet "Configuring Exim4" dpkg-reconfigure -f noninteractive exim4-config
-  systemctl enable exim4 >> "$INSTALL_LOG" 2>&1 || true
-  systemctl start exim4 >> "$INSTALL_LOG" 2>&1 || true
-  
+  systemctl enable exim4 >>"$INSTALL_LOG" 2>&1 || true
+  systemctl start exim4 >>"$INSTALL_LOG" 2>&1 || true
+
   # SSL/TLS (for securing the control panel domain)
   run_quiet "Installing Certbot" apt-get install -y certbot python3-certbot-nginx
-  
+
   # Node.js (Frappe v16 requires Node >= 24)
   # Node 24 is the certified LTS for version 16
   run_quiet "Setting up NodeSource (v24)" bash -c "curl -fsSL https://deb.nodesource.com/setup_24.x | bash -"
   run_quiet "Installing Node.js" apt-get install -y nodejs
-  
+
   # Nuclear Path Override: Ensure binaries are visible to all users/environments
   ln -sf /usr/bin/node /usr/local/bin/node
   ln -sf /usr/bin/npm /usr/local/bin/npm
   ln -sf /usr/bin/npx /usr/local/bin/npx
-  
+
   # Install Yarn globally and link it
   run_quiet "Installing Yarn" npm install -g yarn
-  ln -sf /usr/local/bin/yarn /usr/bin/yarn >> "$INSTALL_LOG" 2>&1 || true
-  
+  ln -sf /usr/local/bin/yarn /usr/bin/yarn >>"$INSTALL_LOG" 2>&1 || true
+
   # Bypass strict Node version checks in Yarn during build
   run_quiet "Configuring Yarn global policy" yarn config set ignore-engines true -g
-  
+
   # Verify Node/Yarn version
-  node -v >> "$INSTALL_LOG" 2>&1
-  yarn -v >> "$INSTALL_LOG" 2>&1 || { echo -e "${RED}Yarn installation failed!${NC}"; exit 1; }
-  
+  node -v >>"$INSTALL_LOG" 2>&1
+  yarn -v >>"$INSTALL_LOG" 2>&1 || {
+    echo -e "${RED}Yarn installation failed!${NC}"
+    exit 1
+  }
+
   # Configure automatic security updates
   if [[ "$CI" != "true" ]]; then
     echo -e "${GREEN}Configuring automatic security updates...${NC}"
-    cat > /etc/apt/apt.conf.d/50unattended-upgrades <<EOF
+    cat >/etc/apt/apt.conf.d/50unattended-upgrades <<EOF
 Unattended-Upgrade::Allowed-Origins {
     "\${distro_id}:\${distro_codename}-security";
 };
@@ -191,13 +194,13 @@ Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
 Unattended-Upgrade::Remove-Unused-Dependencies "true";
 Unattended-Upgrade::Automatic-Reboot "false";
 EOF
-    
-    cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
+
+    cat >/etc/apt/apt.conf.d/20auto-upgrades <<EOF
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 APT::Periodic::AutocleanInterval "7";
 EOF
-    
+
     systemctl enable unattended-upgrades || true
     systemctl start unattended-upgrades || true
     echo -e "${GREEN}✓ Automatic security updates enabled${NC}"
@@ -220,7 +223,7 @@ setup_swap() {
       mkswap /swapfile
       swapon /swapfile || true
       if ! grep -q "/swapfile" /etc/fstab; then
-        echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+        echo "/swapfile swap swap defaults 0 0" >>/etc/fstab
       fi
       echo -e "${GREEN}✓ Swap enabled${NC}"
     fi
@@ -232,21 +235,21 @@ setup_swap() {
 # Helper to configure MariaDB (only for fresh mode)
 configure_mariadb() {
   echo -e "${GREEN}Configuring MariaDB...${NC}"
-  
+
   # Secure MariaDB installation
   run_quiet "Securing MariaDB" bash -c "sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e \"ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; FLUSH PRIVILEGES;\" || true"
   run_quiet "Cleaning up MariaDB users" bash -c "sudo mariadb --user=root --socket=/var/run/mysqld/mysqld.sock -e \"DELETE FROM mysql.user WHERE User=''; DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1'); DROP DATABASE IF EXISTS test; DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'; FLUSH PRIVILEGES;\""
-  
+
   # Save password securely
-  cat > /root/.my.cnf <<EOF
+  cat >/root/.my.cnf <<EOF
 [client]
 user=root
 password=$DB_ROOT_PASS
 EOF
   chmod 600 /root/.my.cnf
-  
+
   # Configure MariaDB for Frappe
-  cat > /etc/mysql/mariadb.conf.d/frappe.cnf <<EOF
+  cat >/etc/mysql/mariadb.conf.d/frappe.cnf <<EOF
 [mysqld]
 character-set-client-handshake = FALSE
 character-set-server = utf8mb4
@@ -270,22 +273,25 @@ EOF
 configure_postgresql() {
   # Ensure PostgreSQL is started and enabled
   run_quiet "Starting PostgreSQL" systemctl start postgresql
-  
+
   # Wait for PostgreSQL socket to be ready (critical for CI)
   echo -n -e "${BLUE}  - Waiting for PostgreSQL to be ready... ${NC}"
   for i in {1..30}; do
-    if sudo -u postgres psql -c "select 1" >> "$INSTALL_LOG" 2>&1; then
+    if sudo -u postgres psql -c "select 1" >>"$INSTALL_LOG" 2>&1; then
       echo -e "${GREEN}✓ READY${NC}"
       break
     fi
     echo -n "."
     sleep 1
-    if [[ $i == 30 ]]; then echo -e "${RED}✗ TIMEOUT${NC}"; exit 1; fi
+    if [[ $i == 30 ]]; then
+      echo -e "${RED}✗ TIMEOUT${NC}"
+      exit 1
+    fi
   done
-  
+
   # Set postgres user password
   run_quiet "Setting PostgreSQL root password" sudo -u postgres psql -c "ALTER USER postgres PASSWORD '$DB_ROOT_PASS';"
-  
+
   # Pre-enable extensions in template1 so all new bench sites have them
   # Verification: Check if vector.control exists, if not, try re-installing
   if [ ! -f "/usr/share/postgresql/16/extension/vector.control" ]; then
@@ -293,11 +299,11 @@ configure_postgresql() {
   fi
 
   run_quiet "Enabling PostgreSQL extensions (vector, cube, etc.)" bash -c "sudo -u postgres psql -d template1 -c 'CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS cube; CREATE EXTENSION IF NOT EXISTS earthdistance;'"
-  
+
   # Allow password authentication for local connections
   PG_VERSION=$(psql --version | grep -oE '[0-9]+' | head -1)
   PG_CONF="/etc/postgresql/$PG_VERSION/main/pg_hba.conf"
-  
+
   if [ -f "$PG_CONF" ]; then
     run_quiet "Configuring authentication policy (md5)" bash -c "sed -i '/^local/s/peer/md5/' '$PG_CONF' && sed -i '/^host/s/ident/md5/' '$PG_CONF'"
     run_quiet "Applying PostgreSQL configuration" systemctl restart postgresql
@@ -309,12 +315,12 @@ configure_postgresql() {
 # Helper to create frappe system user (only for fresh mode)
 create_frappe_user() {
   echo -e "${GREEN}Creating/Configuring frappe system user...${NC}"
-  if ! id -u frappe > /dev/null 2>&1; then
+  if ! id -u frappe >/dev/null 2>&1; then
     useradd -m -s /bin/bash frappe
     usermod -aG sudo frappe
   fi
   # Nuclear sudo permission for frappe user (Always ensured for bench setup production)
-  echo "frappe ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/frappe
+  echo "frappe ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/frappe
   chmod 440 /etc/sudoers.d/frappe
 }
 
@@ -362,35 +368,35 @@ fetch_latest_tag() {
 
 # Main logic per mode
 case "$MODE" in
-  fresh)
-    if [[ "$CI" == "true" ]]; then
-      echo -e "${GREEN}CI detected: Forcing 4GB swap for asset compilation stability...${NC}"
-      # Turn off existing swap to avoid "Text file busy"
-      swapoff /swapfile >> "$INSTALL_LOG" 2>&1 || true
-      fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
-      chmod 600 /swapfile
-      mkswap /swapfile
-      swapon /swapfile || true
-    else
-      setup_swap
-    fi
-    install_system_deps
-    if [[ "$DB_TYPE" == "postgres" ]]; then
-      configure_postgresql
-    else
-      configure_mariadb
-    fi
-    create_frappe_user
-    install_bench
-    ;;
-  bench)
-    # Existing bench - just ensure frappe user exists
-    create_frappe_user || true
-    ;;
+fresh)
+  if [[ "$CI" == "true" ]]; then
+    echo -e "${GREEN}CI detected: Forcing 4GB swap for asset compilation stability...${NC}"
+    # Turn off existing swap to avoid "Text file busy"
+    swapoff /swapfile >>"$INSTALL_LOG" 2>&1 || true
+    fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile || true
+  else
+    setup_swap
+  fi
+  install_system_deps
+  if [[ "$DB_TYPE" == "postgres" ]]; then
+    configure_postgresql
+  else
+    configure_mariadb
+  fi
+  create_frappe_user
+  install_bench
+  ;;
+bench)
+  # Existing bench - just ensure frappe user exists
+  create_frappe_user || true
+  ;;
 esac
 
 # Install/Update RPanel app
-# Note: On fresh installs, rpanel app doesn't exist yet, so fetch_latest_tag 
+# Note: On fresh installs, rpanel app doesn't exist yet, so fetch_latest_tag
 # returns empty and we download the default branch (usually main/master).
 LATEST_TAG=$(fetch_latest_tag || echo "")
 if [ -z "$LATEST_TAG" ]; then
@@ -416,7 +422,7 @@ SITE_NAME="${DOMAIN_NAME:-rpanel.local}"
 BENCH_BIN="/home/frappe/.local/bin/bench"
 
 if [ ! -d "/home/frappe/frappe-bench/sites/$SITE_NAME" ]; then
-  run_quiet "Creating site: $SITE_NAME" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && $BENCH_BIN new-site $SITE_NAME --admin-password admin --db-root-password $DB_ROOT_PASS $( [[ \"$DB_TYPE\" == \"postgres\" ]] && echo --db-type postgres )"
+  run_quiet "Creating site: $SITE_NAME" $BENCH_SUDO bash -c "cd /home/frappe/frappe-bench && $BENCH_BIN new-site $SITE_NAME --admin-password admin --db-root-password $DB_ROOT_PASS $([[ \"$DB_TYPE\" == \"postgres\" ]] && echo --db-type postgres)"
 fi
 
 # Ensure the app is installed/registered (bench handles apps.txt correctly)
@@ -424,7 +430,7 @@ run_quiet "Installing RPanel into site" $BENCH_SUDO bash -c "cd /home/frappe/fra
 # Build application assets (Non-fatal as requested for headless/API-only usage)
 echo -n -e "${BLUE}  - Building application assets... ${NC}"
 # Use || true inside to ensure SIGTERM (143) doesn't kill the installer
-if $BENCH_SUDO bash -c "export NODE_OPTIONS='--max-old-space-size=1536'; export GENERATE_SOURCEMAP=false; cd /home/frappe/frappe-bench && $BENCH_BIN build --app rpanel --hard-link || true" >> "$INSTALL_LOG" 2>&1; then
+if $BENCH_SUDO bash -c "export NODE_OPTIONS='--max-old-space-size=1536'; export GENERATE_SOURCEMAP=false; cd /home/frappe/frappe-bench && $BENCH_BIN build --app rpanel --hard-link || true" >>"$INSTALL_LOG" 2>&1; then
   echo -e "${YELLOW}! COMPLETED (Asset build finished or skipped)${NC}"
 else
   echo -e "${YELLOW}! FAILED (Non-fatal)${NC}"
@@ -445,13 +451,12 @@ run_quiet "Starting Supervisor" systemctl restart supervisor
 # NON-FATAL: bench setup production may fail on 'systemctl reload nginx' in CI.
 # The configs ARE generated before the reload. Our verification block handles the rest.
 echo -n -e "${BLUE}  - Generating production config... ${NC}"
-if sudo -i -u frappe bash <<EOF >> "$INSTALL_LOG" 2>&1
+if sudo -i -u frappe bash <<EOF >>"$INSTALL_LOG" 2>&1; then
 export PATH="/home/frappe/.local/bin:\$PATH"
 export PYTHONPATH=\$(python3.14 -m site --user-site 2>/dev/null || echo "/home/frappe/.local/lib/python3.14/site-packages")
 cd /home/frappe/frappe-bench
 sudo env "PATH=\$PATH" "PYTHONPATH=\$PYTHONPATH" /home/frappe/.local/bin/bench setup production frappe --yes
 EOF
-then
   echo -e "${GREEN}✓ DONE${NC}"
 else
   echo -e "${YELLOW}! COMPLETED (config generated, service reload deferred)${NC}"
@@ -463,14 +468,14 @@ NGINX_CONF="/etc/nginx/conf.d/frappe.conf"
 BENCH_CONF="/home/frappe/frappe-bench/config/nginx.conf"
 
 if [ -f "$NGINX_CONF" ]; then
-    echo -e "${GREEN}✓ VERIFIED${NC}"
+  echo -e "${GREEN}✓ VERIFIED${NC}"
 elif [ -f "$BENCH_CONF" ]; then
-    ln -sf "$BENCH_CONF" "$NGINX_CONF"
-    echo -e "${YELLOW}✓ RECOVERED (Manually Linked)${NC}"
+  ln -sf "$BENCH_CONF" "$NGINX_CONF"
+  echo -e "${YELLOW}✓ RECOVERED (Manually Linked)${NC}"
 else
-    echo -e "${RED}✗ FAILED${NC}"
-    echo -e "${RED}Error: Nginx config was not generated at $BENCH_CONF${NC}"
-    exit 1
+  echo -e "${RED}✗ FAILED${NC}"
+  echo -e "${RED}Error: Nginx config was not generated at $BENCH_CONF${NC}"
+  exit 1
 fi
 
 # 4. Critical: The GitHub Actions Permission Punch
@@ -478,25 +483,25 @@ run_quiet "Applying directory permissions" chmod o+x /home/frappe /home/frappe/f
 
 # 5. Service Restart (non-fatal in CI — systemctl can fail in containers)
 echo -n -e "${BLUE}  - Restarting Nginx... ${NC}"
-if systemctl restart nginx >> "$INSTALL_LOG" 2>&1; then
-    echo -e "${GREEN}✓ DONE${NC}"
+if systemctl restart nginx >>"$INSTALL_LOG" 2>&1; then
+  echo -e "${GREEN}✓ DONE${NC}"
 else
-    echo -e "${YELLOW}! DEFERRED (systemctl unavailable in CI, config is valid)${NC}"
+  echo -e "${YELLOW}! DEFERRED (systemctl unavailable in CI, config is valid)${NC}"
 fi
 
 echo -n -e "${BLUE}  - Restarting Supervisor... ${NC}"
-if systemctl restart supervisor >> "$INSTALL_LOG" 2>&1; then
-    echo -e "${GREEN}✓ DONE${NC}"
+if systemctl restart supervisor >>"$INSTALL_LOG" 2>&1; then
+  echo -e "${GREEN}✓ DONE${NC}"
 else
-    echo -e "${YELLOW}! DEFERRED (systemctl unavailable in CI)${NC}"
+  echo -e "${YELLOW}! DEFERRED (systemctl unavailable in CI)${NC}"
 fi
 
 # 6. Final API Health Check
 echo -n -e "${BLUE}  - RPanel API Health Check... ${NC}"
-if curl -s -f http://localhost > /dev/null; then
-    echo -e "${GREEN}✓ ONLINE${NC}"
+if curl -s -f http://localhost >/dev/null; then
+  echo -e "${GREEN}✓ ONLINE${NC}"
 else
-    echo -e "${YELLOW}! UNRESPONSIVE (Check Nginx Logs)${NC}"
+  echo -e "${YELLOW}! UNRESPONSIVE (Check Nginx Logs)${NC}"
 fi
 
 # Provision localhost if self-hosted mode
@@ -505,10 +510,10 @@ if [[ "$MODE" == "fresh" && ("$SELF_HOSTED" == "Y" || "$SELF_HOSTED" == "y") ]];
   echo -e "${GREEN}Provisioning localhost for website hosting...${NC}"
   echo -e "${GREEN}=================================================${NC}"
   echo ""
-  
+
   # Run the provisioning script
   bash /home/frappe/frappe-bench/apps/rpanel/scripts/provision_localhost.sh
-  
+
   echo -e "${GREEN}Localhost provisioning complete!${NC}"
 fi
 
@@ -517,7 +522,7 @@ if [[ "$MODE" == "fresh" && "$DOMAIN_NAME" != "rpanel.local" && "$DOMAIN_NAME" !
   echo -e "${GREEN}Setting up SSL for $DOMAIN_NAME...${NC}"
   echo -e "${BLUE}Note: Make sure $DOMAIN_NAME points to this server's IP address${NC}"
   read -p "Press Enter to continue with SSL setup (or Ctrl+C to skip)..."
-  
+
   # Run certbot for the domain
   certbot --nginx -d $DOMAIN_NAME --non-interactive --agree-tos --register-unsafely-without-email || {
     echo -e "${RED}SSL setup failed. You can run 'sudo certbot --nginx -d $DOMAIN_NAME' manually later.${NC}"
