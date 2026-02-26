@@ -93,7 +93,7 @@ jobs:
       release_strategy: 'immediate'
       # Environment configuration
       node-version: ${{ inputs.node-version || '24' }}
-      python-version: ${{ inputs.python-version || '3.14' }}
+      python-version: ${{ inputs.python-version || '3.14.2' }}
       mariadb-version: ${{ inputs.mariadb-version || '10.6' }}
       postgres-version: ${{ inputs.postgres-version || '15' }}
       db-type: 'postgres'
