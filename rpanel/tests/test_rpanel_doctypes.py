@@ -78,7 +78,8 @@ class TestHostedWebsite(unittest.TestCase):
             MockUser):
         """Test successful site provisioning for a CMS"""
         # Setup mocks
-        mock_exists.return_value = False  # Directory doesn't exist yet
+        # Directory doesn't exist yet, but exists after creation
+        mock_exists.side_effect = [False, False, True, True, True, True, True]
         mock_run.return_value.returncode = 0  # Success for check=True
         mock_certbot.return_value = (True, "Cert issued")
         mock_exim.return_value = (True, "Exim updated")
@@ -98,7 +99,8 @@ class TestHostedWebsite(unittest.TestCase):
         # Execute
         # We need to mock install_wordpress separately to avoid those specific
         # calls if they are complex
-        with patch.object(self.doc, 'install_wordpress') as mock_install:
+        with patch.object(self.doc, 'install_wordpress') as mock_install, \
+             patch('frappe.log_error') as mock_log_error:
             self.doc.provision_site()
 
             # Verify interactions
