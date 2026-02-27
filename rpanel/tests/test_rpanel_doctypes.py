@@ -19,7 +19,7 @@ class TestHostedWebsite(unittest.TestCase):
 
         # Configure the mock meta object
         meta_obj = MagicMock()
-        meta_obj._table_doctypes = []
+        meta_obj._table_doctypes = {} # Must be a dict to support .items()
         meta_obj.get_field = lambda x: MagicMock()
         self.mock_meta.return_value = meta_obj
 
@@ -29,6 +29,7 @@ class TestHostedWebsite(unittest.TestCase):
             "name": "test-website-doc"
         })
         self.doc.domain = "test.example.com"
+        self.doc.client = "test-client"
         self.doc.system_user = "testuser"
         self.doc.status = "Active"
         self.doc.site_type = "CMS"
@@ -36,6 +37,7 @@ class TestHostedWebsite(unittest.TestCase):
         self.doc.php_version = "8.3"
         self.doc.php_mode = "PHP-FPM"
         self.doc.site_path = "/var/www/testuser/data/www/test.example.com"
+        self.doc.db_engine = "PostgreSQL"
         self.doc.db_name = "test_db"
         self.doc.db_user = "test_user"
         self.doc.db_password = "password"
