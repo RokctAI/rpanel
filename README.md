@@ -1,4 +1,4 @@
-# RPanel - Professional Web Hosting Control Panel
+# rPanel - Professional Web Hosting Control Panel
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Frappe Framework](https://img.shields.io/badge/Frappe-v15-orange)](https://frappeframework.com)
