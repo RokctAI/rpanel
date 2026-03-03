@@ -19,7 +19,7 @@ class TestHostedWebsite(unittest.TestCase):
 
         # Configure the mock meta object
         meta_obj = MagicMock()
-        meta_obj._table_doctypes = {} # Must be a dict to support .items()
+        meta_obj._table_doctypes = {}  # Must be a dict to support .items()
         meta_obj.get_field = lambda x: MagicMock()
         self.mock_meta.return_value = meta_obj
 
@@ -100,7 +100,7 @@ class TestHostedWebsite(unittest.TestCase):
         # We need to mock install_wordpress separately to avoid those specific
         # calls if they are complex
         with patch.object(self.doc, 'install_wordpress') as mock_install, \
-             patch('frappe.log_error') as mock_log_error:
+                patch('frappe.log_error') as mock_log_error:
             self.doc.provision_site()
 
             # Verify interactions

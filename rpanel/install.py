@@ -241,7 +241,8 @@ def check_and_install_system_dependencies():  # noqa: C901
 
                 # Special handling for packages that might start apache2
                 if dep_name in ['roundcube', 'phpmyadmin']:
-                    if not (os.environ.get('CI') or os.environ.get('NON_INTERACTIVE')):
+                    if not (
+                            os.environ.get('CI') or os.environ.get('NON_INTERACTIVE')):
                         subprocess.run(
                             ['sudo', 'systemctl', 'stop', 'apache2'], check=False)
                         subprocess.run(
@@ -308,12 +309,14 @@ def setup_security_features():
 
         if not (os.environ.get('CI') or os.environ.get('NON_INTERACTIVE')):
             print("Stopping Apache2 service...")
-            subprocess.run(['sudo', 'systemctl', 'stop', 'apache2'], check=False)
+            subprocess.run(
+                ['sudo', 'systemctl', 'stop', 'apache2'], check=False)
             subprocess.run(
                 ['sudo', 'systemctl', 'disable', 'apache2'], check=False)
 
             print("Restarting Nginx service...")
-            subprocess.run(['sudo', 'systemctl', 'restart', 'nginx'], check=True)
+            subprocess.run(
+                ['sudo', 'systemctl', 'restart', 'nginx'], check=True)
             print("✓ Nginx restarted successfully (Port 80 reclaimed)")
         else:
             print("CI/Non-Interactive environment: Skipping service restarts")
