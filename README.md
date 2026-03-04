@@ -6,9 +6,9 @@
 [![Build Status](https://github.com/rokctAI/rpanel/actions/workflows/auto_release.yml/badge.svg)](https://github.com/rokctAI/rpanel/actions)
 
 
-**RPanel** is a powerful, open-source web hosting control panel built on the Frappe Framework (v15). It is designed to be a complete alternative to cPanel/Plesk, offering a modern UI for managing websites, databases, emails, and servers.
+**rPanel** is a powerful, open-source web hosting control panel built on the Frappe Framework (v15). It is designed to be a complete alternative to cPanel/Plesk, offering a modern UI for managing websites, databases, emails, and servers.
 
-RPanel works by orchestrating standard open-source technologies (Nginx, PostgreSQL, MariaDB, Exim, etc.) through a beautiful, easy-to-use interface. It can manage the server it's installed on (Local Mode) or manage multiple remote servers via SSH (Cluster Mode).
+rPanel works by orchestrating standard open-source technologies (Nginx, PostgreSQL, MariaDB, Exim, etc.) through a beautiful, easy-to-use interface. It can manage the server it's installed on (Local Mode) or manage multiple remote servers via SSH (Cluster Mode).
 
 ## 🚀 Key Features
 
