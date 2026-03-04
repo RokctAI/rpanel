@@ -1,13 +1,17 @@
 # Stage 1: Base - System Dependencies & Bench Setup
-FROM python:3.14-slim AS base
+ARG UBUNTU_VERSION=24.04
+FROM ubuntu:${UBUNTU_VERSION} AS base
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
 
 # System Dependencies (Frappe + MariaDB + PDF + Build Tools)
-# Note: python3-distutils removed in 3.12+, wkhtmltopdf not in Trixie repos,
-# software-properties-common not in slim. Install wkhtmltopdf from GitHub.
+# Note: python3-distutils is removed in Ubuntu 24.04 (Python 3.12+)
+# wkhtmltopdf is installed from GitHub since it's missing from 24.04 repos.
 RUN apt-get update && apt-get install -y \
     git mariadb-client postgresql-client gettext-base wget libssl-dev \
     fonts-cantarell xvfb libfontconfig \
-    python3-dev python3-setuptools python3-pip build-essential \
+    python3-dev python3-setuptools python3-pip python3-venv build-essential \
     cron curl vim nodejs npm redis-server \
     && wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb -O /tmp/wkhtmltox.deb \
     && apt-get install -y /tmp/wkhtmltox.deb || true \
