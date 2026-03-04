@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     fonts-cantarell xvfb libfontconfig \
     python3-dev python3-setuptools python3-pip python3-venv build-essential \
     cron curl vim nodejs npm redis-server \
+    libmariadb-dev libffi-dev libjpeg-dev zlib1g-dev \
+    libcairo2-dev libpango1.0-dev pkg-config \
     && wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb -O /tmp/wkhtmltox.deb \
     && apt-get install -y /tmp/wkhtmltox.deb || true \
     && rm -f /tmp/wkhtmltox.deb \
