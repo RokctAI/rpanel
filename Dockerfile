@@ -6,12 +6,14 @@ FROM ubuntu:${UBUNTU_VERSION} AS base
 ENV DEBIAN_FRONTEND=noninteractive
 
 # System Dependencies (Frappe + MariaDB + PDF + Build Tools)
-# Note: python3-distutils is removed in Ubuntu 24.04 (Python 3.12+)
 # wkhtmltopdf is installed from GitHub since it's missing from 24.04 repos.
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y \
     git mariadb-client postgresql-client gettext-base wget libssl-dev \
     fonts-cantarell xvfb libfontconfig \
-    python3-dev python3-setuptools python3-pip python3-venv build-essential \
+    python3.14 python3.14-dev python3.14-venv \
+    python3-pip python3-setuptools build-essential \
     cron curl vim nodejs npm redis-server \
     libmariadb-dev libffi-dev libjpeg-dev zlib1g-dev \
     libcairo2-dev libpango1.0-dev pkg-config \
@@ -28,7 +30,7 @@ USER frappe
 WORKDIR /home/frappe
 ENV PATH="/home/frappe/.local/bin:${PATH}"
 RUN pip3 install --break-system-packages frappe-bench
-RUN bench init --skip-assets --skip-redis-config-generation --frappe-branch version-16 --python python3 frappe-bench
+RUN bench init --skip-assets --skip-redis-config-generation --frappe-branch version-16 --python python3.14 frappe-bench
 
 WORKDIR /home/frappe/frappe-bench
 
