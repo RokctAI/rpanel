@@ -24,6 +24,7 @@ RUN useradd -ms /bin/bash frappe
 # Bench Setup
 USER frappe
 WORKDIR /home/frappe
+ENV PATH="/home/frappe/.local/bin:${PATH}"
 RUN pip3 install --break-system-packages frappe-bench
 RUN bench init --skip-assets --skip-redis-config-generation --python python3 frappe-bench
 
