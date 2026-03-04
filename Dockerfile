@@ -7,14 +7,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # System Dependencies (Frappe + MariaDB + PDF + Build Tools)
 # wkhtmltopdf is installed from GitHub since it's missing from 24.04 repos.
-RUN apt-get update && apt-get install -y software-properties-common \
+RUN apt-get update && apt-get install -y software-properties-common curl ca-certificates gnupg \
     && add-apt-repository -y ppa:deadsnakes/ppa \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
     && apt-get update && apt-get install -y \
     git mariadb-client postgresql-client gettext-base wget libssl-dev \
     fonts-cantarell xvfb libfontconfig \
     python3.14 python3.14-dev python3.14-venv \
     python3-pip python3-setuptools build-essential \
-    cron curl vim nodejs npm redis-server \
+    cron vim nodejs npm redis-server \
     libmariadb-dev libffi-dev libjpeg-dev zlib1g-dev \
     libcairo2-dev libpango1.0-dev pkg-config \
     && wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb -O /tmp/wkhtmltox.deb \
