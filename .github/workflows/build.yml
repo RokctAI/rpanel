@@ -135,6 +135,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.MONOREPO_PAT }}
 
+      - name: Detect Runner OS Version
+        id: os-version
+        run: echo "version=$(lsb_release -rs)" >> $GITHUB_OUTPUT
+
       - name: Build and Push
         uses: docker/build-push-action@v4
         with:
@@ -143,3 +147,5 @@ jobs:
           push: true
           # Pushing to the Monorepo (Private) namespace to keep the image private
           tags: ghcr.io/rokctai/monorepo/rpanel:latest
+          build-args: |
+            UBUNTU_VERSION=${{ steps.os-version.outputs.version }}
