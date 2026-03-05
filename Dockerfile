@@ -63,7 +63,7 @@ COPY --chown=frappe:frappe current_repo /home/frappe/current_repo
 # Apply Bench Overrides
 RUN if [ -d "/home/frappe/monorepo_overrides/bench" ]; then \
     echo "Applying Bench Overrides from Monorepo..."; \
-    BENCH_PATH=$(python3.14 -c "import bench; import os; print(os.path.dirname(bench.__file__))"); \
+    BENCH_PATH=$(python3 -c "import bench; import os; print(os.path.dirname(bench.__file__))"); \
     cp -r /home/frappe/monorepo_overrides/bench/bench/* "$BENCH_PATH/"; \
     fi
 
