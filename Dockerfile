@@ -9,26 +9,30 @@ ARG IS_ROKCTAI_REPO=false
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# System Dependencies (Frappe + MariaDB + PDF + Build Tools)
+# System Dependencies (Frappe + PostgreSQL + PDF + Build Tools)
 # Includes dependencies previously installed by install_stack.py (libxml2-dev, libxslt1-dev)
-RUN apt-get update && apt-get install -y software-properties-common curl ca-certificates gnupg \
+RUN apt-get update && apt-get install -y software-properties-common curl ca-certificates gnupg sudo \
     && add-apt-repository -y ppa:deadsnakes/ppa \
     && mkdir -p /etc/apt/keyrings \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
     && apt-get update && apt-get install -y \
-    git mariadb-client mariadb-server postgresql-client gettext-base wget libssl-dev \
+    git postgresql postgresql-contrib postgresql-client postgresql-server-dev-all gettext-base wget libssl-dev \
     fonts-cantarell xvfb libfontconfig \
     python3.14 python3.14-dev python3.14-venv \
     python3-pip python3-setuptools build-essential \
     cron vim nodejs redis-server \
-    libmariadb-dev libffi-dev libjpeg-dev zlib1g-dev \
+    libffi-dev libjpeg-dev zlib1g-dev \
     libcairo2-dev libpango1.0-dev pkg-config \
     libxml2-dev libxslt1-dev \
     && wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb -O /tmp/wkhtmltox.deb \
     && apt-get install -y /tmp/wkhtmltox.deb || true \
     && rm -f /tmp/wkhtmltox.deb \
     && rm -rf /var/lib/apt/lists/*
+
+# Install pgvector from source (Required by rcore & brain apps)
+RUN cd /tmp && git clone --branch v0.7.0 https://github.com/pgvector/pgvector.git && \
+    cd pgvector && make && make install && rm -rf /tmp/pgvector
 
 RUN npm install -g yarn pnpm
 RUN useradd -ms /bin/bash frappe
@@ -79,12 +83,14 @@ RUN APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -
     mkdir -p "apps/$APP_DIR" && \
     cp -a /home/frappe/current_repo/. "apps/$APP_DIR/"
 
-# Start required background services (Redis and MariaDB) for Installation
+# Start required background services (Redis and PostgreSQL) for Installation
 USER root
 RUN service redis-server start && \
-    service mariadb start && \
-    mysqladmin -u root password 'admin' && \
-    mysql -u root -padmin -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'admin' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+    service postgresql start && \
+    su - postgres -c "psql -c \"ALTER USER postgres PASSWORD 'admin';\"" && \
+    su - postgres -c "psql -d template1 -c 'CREATE EXTENSION IF NOT EXISTS vector;'" && \
+    su - postgres -c "psql -d template1 -c 'CREATE EXTENSION IF NOT EXISTS cube;'" && \
+    su - postgres -c "psql -d template1 -c 'CREATE EXTENSION IF NOT EXISTS earthdistance;'"
 
 USER frappe
 # Configure bench to hit local services
@@ -93,16 +99,16 @@ RUN bench set-config -g db_host 127.0.0.1 && \
     bench set-config -g redis_queue redis://127.0.0.1:6379 && \
     bench set-config -g redis_socketio redis://127.0.0.1:6379
 
-# Create Site (Requires MariaDB running)
+# Create Site (Requires PostgreSQL running)
 USER root
-RUN service redis-server start && service mariadb start
+RUN service redis-server start && service postgresql start
 USER frappe
-RUN bench new-site platform.rokct.ai --admin-password admin --db-root-password admin || true
+RUN bench new-site platform.rokct.ai --db-type postgres --db-root-password admin --admin-password admin || true
 RUN echo "platform.rokct.ai" > sites/currentsite.txt
 
 # 3. Install ERPNext (Standard Dependency, exactly like CI)
 USER root
-RUN service redis-server start && service mariadb start
+RUN service redis-server start && service postgresql start
 USER frappe
 RUN bench get-app erpnext --branch version-16 --resolve-deps --skip-assets
 
@@ -128,7 +134,7 @@ RUN if [ -d "/home/frappe/monorepo_overrides" ]; then \
 # Run Native Stack Installation (Installs rcore, payments, etc with their OS deps)
 # This will pick up the current repo we synced into apps/ earlier!
 USER root
-RUN service redis-server start && service mariadb start
+RUN service redis-server start && service postgresql start
 USER frappe
 RUN echo "Running Native Stack Installer..."; \
     python apps/control/install_stack.py platform.rokct.ai;
