@@ -76,12 +76,14 @@ RUN bench init --skip-assets --skip-redis-config-generation --frappe-branch vers
 
 WORKDIR /home/frappe/frappe-bench
 
-# 1. Sync Workspace Code to Bench Apps (Just like Step: "Sync Workspace Code to Bootstrap Bench")
+# 1. Sync Workspace Code to Bench Apps and Register
 RUN APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = "' | cut -d'"' -f2 || echo "app") && \
     APP_DIR=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]') && \
     echo "Syncing workspace code into apps/$APP_DIR..." && \
     mkdir -p "apps/$APP_DIR" && \
-    cp -a /home/frappe/current_repo/. "apps/$APP_DIR/"
+    cp -a /home/frappe/current_repo/. "apps/$APP_DIR/" && \
+    echo "Registering $APP_NAME in Bench..." && \
+    bench pip install -e "apps/$APP_DIR"
 
 # Start required background services (Redis and PostgreSQL) for Installation
 USER root
@@ -103,6 +105,13 @@ RUN bench set-config -g db_host 127.0.0.1 && \
 USER root
 RUN service redis-server start && service postgresql start && \
     sudo -Eu frappe bash -c "export PATH=/home/frappe/.local/bin:\$PATH && cd /home/frappe/frappe-bench && bench new-site platform.rokct.ai --db-type postgres --db-root-password admin --admin-password admin || true && echo 'platform.rokct.ai' > sites/currentsite.txt"
+
+# 2. Install Core App (The one we just synced)
+RUN service redis-server start && service postgresql start && \
+    sudo -Eu frappe bash -c "export PATH=/home/frappe/.local/bin:\$PATH && cd /home/frappe/frappe-bench && \
+    APP_NAME=\$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = \"' | cut -d'\"' -f2 || echo 'app') && \
+    echo \"Installing \$APP_NAME natively to site...\" && \
+    bench --site platform.rokct.ai install-app \"\$APP_NAME\""
 
 # 3. Install ERPNext (Standard Dependency, exactly like CI)
 RUN service redis-server start && service postgresql start && \
