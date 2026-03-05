@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y software-properties-common curl ca-cert
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
     && apt-get update && apt-get install -y \
-    git mariadb-client postgresql-client gettext-base wget libssl-dev \
+    git mariadb-client mariadb-server postgresql-client gettext-base wget libssl-dev \
     fonts-cantarell xvfb libfontconfig \
     python3.14 python3.14-dev python3.14-venv \
     python3-pip python3-setuptools build-essential \
@@ -79,15 +79,35 @@ RUN APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -
     mkdir -p "apps/$APP_DIR" && \
     cp -a /home/frappe/current_repo/. "apps/$APP_DIR/"
 
-# Create Site
-RUN bench new-site platform.rokct.ai --no-mariadb-socket --admin-password admin --db-root-password admin || true
+# Start required background services (Redis and MariaDB) for Installation
+USER root
+RUN service redis-server start && \
+    service mariadb start && \
+    mysqladmin -u root password 'admin' && \
+    mysql -u root -padmin -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'admin' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+
+USER frappe
+# Configure bench to hit local services
+RUN bench set-config -g db_host 127.0.0.1 && \
+    bench set-config -g redis_cache redis://127.0.0.1:6379 && \
+    bench set-config -g redis_queue redis://127.0.0.1:6379 && \
+    bench set-config -g redis_socketio redis://127.0.0.1:6379
+
+# Create Site (Requires MariaDB running)
+USER root
+RUN service redis-server start && service mariadb start
+USER frappe
+RUN bench new-site platform.rokct.ai --admin-password admin --db-root-password admin || true
 RUN echo "platform.rokct.ai" > sites/currentsite.txt
 
 # 3. Install ERPNext (Standard Dependency, exactly like CI)
+USER root
+RUN service redis-server start && service mariadb start
+USER frappe
 RUN bench get-app erpnext --branch version-16 --resolve-deps --skip-assets
 
 # 4. Install Control natively from local context
-RUN if [ -d "/home/frappe/control_app" ]; then \
+RUN if [ "$IS_ROKCTAI_REPO" = "true" ] && [ -d "/home/frappe/control_app" ]; then \
     echo "Installing Local Control App..."; \
     mkdir -p apps/control; \
     cp -r /home/frappe/control_app/. apps/control/; \
@@ -96,7 +116,7 @@ RUN if [ -d "/home/frappe/control_app" ]; then \
     echo "Applying Monorepo Overrides to Control..."; \
     cp -rf /home/frappe/monorepo_overrides/control/. apps/control/; \
     fi; \
-    bench --site platform.rokct.ai install-app erpnext control; \
+    bench --site platform.rokct.ai install-app control; \
     fi
 
 # Stage Monorepo Overrides for Install Stack
@@ -107,6 +127,9 @@ RUN if [ -d "/home/frappe/monorepo_overrides" ]; then \
 
 # Run Native Stack Installation (Installs rcore, payments, etc with their OS deps)
 # This will pick up the current repo we synced into apps/ earlier!
+USER root
+RUN service redis-server start && service mariadb start
+USER frappe
 RUN echo "Running Native Stack Installer..."; \
     python apps/control/install_stack.py platform.rokct.ai;
 
