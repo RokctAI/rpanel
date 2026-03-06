@@ -71,93 +71,24 @@ RUN if [ -d "/home/frappe/monorepo_overrides/bench" ]; then \
     cp -r /home/frappe/monorepo_overrides/bench/bench/* "$BENCH_PATH/"; \
     fi
 
-# Initialize Bench
-RUN bench init --skip-assets --skip-redis-config-generation --frappe-branch version-16 --python python3.14 frappe-bench
-
-WORKDIR /home/frappe/frappe-bench
-
-# 1. Sync Workspace Code to Bench Apps and Register
-RUN APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = "' | cut -d'"' -f2 || echo "app") && \
-    APP_DIR=$(echo "$APP_NAME" | tr '[:upper:]' '[:lower:]') && \
-    echo "Syncing workspace code into apps/$APP_DIR..." && \
-    mkdir -p "apps/$APP_DIR" && \
-    cp -a /home/frappe/current_repo/. "apps/$APP_DIR/" && \
-    echo "Registering $APP_NAME in Bench..." && \
-    bench pip install -e "apps/$APP_DIR"
-
-# Start required background services (Redis and PostgreSQL) for Installation
+# --- 2. Golden Ecosystem Build ---
 USER root
-RUN service redis-server start && \
-    service postgresql start && \
-    su - postgres -c "psql -c \"ALTER USER postgres PASSWORD 'admin';\"" && \
-    su - postgres -c "psql -d template1 -c 'CREATE EXTENSION IF NOT EXISTS vector;'" && \
-    su - postgres -c "psql -d template1 -c 'CREATE EXTENSION IF NOT EXISTS cube;'" && \
-    su - postgres -c "psql -d template1 -c 'CREATE EXTENSION IF NOT EXISTS earthdistance;'"
+# Download Golden Build Script
+RUN wget -qO /usr/local/bin/build_ecosystem.sh https://raw.githubusercontent.com/RokctAI/shared-workflows/main/scripts/build_ecosystem.sh && \
+    chmod +x /usr/local/bin/build_ecosystem.sh
 
 USER frappe
-# Configure bench to hit local services
-RUN bench set-config -g db_host 127.0.0.1 && \
-    bench set-config -g redis_cache redis://127.0.0.1:6379 && \
-    bench set-config -g redis_queue redis://127.0.0.1:6379 && \
-    bench set-config -g redis_socketio redis://127.0.0.1:6379
+WORKDIR /home/frappe
 
-# Create Site (Requires PostgreSQL running)
-USER root
-RUN service redis-server start && service postgresql start && \
-    sudo -Eu frappe bash -c "export PATH=/home/frappe/.local/bin:\$PATH && cd /home/frappe/frappe-bench && bench new-site platform.rokct.ai --db-type postgres --db-root-password admin --admin-password admin || true && echo 'platform.rokct.ai' > sites/currentsite.txt"
+# Execute Golden Build
+# Variables passed via environment or defaults in script
+RUN export BOOTSTRAP=false && \
+    export DB_TYPE=postgres && \
+    export DB_PW=admin && \
+    export GITHUB_TOKEN=${GITHUB_TOKEN} && \
+    export APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = "' | cut -d'"' -f2 || echo "rpanel") && \
+    /usr/local/bin/build_ecosystem.sh
 
-# 2. Install Core App (The one we just synced)
-RUN service redis-server start && service postgresql start && \
-    sudo -Eu frappe bash -c "export PATH=/home/frappe/.local/bin:\$PATH && cd /home/frappe/frappe-bench && \
-    APP_NAME=\$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = \"' | cut -d'\"' -f2 || echo 'app') && \
-    echo \"Installing \$APP_NAME natively to site...\" && \
-    bench --site platform.rokct.ai install-app \"\$APP_NAME\""
-
-# 3. Install ERPNext (Standard Dependency, exactly like CI)
-RUN service redis-server start && service postgresql start && \
-    sudo -Eu frappe bash -c "export PATH=/home/frappe/.local/bin:\$PATH && cd /home/frappe/frappe-bench && bench get-app erpnext --branch version-16 --resolve-deps --skip-assets"
-
-# 4. Install Control natively from local context
-RUN service redis-server start && service postgresql start && \
-    sudo -Eu frappe bash -c 'export PATH=/home/frappe/.local/bin:$PATH && cd /home/frappe/frappe-bench && \
-    if [ "$IS_ROKCTAI_REPO" = "true" ] && [ -d "/home/frappe/control_app" ]; then \
-    echo "Installing Local Control App..."; \
-    mkdir -p apps/control; \
-    cp -r /home/frappe/control_app/. apps/control/; \
-    bench pip install -e apps/control; \
-    if [ -d "/home/frappe/monorepo_overrides/control" ]; then \
-    echo "Applying Monorepo Overrides to Control..."; \
-    cp -rf /home/frappe/monorepo_overrides/control/. apps/control/; \
-    fi; \
-    else \
-    echo "Installing Control Panel via HTTPS (Token-based)..."; \
-    bench get-app https://x-access-token:${GITHUB_TOKEN}@github.com/RokctAI/control.git --resolve-deps --skip-assets; \
-    fi; \
-    bench --site platform.rokct.ai install-app control'
-
-# Stage Monorepo Overrides for Install Stack
-USER frappe
-RUN if [ -d "/home/frappe/monorepo_overrides" ]; then \
-    echo "Staging Monorepo Overrides for Install Stack..."; \
-    cp -r /home/frappe/monorepo_overrides ./monorepo_overrides; \
-    fi
-
-# Run Native Stack Installation (Installs rcore, payments, etc with their OS deps)
-USER root
-RUN echo "127.0.0.1 platform.rokct.ai" >> /etc/hosts && \
-    service redis-server start && service postgresql start && \
-    sudo -Eu frappe bash -c "export PATH=/home/frappe/.local/bin:\$PATH && cd /home/frappe/frappe-bench && \
-    echo 'Running Native Stack Installer...' && \
-    python apps/control/install_stack.py platform.rokct.ai && \
-    echo 'Generating Golden DB Seed...' && \
-    bench --site platform.rokct.ai backup && \
-    BACKUP_FILE=\$(ls sites/platform.rokct.ai/private/backups/*-database.sql.gz | head -n 1) && \
-    if [ -f \"\$BACKUP_FILE\" ]; then \
-    echo 'Backup found: '\$BACKUP_FILE; \
-    mkdir -p apps/seed_data; \
-    cp \"\$BACKUP_FILE\" \"apps/seed_data/seed.sql.gz\"; \
-    echo '✅ Golden Seed created at apps/seed_data/seed.sql.gz'; \
-    fi"
 
 # Stage 3: Lean - The Core App & Python Environment (Drone/API Target)
 FROM builder AS lean
