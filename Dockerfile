@@ -58,7 +58,6 @@ USER frappe
 # Inject Context
 # These are provided by build.yml checkout steps
 COPY --chown=frappe:frappe monorepo_overrides /home/frappe/monorepo_overrides
-COPY --chown=frappe:frappe control_app /home/frappe/control_app
 
 # The CURRENT Repository's code (Whatever repo is invoking the Docker build)
 # This is equivalent to GITHUB_WORKSPACE in CI
