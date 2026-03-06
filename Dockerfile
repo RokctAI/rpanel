@@ -47,8 +47,6 @@ RUN pip3 install --break-system-packages frappe-bench
 FROM base AS builder
 
 USER root
-# Map platform.rokct.ai to 127.0.0.1 for local site access
-RUN echo "127.0.0.1 platform.rokct.ai" >> /etc/hosts
 # We need Git for bench get-app
 # Configure Git to use the token for private repo access
 RUN git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "git@github.com:" && \
