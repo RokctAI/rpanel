@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y software-properties-common lsb-release 
     fonts-cantarell xvfb libfontconfig \
     python3.14 python3.14-dev python3.14-venv \
     python3-pip python3-setuptools build-essential \
-    cron vim nodejs redis-server \
+    cron vim nodejs redis-server netcat-openbsd \
     libffi-dev libjpeg-dev zlib1g-dev \
     libcairo2-dev libpango1.0-dev pkg-config \
     libxml2-dev libxslt1-dev \
