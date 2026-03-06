@@ -33,7 +33,9 @@ RUN apt-get update && apt-get install -y software-properties-common lsb-release 
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g yarn pnpm
-RUN useradd -ms /bin/bash frappe
+RUN useradd -ms /bin/bash frappe && \
+    usermod -aG sudo frappe && \
+    echo "frappe ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Bench Setup
 USER frappe
