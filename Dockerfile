@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y software-properties-common lsb-release 
     cron vim nodejs redis-server netcat-openbsd \
     libffi-dev libjpeg-dev zlib1g-dev \
     libcairo2-dev libpango1.0-dev pkg-config \
-    libxml2-dev libxslt1-dev \
+    libxml2-dev libxslt1-dev default-libmysqlclient-dev \
     && wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb -O /tmp/wkhtmltox.deb \
     && apt-get install -y /tmp/wkhtmltox.deb || true \
     && rm -f /tmp/wkhtmltox.deb \
