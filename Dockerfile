@@ -82,10 +82,12 @@ WORKDIR /home/frappe
 
 # Execute Golden Build
 # Variables passed via environment or defaults in script
-RUN export BOOTSTRAP=false && \
+ARG RUN_TESTS=false
+RUN export BOOTSTRAP=true && \
     export DB_TYPE=postgres && \
     export DB_PW=admin && \
     export GITHUB_TOKEN=${GITHUB_TOKEN} && \
+    export RUN_TESTS=${RUN_TESTS} && \
     export APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = "' | cut -d'"' -f2 || echo "rpanel") && \
     /usr/local/bin/build_ecosystem.sh
 
