@@ -131,7 +131,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.MONOREPO_PAT }}
+          password: ${{ github.token }}
 
       - name: Build Context Staging
         run: |
