@@ -7,12 +7,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-  packages: write
-  id-token: write
+permissions: write-all
 
 on:
   push:
@@ -109,9 +104,7 @@ jobs:
   docker-release:
     needs: pipeline
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    permissions: write-all
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
