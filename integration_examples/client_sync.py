@@ -25,19 +25,19 @@ def sync_client_quotas(client_name, plan_doc):
         client_name (str): Name of the Hosting Client (usually Customer name).
         plan_doc (doc): Your Subscription Plan document.
     """
-    if not frappe.db.exists('Hosting Client', client_name):
+    if not frappe.db.exists("Hosting Client", client_name):
         return
 
-    client = frappe.get_doc('Hosting Client', client_name)
+    client = frappe.get_doc("Hosting Client", client_name)
 
     # Example: Sync fields if they exist in your plan
-    if hasattr(plan_doc, 'max_websites'):
+    if hasattr(plan_doc, "max_websites"):
         client.max_websites = plan_doc.max_websites
 
-    if hasattr(plan_doc, 'max_storage_gb'):
+    if hasattr(plan_doc, "max_storage_gb"):
         client.max_storage_gb = plan_doc.max_storage_gb
 
-    if hasattr(plan_doc, 'max_databases'):
+    if hasattr(plan_doc, "max_databases"):
         client.max_databases = plan_doc.max_databases
 
     client.save()

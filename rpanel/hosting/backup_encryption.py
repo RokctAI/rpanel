@@ -16,13 +16,12 @@ class BackupEncryptionManager:
     """Manages GPG encryption for backups"""
 
     def __init__(self):
-        self.gpg_home = os.path.expanduser('~/.gnupg')
+        self.gpg_home = os.path.expanduser("~/.gnupg")
         self.gpg = gnupg.GPG(gnupghome=self.gpg_home)
 
     def generate_encryption_key(
-            self,
-            email="backup@rpanel.local",
-            name="RPanel Backup"):
+        self, email="backup@rpanel.local", name="RPanel Backup"
+    ):
         """
         Generate a new GPG key pair for backup encryption
 
@@ -37,9 +36,9 @@ class BackupEncryptionManager:
         input_data = self.gpg.gen_key_input(
             name_real=name,
             name_email=email,
-            key_type='RSA',
+            key_type="RSA",
             key_length=4096,
-            passphrase=''  # No passphrase for automated backups
+            passphrase="",  # No passphrase for automated backups
         )
 
         key = self.gpg.gen_key(input_data)
@@ -49,23 +48,22 @@ class BackupEncryptionManager:
 
         # Get key details
         keys = self.gpg.list_keys()
-        key_info = next(
-            (k for k in keys if k['fingerprint'] == str(key)), None)
+        key_info = next((k for k in keys if k["fingerprint"] == str(key)), None)
 
         if not key_info:
             frappe.throw("Generated key not found")
 
         # Update Security Settings
-        settings = frappe.get_single('Security Settings')
-        settings.encryption_key_fingerprint = key_info['fingerprint']
+        settings = frappe.get_single("Security Settings")
+        settings.encryption_key_fingerprint = key_info["fingerprint"]
         settings.last_key_rotation = frappe.utils.now()
         settings.save()
 
         return {
-            'fingerprint': key_info['fingerprint'],
-            'key_id': key_info['keyid'],
-            'created': key_info['date'],
-            'expires': key_info.get('expires', 'Never')
+            "fingerprint": key_info["fingerprint"],
+            "key_id": key_info["keyid"],
+            "created": key_info["date"],
+            "expires": key_info.get("expires", "Never"),
         }
 
     def encrypt_file(self, file_path, output_path=None):
@@ -83,24 +81,20 @@ class BackupEncryptionManager:
             frappe.throw(f"File not found: {file_path}")
 
         # Get encryption key fingerprint
-        settings = frappe.get_single('Security Settings')
+        settings = frappe.get_single("Security Settings")
         fingerprint = settings.encryption_key_fingerprint
 
         if not fingerprint:
-            frappe.throw(
-                "No encryption key configured. Please generate a key first.")
+            frappe.throw("No encryption key configured. Please generate a key first.")
 
         # Set output path
         if not output_path:
             output_path = f"{file_path}.gpg"
 
         # Encrypt file
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             encrypted = self.gpg.encrypt_file(
-                f,
-                recipients=[fingerprint],
-                output=output_path,
-                always_trust=True
+                f, recipients=[fingerprint], output=output_path, always_trust=True
             )
 
         if not encrypted.ok:
@@ -124,10 +118,10 @@ class BackupEncryptionManager:
 
         # Set output path
         if not output_path:
-            output_path = encrypted_file_path.replace('.gpg', '')
+            output_path = encrypted_file_path.replace(".gpg", "")
 
         # Decrypt file
-        with open(encrypted_file_path, 'rb') as f:
+        with open(encrypted_file_path, "rb") as f:
             decrypted = self.gpg.decrypt_file(f, output=output_path)
 
         if not decrypted.ok:
@@ -146,7 +140,7 @@ class BackupEncryptionManager:
             str: ASCII-armored public key
         """
         if not fingerprint:
-            settings = frappe.get_single('Security Settings')
+            settings = frappe.get_single("Security Settings")
             fingerprint = settings.encryption_key_fingerprint
 
         if not fingerprint:
@@ -170,7 +164,7 @@ class BackupEncryptionManager:
             str: ASCII-armored private key
         """
         if not fingerprint:
-            settings = frappe.get_single('Security Settings')
+            settings = frappe.get_single("Security Settings")
             fingerprint = settings.encryption_key_fingerprint
 
         if not fingerprint:
@@ -199,13 +193,14 @@ class BackupEncryptionManager:
             frappe.throw("Failed to import key")
 
         return {
-            'fingerprints': result.fingerprints,
-            'count': result.count,
-            'imported': result.imported
+            "fingerprints": result.fingerprints,
+            "count": result.count,
+            "imported": result.imported,
         }
 
 
 # Convenience functions for use in other modules
+
 
 def encrypt_backup(backup_file_path):
     """
@@ -248,27 +243,27 @@ def download_public_key():
     manager = BackupEncryptionManager()
     public_key = manager.export_public_key()
 
-    frappe.response['filename'] = 'rpanel_backup_public_key.asc'
-    frappe.response['filecontent'] = public_key
-    frappe.response['type'] = 'download'
+    frappe.response["filename"] = "rpanel_backup_public_key.asc"
+    frappe.response["filecontent"] = public_key
+    frappe.response["type"] = "download"
 
 
 @frappe.whitelist()
 def download_private_key():
     """Download private key (whitelisted for UI) - KEEP SECURE!"""
     # Only allow System Managers
-    if 'System Manager' not in frappe.get_roles():
+    if "System Manager" not in frappe.get_roles():
         frappe.throw("Not permitted")
 
     manager = BackupEncryptionManager()
     private_key = manager.export_private_key()
 
-    frappe.response['filename'] = 'rpanel_backup_private_key.asc'
-    frappe.response['filecontent'] = private_key
-    frappe.response['type'] = 'download'
+    frappe.response["filename"] = "rpanel_backup_private_key.asc"
+    frappe.response["filecontent"] = private_key
+    frappe.response["type"] = "download"
 
     # Log this action
     frappe.log_error(
         f"Private key downloaded by {frappe.session.user}",
-        "Security: Private Key Download"
+        "Security: Private Key Download",
     )

@@ -24,10 +24,10 @@ def get_latest_rpanel_release():
     """Fetch latest tag from GitHub"""
     try:
         response = requests.get(
-            'https://api.github.com/repos/RokctAI/rpanel/releases/latest',
-            timeout=5)
+            "https://api.github.com/repos/RokctAI/rpanel/releases/latest", timeout=5
+        )
         if response.status_code == 200:
-            return response.json().get('tag_name')
+            return response.json().get("tag_name")
     except Exception as e:
         print(f"Warning: Could not fetch RPanel release: {e}")
     return None
@@ -39,14 +39,15 @@ def check_and_install_rpanel():
     Only runs on 'control' sites.
     """
     # 1. Check if this is a control site (Customize this logic for your needs)
-    is_control_site = frappe.local.site == "control" or frappe.conf.get(
-        'app_role') == 'control'
+    is_control_site = (
+        frappe.local.site == "control" or frappe.conf.get("app_role") == "control"
+    )
 
     if not is_control_site:
         return
 
     # 2. Check if already installed
-    if 'rpanel' in frappe.get_installed_apps():
+    if "rpanel" in frappe.get_installed_apps():
         return
 
     print("Installing RPanel...")
@@ -56,16 +57,17 @@ def check_and_install_rpanel():
         site = frappe.local.site
 
         # 3. Get App
-        cmd = ['bench', 'get-app', 'https://github.com/RokctAI/rpanel.git']
+        cmd = ["bench", "get-app", "https://github.com/RokctAI/rpanel.git"]
         latest_tag = get_latest_rpanel_release()
         if latest_tag:
-            cmd.extend(['--branch', latest_tag])
+            cmd.extend(["--branch", latest_tag])
 
         subprocess.check_call(cmd, cwd=bench_path)
 
         # 4. Install App
         subprocess.check_call(
-            ['bench', '--site', site, 'install-app', 'rpanel'], cwd=bench_path)
+            ["bench", "--site", site, "install-app", "rpanel"], cwd=bench_path
+        )
         print("✓ RPanel installed successfully!")
 
     except Exception as e:

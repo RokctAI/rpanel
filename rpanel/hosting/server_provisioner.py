@@ -23,7 +23,7 @@ def provision_server(server_name):
     - UFW (firewall)
     """
 
-    server = frappe.get_doc('Hosting Server', server_name)
+    server = frappe.get_doc("Hosting Server", server_name)
 
     # Smart installation script - checks and installs only missing services
     install_script = """#!/bin/bash
@@ -253,19 +253,18 @@ echo "  ✓ UFW (Firewall)"
 
     try:
         # Execute installation script on remote server
-        frappe.msgprint(
-            "Starting server provisioning... This may take 10-15 minutes.")
+        frappe.msgprint("Starting server provisioning... This may take 10-15 minutes.")
 
         result = execute_remote_command(
             server_name=server_name,
             command=install_script,
-            timeout=1800  # 30 minutes timeout
+            timeout=1800,  # 30 minutes timeout
         )
 
-        if result.get('success'):
+        if result.get("success"):
             # Update server status
-            server.db_set('provisioned', 1)
-            server.db_set('health_status', 'Healthy')
+            server.db_set("provisioned", 1)
+            server.db_set("health_status", "Healthy")
 
             frappe.msgprint(f"""
                 <h3>✅ Server Provisioned Successfully!</h3>
@@ -274,16 +273,16 @@ echo "  ✓ UFW (Firewall)"
             """)
 
             return {
-                'success': True,
-                'message': 'Server provisioned successfully',
-                'output': result.get('output')
+                "success": True,
+                "message": "Server provisioned successfully",
+                "output": result.get("output"),
             }
         else:
             frappe.throw(f"Provisioning failed: {result.get('error')}")
 
     except Exception as e:
         frappe.log_error(f"Server provisioning failed: {str(e)}")
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
@@ -320,10 +319,7 @@ def check_server_services(server_name):
 
     result = execute_remote_command(server_name, check_script)
 
-    if result.get('success'):
-        return {
-            'success': True,
-            'services': result.get('output')
-        }
+    if result.get("success"):
+        return {"success": True, "services": result.get("output")}
     else:
-        return {'success': False, 'error': result.get('error')}
+        return {"success": False, "error": result.get("error")}

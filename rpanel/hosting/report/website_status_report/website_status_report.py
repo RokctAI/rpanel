@@ -19,63 +19,64 @@ def get_columns():
             "label": _("Domain"),
             "fieldtype": "Link",
             "options": "Hosted Website",
-            "width": 200
+            "width": 200,
         },
         {
             "fieldname": "status",
             "label": _("Status"),
             "fieldtype": "Data",
-            "width": 100
+            "width": 100,
         },
         {
             "fieldname": "site_type",
             "label": _("Site Type"),
             "fieldtype": "Data",
-            "width": 100
+            "width": 100,
         },
         {
             "fieldname": "cms_type",
             "label": _("CMS Type"),
             "fieldtype": "Data",
-            "width": 100
+            "width": 100,
         },
         {
             "fieldname": "php_version",
             "label": _("PHP Version"),
             "fieldtype": "Data",
-            "width": 100
+            "width": 100,
         },
         {
             "fieldname": "ssl_status",
             "label": _("SSL Status"),
             "fieldtype": "Data",
-            "width": 100
+            "width": 100,
         },
         {
             "fieldname": "db_name",
             "label": _("Database"),
             "fieldtype": "Data",
-            "width": 150
+            "width": 150,
         },
         {
             "fieldname": "email_count",
             "label": _("Email Accounts"),
             "fieldtype": "Int",
-            "width": 120
+            "width": 120,
         },
         {
             "fieldname": "creation",
             "label": _("Created On"),
             "fieldtype": "Date",
-            "width": 120
-        }
+            "width": 120,
+        },
     ]
 
 
 def get_data(filters):
     conditions = get_conditions(filters)
 
-    websites = frappe.db.sql(f"""
+    websites = frappe.db.sql(
+        f"""
         SELECT
             hw.name as domain,
             hw.status,
@@ -94,7 +95,9 @@ def get_data(filters):
             {conditions}
         ORDER BY
             hw.creation DESC
-    """, as_dict=1)
+    """,
+        as_dict=1,
+    )
 
     return websites
 
@@ -143,13 +146,10 @@ def get_chart_data(data):
         "data": {
             "labels": list(status_count.keys()),
             "datasets": [
-                {
-                    "name": "Website Status",
-                    "values": list(status_count.values())
-                }
-            ]
+                {"name": "Website Status", "values": list(status_count.values())}
+            ],
         },
         "type": "donut",
         "height": 250,
-        "colors": ["#10B981", "#F59E0B", "#EF4444", "#6B7280"]
+        "colors": ["#10B981", "#F59E0B", "#EF4444", "#6B7280"],
     }

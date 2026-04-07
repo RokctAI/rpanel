@@ -12,11 +12,11 @@ from rpanel.hosting.mysql_utils import run_mysql_command
 @frappe.whitelist()
 def import_wordpress(website_name, source_path):
     """Import WordPress site from ZIP or directory"""
-    website = frappe.get_doc('Hosted Website', website_name)
+    website = frappe.get_doc("Hosted Website", website_name)
 
     try:
         # Extract if ZIP
-        if source_path.endswith('.zip'):
+        if source_path.endswith(".zip"):
             cmd = f"unzip -o {source_path} -d {website.site_path}"
             subprocess.run(shlex.split(cmd), check=True)
         else:
@@ -24,18 +24,19 @@ def import_wordpress(website_name, source_path):
             shutil.copytree(source_path, website.site_path, dirs_exist_ok=True)
 
         # Set permissions
-        subprocess.run(["chown", "-R", "www-data:www-data",
-                       website.site_path], check=True)
+        subprocess.run(
+            ["chown", "-R", "www-data:www-data", website.site_path], check=True
+        )
 
-        return {'success': True, 'message': 'WordPress imported'}
+        return {"success": True, "message": "WordPress imported"}
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
 def export_wordpress(website_name, include_uploads=True):
     """Export WordPress site to ZIP"""
-    website = frappe.get_doc('Hosted Website', website_name)
+    website = frappe.get_doc("Hosted Website", website_name)
 
     try:
         export_path = f"/tmp/{website.domain}_export.zip"
@@ -46,26 +47,23 @@ def export_wordpress(website_name, include_uploads=True):
 
         subprocess.run(cmd, cwd=website.site_path, check=True)
 
-        return {'success': True, 'file_path': export_path}
+        return {"success": True, "file_path": export_path}
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
 def search_replace_db(website_name, search, replace):
     """Search and replace in WordPress database"""
-    website = frappe.get_doc('Hosted Website', website_name)
+    website = frappe.get_doc("Hosted Website", website_name)
 
     try:
         # Use WP-CLI if available
         cmd = f"wp search-replace '{search}' '{replace}' --path={website.site_path}"
-        result = subprocess.run(
-            shlex.split(cmd),
-            capture_output=True,
-            text=True)
+        result = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
 
         if result.returncode == 0:
-            return {'success': True, 'output': result.stdout}
+            return {"success": True, "output": result.stdout}
         else:
             # Fallback for PostgreSQL (WP-CLI is MySQL-only)
             if website.db_engine == "PostgreSQL":
@@ -116,14 +114,12 @@ echo "Search-replace completed via PHP Bridge\\n";
 
                     # Execute as www-data
                     cmd = f"sudo -u www-data php {script_path}"
-                    subprocess.run(
-                        shlex.split(cmd),
-                        check=True,
-                        capture_output=True)
+                    subprocess.run(shlex.split(cmd), check=True, capture_output=True)
 
                     return {
-                        'success': True,
-                        'message': 'Search/replace completed via PG Bridge'}
+                        "success": True,
+                        "message": "Search/replace completed via PG Bridge",
+                    }
                 finally:
                     if os.path.exists(script_path):
                         os.remove(script_path)
@@ -140,74 +136,73 @@ echo "Search-replace completed via PHP Bridge\\n";
                 sql=sql,
                 database=website.db_name,
                 user=website.db_user,
-                password=website.db_password
+                password=website.db_password,
             )
 
             return {
-                'success': True,
-                'message': 'Search/replace completed via Legacy SQL'}
+                "success": True,
+                "message": "Search/replace completed via Legacy SQL",
+            }
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
 def install_wp_plugin(website_name, plugin_slug):
     """Install WordPress plugin"""
-    website = frappe.get_doc('Hosted Website', website_name)
+    website = frappe.get_doc("Hosted Website", website_name)
 
     try:
         cmd = f"wp plugin install {plugin_slug} --activate --path={website.site_path}"
-        result = subprocess.run(
-            shlex.split(cmd),
-            capture_output=True,
-            text=True)
+        result = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
 
-        return {'success': True, 'output': result.stdout}
+        return {"success": True, "output": result.stdout}
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
 def update_wordpress(website_name):
     """Update WordPress core"""
-    website = frappe.get_doc('Hosted Website', website_name)
+    website = frappe.get_doc("Hosted Website", website_name)
 
     try:
         cmd = f"wp core update --path={website.site_path}"
-        result = subprocess.run(
-            shlex.split(cmd),
-            capture_output=True,
-            text=True)
+        result = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
 
-        return {'success': True, 'output': result.stdout}
+        return {"success": True, "output": result.stdout}
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
 def get_wp_info(website_name):
     """Get WordPress installation info"""
-    website = frappe.get_doc('Hosted Website', website_name)
+    website = frappe.get_doc("Hosted Website", website_name)
 
     try:
         # Get WP version
         cmd = f"wp core version --path={website.site_path}"
         version_result = subprocess.run(
-            shlex.split(cmd), capture_output=True, text=True)
+            shlex.split(cmd), capture_output=True, text=True
+        )
 
         # Get plugin list
         cmd = f"wp plugin list --format=json --path={website.site_path}"
         plugins_result = subprocess.run(
-            shlex.split(cmd), capture_output=True, text=True)
+            shlex.split(cmd), capture_output=True, text=True
+        )
 
         import json
-        plugins = json.loads(
-            plugins_result.stdout) if plugins_result.returncode == 0 else []
+
+        plugins = (
+            json.loads(plugins_result.stdout) if plugins_result.returncode == 0 else []
+        )
 
         return {
-            'success': True,
-            'version': version_result.stdout.strip(),
-            'plugins': plugins
+            "success": True,
+            "version": version_result.stdout.strip(),
+            "plugins": plugins,
         }
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}

@@ -28,17 +28,17 @@ class FirewallRule(Document):
         try:
             # Build UFW command as a list
             cmd = ["sudo", "ufw"]
-            if self.rule_type == 'Allow':
+            if self.rule_type == "Allow":
                 cmd.append("allow")
                 cmd.extend(["from", self.ip_address])
-                if self.port != 'any':
+                if self.port != "any":
                     cmd.extend(["to", "any", "port", str(self.port)])
-                if self.protocol != 'any':
+                if self.protocol != "any":
                     cmd.extend(["proto", self.protocol])
             else:  # Deny
                 cmd.append("deny")
                 cmd.extend(["from", self.ip_address])
-                if self.port != 'any':
+                if self.port != "any":
                     cmd.extend(["to", "any", "port", str(self.port)])
 
             subprocess.run(cmd, check=True)
@@ -55,7 +55,8 @@ class FirewallRule(Document):
                 "delete",
                 self.rule_type.lower(),
                 "from",
-                self.ip_address]
+                self.ip_address,
+            ]
             subprocess.run(cmd, check=True)
         except Exception as e:
             frappe.log_error(f"Firewall rule remove failed: {str(e)}")
@@ -66,27 +67,28 @@ def get_firewall_status():
     """Get UFW firewall status"""
     try:
         result = subprocess.run(
-            ['sudo', 'ufw', 'status', 'verbose'], capture_output=True, text=True)
-        return {'success': True, 'status': result.stdout}
+            ["sudo", "ufw", "status", "verbose"], capture_output=True, text=True
+        )
+        return {"success": True, "status": result.stdout}
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
 def enable_firewall():
     """Enable UFW firewall"""
     try:
-        subprocess.run(['sudo', 'ufw', '--force', 'enable'], check=True)
-        return {'success': True, 'message': 'Firewall enabled'}
+        subprocess.run(["sudo", "ufw", "--force", "enable"], check=True)
+        return {"success": True, "message": "Firewall enabled"}
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}
 
 
 @frappe.whitelist()
 def disable_firewall():
     """Disable UFW firewall"""
     try:
-        subprocess.run(['sudo', 'ufw', 'disable'], check=True)
-        return {'success': True, 'message': 'Firewall disabled'}
+        subprocess.run(["sudo", "ufw", "disable"], check=True)
+        return {"success": True, "message": "Firewall disabled"}
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        return {"success": False, "error": str(e)}

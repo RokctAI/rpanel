@@ -11,7 +11,7 @@ app_license = "AGPL-3.0"
 
 app_include_js = [
     "/assets/rpanel/js/hosting_branding.js",
-    "/assets/rpanel/js/control_branding.js"
+    "/assets/rpanel/js/control_branding.js",
 ]
 
 # include js, css files in header of web template
@@ -83,15 +83,9 @@ on_migrate = "rpanel.install.after_migrate"
 # ---------------
 
 scheduler_events = {
-    "all": [
-        "rpanel.hosting.tasks.every_5_minutes"
-    ],
-    "hourly": [
-        "rpanel.hosting.tasks.hourly"
-    ],
-    "daily": [
-        "rpanel.hosting.tasks.all"
-    ]
+    "all": ["rpanel.hosting.tasks.every_5_minutes"],
+    "hourly": ["rpanel.hosting.tasks.hourly"],
+    "daily": ["rpanel.hosting.tasks.all"],
 }
 
 # Testing
@@ -101,9 +95,7 @@ scheduler_events = {
 
 # Whitelisted Methods
 # -------------------
-whitelisted_methods = {
-    "rpanel.api.get_version": "rpanel.version.get_version"
-}
+whitelisted_methods = {"rpanel.api.get_version": "rpanel.version.get_version"}
 
 # Overriding Methods
 # ------------------------------
@@ -163,9 +155,4 @@ whitelisted_methods = {
 # Fixtures
 # --------
 
-fixtures = [
-    {
-        "dt": "Workspace",
-        "filters": [["name", "in", ["Hosting"]]]
-    }
-]
+fixtures = [{"dt": "Workspace", "filters": [["name", "in", ["Hosting"]]]}]

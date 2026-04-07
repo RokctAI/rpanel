@@ -11,30 +11,32 @@ def get_client_branding(user=None):
 
     # Check if user is linked to a hosting client
     client = frappe.db.get_value(
-        'Hosting Client', {
-            'email': user}, [
-            'name', 'custom_logo', 'brand_color', 'portal_enabled'], as_dict=True)
+        "Hosting Client",
+        {"email": user},
+        ["name", "custom_logo", "brand_color", "portal_enabled"],
+        as_dict=True,
+    )
 
     if client and client.portal_enabled:
         return {
-            'enabled': True,
-            'logo': client.custom_logo,
-            'brand_color': client.brand_color or '#3498db',
-            'client_name': client.name
+            "enabled": True,
+            "logo": client.custom_logo,
+            "brand_color": client.brand_color or "#3498db",
+            "client_name": client.name,
         }
 
-    return {'enabled': False}
+    return {"enabled": False}
 
 
 def get_brand_html():
     """Generate custom branding HTML/CSS"""
     branding = get_client_branding()
 
-    if not branding.get('enabled'):
+    if not branding.get("enabled"):
         return ""
 
-    brand_color = branding.get('brand_color', '#3498db')
-    logo_url = branding.get('logo', '')
+    brand_color = branding.get("brand_color", "#3498db")
+    logo_url = branding.get("logo", "")
 
     # Generate custom CSS
     custom_css = f"""
@@ -127,10 +129,10 @@ def apply_branding_to_page(context):
     """Hook to inject branding into page context"""
     branding = get_client_branding()
 
-    if branding.get('enabled'):
-        context['custom_branding'] = get_brand_html()
-        context['brand_logo'] = branding.get('logo')
-        context['brand_color'] = branding.get('brand_color')
-        context['client_name'] = branding.get('client_name')
+    if branding.get("enabled"):
+        context["custom_branding"] = get_brand_html()
+        context["brand_logo"] = branding.get("logo")
+        context["brand_color"] = branding.get("brand_color")
+        context["client_name"] = branding.get("client_name")
 
     return context

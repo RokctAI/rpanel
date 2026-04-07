@@ -20,9 +20,10 @@ class ServiceIntelligence:
         try:
             # Try psql first
             result = subprocess.run(
-                ['psql', '--version'], capture_output=True, text=True, check=True)
+                ["psql", "--version"], capture_output=True, text=True, check=True
+            )
             # Extract first number (e.g. "psql (PostgreSQL) 15.10" -> "15")
-            match = re.search(r'\(PostgreSQL\)\s+([0-9]+)', result.stdout)
+            match = re.search(r"\(PostgreSQL\)\s+([0-9]+)", result.stdout)
             if match:
                 return match.group(1)
         except Exception:
@@ -30,9 +31,8 @@ class ServiceIntelligence:
 
         # Fallback: check /etc/postgresql directory
         try:
-            if os.path.exists('/etc/postgresql'):
-                versions = [d for d in os.listdir(
-                    '/etc/postgresql') if d.isdigit()]
+            if os.path.exists("/etc/postgresql"):
+                versions = [d for d in os.listdir("/etc/postgresql") if d.isdigit()]
                 if versions:
                     return sorted(versions, reverse=True)[0]
         except Exception:
@@ -45,15 +45,14 @@ class ServiceIntelligence:
         """Get list of all installed PHP versions (e.g. ['8.3', '8.2'])"""
         versions = []
         try:
-            if os.path.exists('/etc/php'):
+            if os.path.exists("/etc/php"):
                 # Look for directories like 8.1, 8.2, 8.3 in /etc/php
                 versions = [
-                    d for d in os.listdir('/etc/php') if re.match(
-                        r'^[0-9]\.[0-9]$',
-                        d) and os.path.isdir(
-                        os.path.join(
-                            '/etc/php',
-                            d))]
+                    d
+                    for d in os.listdir("/etc/php")
+                    if re.match(r"^[0-9]\.[0-9]$", d)
+                    and os.path.isdir(os.path.join("/etc/php", d))
+                ]
         except Exception:
             pass
         return sorted(versions, reverse=True)
