@@ -18,44 +18,44 @@ def get_columns():
             "label": _("Domain"),
             "fieldtype": "Link",
             "options": "Hosted Website",
-            "width": 200
+            "width": 200,
         },
         {
             "fieldname": "ssl_status",
             "label": _("SSL Status"),
             "fieldtype": "Data",
-            "width": 100
+            "width": 100,
         },
         {
             "fieldname": "ssl_issuer",
             "label": _("SSL Issuer"),
             "fieldtype": "Data",
-            "width": 120
+            "width": 120,
         },
         {
             "fieldname": "ssl_expiry_date",
             "label": _("Expiry Date"),
             "fieldtype": "Date",
-            "width": 120
+            "width": 120,
         },
         {
             "fieldname": "days_until_expiry",
             "label": _("Days Until Expiry"),
             "fieldtype": "Int",
-            "width": 130
+            "width": 130,
         },
         {
             "fieldname": "status",
             "label": _("Site Status"),
             "fieldtype": "Data",
-            "width": 100
+            "width": 100,
         },
         {
             "fieldname": "site_path",
             "label": _("Site Path"),
             "fieldtype": "Data",
-            "width": 200
-        }
+            "width": 200,
+        },
     ]
 
 
@@ -63,7 +63,8 @@ def get_data(filters):
     conditions = get_conditions(filters)
 
     # Get all websites with SSL
-    websites = frappe.db.sql(f"""
+    websites = frappe.db.sql(
+        f"""
         SELECT
             name as domain,
             ssl_status,
@@ -79,7 +80,9 @@ def get_data(filters):
             {conditions}
         ORDER BY
             days_until_expiry ASC
-    """, as_dict=1)
+    """,
+        as_dict=1,
+    )
 
     return websites
 

@@ -19,14 +19,20 @@ def run_certbot(domain, webroot):
             os.makedirs(webroot, exist_ok=True)
 
         cmd = [
-            "sudo", "certbot", "certonly",
+            "sudo",
+            "certbot",
+            "certonly",
             "--webroot",
-            "-w", webroot,
-            "-d", domain,
-            "-d", f"www.{domain}",
+            "-w",
+            webroot,
+            "-d",
+            domain,
+            "-d",
+            f"www.{domain}",
             "--non-interactive",
             "--agree-tos",
-            "--email", f"admin@{domain}"
+            "--email",
+            f"admin@{domain}",
         ]
 
         subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -50,7 +56,7 @@ def update_exim_config(domain, accounts):  # noqa: C901
 
         current_lines = []
         if os.path.exists(passwd_file):
-            with open(passwd_file, 'r') as f:
+            with open(passwd_file, "r") as f:
                 current_lines = f.readlines()
 
         # Safe removal of existing entries for this domain
@@ -72,27 +78,24 @@ def update_exim_config(domain, accounts):  # noqa: C901
 
             # --- SECURE HASH REPLACEMENT FOR CRYPT ---
             # Generate random 16-char salt
-            salt = ''.join(
-                secrets.choice(
-                    string.ascii_letters +
-                    string.digits) for _ in range(16))
+            salt = "".join(
+                secrets.choice(string.ascii_letters + string.digits) for _ in range(16)
+            )
 
             # Use openssl to generate SHA-512 crypt hash ($6$)
             # We pass password via stdin to prevent exposure in 'ps aux'
             try:
                 proc = subprocess.run(
-                    ['openssl', 'passwd', '-6', '-salt', salt, '-stdin'],
-                    input=acc['password'],
+                    ["openssl", "passwd", "-6", "-salt", salt, "-stdin"],
+                    input=acc["password"],
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
                 )
                 hashed = proc.stdout.strip()
                 new_lines.append(f"{full_user}:{hashed}\n")
             except subprocess.CalledProcessError as e:
-                frappe.log_error(
-                    f"Password hashing failed for {full_user}: {
-                        e.stderr}")
+                frappe.log_error(f"Password hashing failed for {full_user}: {e.stderr}")
                 continue
             # -----------------------------------------
 
@@ -102,8 +105,7 @@ def update_exim_config(domain, accounts):  # noqa: C901
             f.writelines(new_lines)
 
         subprocess.run(["sudo", "mv", temp_passwd, passwd_file], check=True)
-        subprocess.run(["sudo", "chown", "root:exim",
-                       passwd_file], check=False)
+        subprocess.run(["sudo", "chown", "root:exim", passwd_file], check=False)
         subprocess.run(["sudo", "chmod", "640", passwd_file], check=False)
 
         # 2. Update Virtual Map (Aliases/Forwarding)
@@ -116,7 +118,7 @@ def update_exim_config(domain, accounts):  # noqa: C901
 
         lines = []
         for acc in accounts:
-            if acc.get('forward_to'):
+            if acc.get("forward_to"):
                 lines.append(f"{acc['user']}: {acc['forward_to']}\n")
             else:
                 # Local delivery
@@ -125,10 +127,10 @@ def update_exim_config(domain, accounts):  # noqa: C901
 
                 # Ensure Maildir exists
                 if not os.path.exists(mail_path):
+                    subprocess.run(["sudo", "mkdir", "-p", mail_path], check=True)
                     subprocess.run(
-                        ["sudo", "mkdir", "-p", mail_path], check=True)
-                    subprocess.run(
-                        ["sudo", "chown", "-R", "exim:exim", mail_path], check=False)
+                        ["sudo", "chown", "-R", "exim:exim", mail_path], check=False
+                    )
 
         temp_virtual = f"/tmp/exim_virtual_{domain}"
         with open(temp_virtual, "w") as f:

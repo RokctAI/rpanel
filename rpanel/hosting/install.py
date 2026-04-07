@@ -9,16 +9,16 @@ import sys
 def check_and_install_dependencies():
     """Check and install hosting module dependencies"""
     required_packages = [
-        'croniter',
-        'boto3',
-        'google-cloud-storage',
-        'dropbox',
-        'dnspython',
-        'paramiko',
-        'google-auth',
-        'google-auth-oauthlib',
-        'google-auth-httplib2',
-        'google-api-python-client'
+        "croniter",
+        "boto3",
+        "google-cloud-storage",
+        "dropbox",
+        "dnspython",
+        "paramiko",
+        "google-auth",
+        "google-auth-oauthlib",
+        "google-auth-httplib2",
+        "google-api-python-client",
     ]
 
     missing_packages = []
@@ -26,7 +26,7 @@ def check_and_install_dependencies():
     # Check which packages are missing
     for package in required_packages:
         try:
-            __import__(package.replace('-', '_'))
+            __import__(package.replace("-", "_"))
         except ImportError:
             missing_packages.append(package)
 
@@ -39,9 +39,7 @@ def check_and_install_dependencies():
         for package in missing_packages:
             try:
                 print(f"Installing {package}...")
-                subprocess.check_call([
-                    sys.executable, '-m', 'pip', 'install', package
-                ])
+                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
                 print(f"✓ {package} installed successfully")
             except subprocess.CalledProcessError as e:
                 print(f"✗ Failed to install {package}: {str(e)}")
@@ -60,7 +58,8 @@ def after_install():
     # Create default alert templates
     try:
         frappe.get_attr(
-            'rpanel.hosting.doctype.alert_template.alert_template.create_default_templates')()
+            "rpanel.hosting.doctype.alert_template.alert_template.create_default_templates"
+        )()
         print("✓ Created default alert templates")
     except Exception as e:
         print(f"Note: Could not create default templates: {str(e)}")

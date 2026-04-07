@@ -23,11 +23,7 @@ class SystemUserManager:
     def user_exists(self, username):
         """Check if a Linux user exists"""
         try:
-            result = subprocess.run(
-                ['id', username],
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(["id", username], capture_output=True, text=True)
             return result.returncode == 0
         except Exception:
             return False
@@ -52,21 +48,28 @@ class SystemUserManager:
                 return
 
             # Create user with no shell access
-            subprocess.run([
-                'sudo', 'useradd',
-                '-M',  # No home directory
-                '-s', '/bin/false',  # No shell access
-                '-g', 'www-data',  # Primary group: www-data
-                username
-            ], check=True)
+            subprocess.run(
+                [
+                    "sudo",
+                    "useradd",
+                    "-M",  # No home directory
+                    "-s",
+                    "/bin/false",  # No shell access
+                    "-g",
+                    "www-data",  # Primary group: www-data
+                    username,
+                ],
+                check=True,
+            )
 
             # Create web directory for user
             web_dir = f"/var/www/{username}"
             if not os.path.exists(web_dir):
-                subprocess.run(['sudo', 'mkdir', '-p', web_dir], check=True)
+                subprocess.run(["sudo", "mkdir", "-p", web_dir], check=True)
                 subprocess.run(
-                    ['sudo', 'chown', f'{username}:www-data', web_dir], check=True)
-                subprocess.run(['sudo', 'chmod', '750', web_dir], check=True)
+                    ["sudo", "chown", f"{username}:www-data", web_dir], check=True
+                )
+                subprocess.run(["sudo", "chmod", "750", web_dir], check=True)
 
             frappe.msgprint(f"Created system user: {username}")
 
@@ -88,10 +91,7 @@ class SystemUserManager:
                 return
 
             # Delete user
-            subprocess.run([
-                'sudo', 'userdel',
-                username
-            ], check=True)
+            subprocess.run(["sudo", "userdel", username], check=True)
 
             frappe.msgprint(f"Deleted system user: {username}")
 
@@ -108,16 +108,18 @@ class SystemUserManager:
         """
         # Check if reference already exists
         if frappe.db.exists(
-            "System User Reference", {
-                "user_name": username, "site_name": site_name}):
+            "System User Reference", {"user_name": username, "site_name": site_name}
+        ):
             return
 
         # Create reference record
-        frappe.get_doc({
-            "doctype": "System User Reference",
-            "user_name": username,
-            "site_name": site_name
-        }).insert(ignore_permissions=True)
+        frappe.get_doc(
+            {
+                "doctype": "System User Reference",
+                "user_name": username,
+                "site_name": site_name,
+            }
+        ).insert(ignore_permissions=True)
         frappe.db.commit()
 
     def decrement_user_reference(self, username, site_name):
@@ -132,14 +134,13 @@ class SystemUserManager:
         refs = frappe.get_all(
             "System User Reference",
             filters={"user_name": username, "site_name": site_name},
-            pluck="name"
+            pluck="name",
         )
 
         for ref_name in refs:
             frappe.delete_doc(
-                "System User Reference",
-                ref_name,
-                ignore_permissions=True)
+                "System User Reference", ref_name, ignore_permissions=True
+            )
 
         frappe.db.commit()
 
@@ -153,35 +154,33 @@ class SystemUserManager:
         Returns:
             int: Number of sites using this user
         """
-        return frappe.db.count(
-            "System User Reference", {
-                "user_name": username})
+        return frappe.db.count("System User Reference", {"user_name": username})
 
     def get_user_info(self, username):
         """Get information about a system user"""
         try:
             result = subprocess.run(
-                ['id', username],
-                capture_output=True,
-                text=True,
-                check=True
+                ["id", username], capture_output=True, text=True, check=True
             )
-            return {'exists': True, 'info': result.stdout}
+            return {"exists": True, "info": result.stdout}
         except subprocess.CalledProcessError:
-            return {'exists': False}
+            return {"exists": False}
 
 
 @frappe.whitelist()
 def list_system_users():
     """List all system users managed by rpanel"""
-    users = frappe.db.sql("""
+    users = frappe.db.sql(
+        """
         SELECT DISTINCT user_name, COUNT(site_name) as site_count
         FROM `tabSystem User Reference`
         GROUP BY user_name
         ORDER BY user_name
-    """, as_dict=True)
+    """,
+        as_dict=True,
+    )
 
-    return {'success': True, 'users': users}
+    return {"success": True, "users": users}
 
 
 @frappe.whitelist()
@@ -191,7 +190,7 @@ def get_user_sites(username):
         "System User Reference",
         filters={"user_name": username},
         fields=["site_name"],
-        pluck="site_name"
+        pluck="site_name",
     )
 
-    return {'success': True, 'sites': sites}
+    return {"success": True, "sites": sites}

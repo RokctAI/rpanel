@@ -19,17 +19,17 @@ from rpanel.hosting.service_intelligence import ServiceIntelligence
 # Protected config files that RPanel should NEVER modify
 PROTECTED_CONFIGS = [
     # Frappe bench (created by bench setup production)
-    'frappe-bench-frappe',
-    'default',                   # System default
+    "frappe-bench-frappe",
+    "default",  # System default
 ]
 
 # RPanel config file prefix
-RPANEL_PREFIX = 'rpanel-'
+RPANEL_PREFIX = "rpanel-"
 
 # Nginx paths
-NGINX_AVAILABLE = '/etc/nginx/sites-available'
-NGINX_ENABLED = '/etc/nginx/sites-enabled'
-NGINX_CONF_D = '/etc/nginx/conf.d'
+NGINX_AVAILABLE = "/etc/nginx/sites-available"
+NGINX_ENABLED = "/etc/nginx/sites-enabled"
+NGINX_CONF_D = "/etc/nginx/conf.d"
 
 
 class NginxManager:
@@ -47,7 +47,7 @@ class NginxManager:
     def get_rpanel_config_name(self, domain):
         """Get the config filename for a domain"""
         # Sanitize domain name for filename
-        safe_domain = domain.replace('.', '_').replace(':', '_')
+        safe_domain = domain.replace(".", "_").replace(":", "_")
         return f"{RPANEL_PREFIX}{safe_domain}.conf"
 
     def create_website_config(self, domain, site_path, php_version=None):
@@ -66,26 +66,25 @@ class NginxManager:
         # Check if this would conflict with protected configs
         if self.is_protected_config(config_name):
             frappe.throw(
-                f"Cannot create config '{config_name}' - this filename is protected")
+                f"Cannot create config '{config_name}' - this filename is protected"
+            )
 
         # Generate Nginx config
-        config_content = self._generate_website_config(
-            domain, site_path, php_version)
+        config_content = self._generate_website_config(domain, site_path, php_version)
 
         # Write config file
         try:
             # Use sudo tee to write to protected directory
             subprocess.run(
-                ['sudo', 'tee', str(config_path)],
+                ["sudo", "tee", str(config_path)],
                 input=config_content,
                 text=True,
                 check=True,
-                stdout=subprocess.DEVNULL
+                stdout=subprocess.DEVNULL,
             )
 
             # Set proper permissions
-            subprocess.run(
-                ['sudo', 'chmod', '644', str(config_path)], check=True)
+            subprocess.run(["sudo", "chmod", "644", str(config_path)], check=True)
 
             # Enable the site
             self.enable_site(config_name)
@@ -96,9 +95,7 @@ class NginxManager:
             frappe.msgprint(f"Nginx configuration created for {domain}")
 
         except Exception as e:
-            frappe.log_error(
-                f"Failed to create Nginx config for {domain}: {
-                    str(e)}")
+            frappe.log_error(f"Failed to create Nginx config for {domain}: {str(e)}")
             frappe.throw(f"Failed to create Nginx configuration: {str(e)}")
 
     def _generate_website_config(self, domain, site_path, php_version):
@@ -170,17 +167,16 @@ server {{
 
         # Remove existing symlink if it exists
         if target.exists() or target.is_symlink():
-            subprocess.run(['sudo', 'rm', '-f', str(target)], check=True)
+            subprocess.run(["sudo", "rm", "-f", str(target)], check=True)
 
         # Create symlink
-        subprocess.run(
-            ['sudo', 'ln', '-s', str(source), str(target)], check=True)
+        subprocess.run(["sudo", "ln", "-s", str(source), str(target)], check=True)
 
     def disable_site(self, config_name):
         """Disable a site by removing symlink from sites-enabled"""
         target = self.enabled_path / config_name
 
-        subprocess.run(['sudo', 'rm', '-f', str(target)], check=True)
+        subprocess.run(["sudo", "rm", "-f", str(target)], check=True)
 
     def delete_site_config(self, domain):
         """Delete Nginx config for a domain"""
@@ -195,7 +191,7 @@ server {{
 
         # Delete config file
         config_path = self.available_path / config_name
-        subprocess.run(['sudo', 'rm', '-f', str(config_path)], check=True)
+        subprocess.run(["sudo", "rm", "-f", str(config_path)], check=True)
 
         # Reload Nginx
         self.test_and_reload()
@@ -205,9 +201,7 @@ server {{
         try:
             # Test configuration
             result = subprocess.run(
-                ['sudo', 'nginx', '-t'],
-                capture_output=True,
-                text=True
+                ["sudo", "nginx", "-t"], capture_output=True, text=True
             )
 
             if result.returncode != 0:
@@ -216,8 +210,7 @@ server {{
                 frappe.throw(f"Nginx configuration error: {error_msg}")
 
             # Reload Nginx
-            subprocess.run(
-                ['sudo', 'systemctl', 'reload', 'nginx'], check=True)
+            subprocess.run(["sudo", "systemctl", "reload", "nginx"], check=True)
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"Failed to reload Nginx: {str(e)}")
@@ -228,7 +221,7 @@ server {{
         Setup global rate limiting for RPanel websites
         Only runs once during installation
         """
-        rate_limit_config = self.conf_d_path / 'rpanel-rate-limits.conf'
+        rate_limit_config = self.conf_d_path / "rpanel-rate-limits.conf"
 
         if rate_limit_config.exists():
             return  # Already configured
@@ -249,15 +242,14 @@ limit_req zone=rpanel_general burst=20 nodelay;
 
         try:
             subprocess.run(
-                ['sudo', 'tee', str(rate_limit_config)],
+                ["sudo", "tee", str(rate_limit_config)],
                 input=config_content,
                 text=True,
                 check=True,
-                stdout=subprocess.DEVNULL
+                stdout=subprocess.DEVNULL,
             )
 
-            subprocess.run(['sudo', 'chmod', '644', str(
-                rate_limit_config)], check=True)
+            subprocess.run(["sudo", "chmod", "644", str(rate_limit_config)], check=True)
 
             print("✓ RPanel rate limiting configured")
 
@@ -293,6 +285,7 @@ limit_req zone=rpanel_general burst=20 nodelay;
 
 # Convenience functions for use in DocTypes
 
+
 def create_nginx_config(domain, site_path, php_version=None):
     """Create Nginx config for a website"""
     manager = NginxManager()
@@ -311,7 +304,7 @@ def setup_nginx_rate_limiting():
     manager.setup_rate_limiting()
 
 
-def secure_website_permissions(site_path, owner='www-data'):
+def secure_website_permissions(site_path, owner="www-data"):
     """
     Set secure file permissions for a website
 
@@ -323,46 +316,42 @@ def secure_website_permissions(site_path, owner='www-data'):
 
     try:
         # Set directory permissions: 755 (rwxr-xr-x)
-        subprocess.run([
-            'find', site_path, '-type', 'd',
-            '-exec', 'chmod', '755', '{}', '+'
-        ], check=True)
+        subprocess.run(
+            ["find", site_path, "-type", "d", "-exec", "chmod", "755", "{}", "+"],
+            check=True,
+        )
 
         # Set file permissions: 644 (rw-r--r--)
-        subprocess.run([
-            'find', site_path, '-type', 'f',
-            '-exec', 'chmod', '644', '{}', '+'
-        ], check=True)
+        subprocess.run(
+            ["find", site_path, "-type", "f", "-exec", "chmod", "644", "{}", "+"],
+            check=True,
+        )
 
         # Set ownership
-        subprocess.run([
-            'chown', '-R', f'{owner}:{owner}', site_path
-        ], check=True)
+        subprocess.run(["chown", "-R", f"{owner}:{owner}", site_path], check=True)
 
         # Secure upload directories (775 for write access)
         upload_dirs = [
-            os.path.join(site_path, 'wp-content/uploads'),
-            os.path.join(site_path, 'uploads'),
+            os.path.join(site_path, "wp-content/uploads"),
+            os.path.join(site_path, "uploads"),
         ]
 
         for upload_dir in upload_dirs:
             if os.path.exists(upload_dir):
-                subprocess.run(['chmod', '-R', '775', upload_dir], check=True)
+                subprocess.run(["chmod", "-R", "775", upload_dir], check=True)
 
         # Secure config files (600 for sensitive files)
         config_files = [
-            os.path.join(site_path, 'wp-config.php'),
-            os.path.join(site_path, '.htaccess'),
+            os.path.join(site_path, "wp-config.php"),
+            os.path.join(site_path, ".htaccess"),
         ]
 
         for config_file in config_files:
             if os.path.exists(config_file):
-                subprocess.run(['chmod', '600', config_file], check=True)
+                subprocess.run(["chmod", "600", config_file], check=True)
 
         frappe.msgprint(f"File permissions secured for {site_path}")
 
     except subprocess.CalledProcessError as e:
-        frappe.log_error(
-            f"Failed to secure permissions for {site_path}: {
-                str(e)}")
+        frappe.log_error(f"Failed to secure permissions for {site_path}: {str(e)}")
         frappe.throw(f"Failed to secure file permissions: {str(e)}")

@@ -18,7 +18,7 @@ def run_psql_command(
     user: str = "postgres",
     password: Optional[str] = None,
     host: str = "localhost",
-    as_sudo: bool = True
+    as_sudo: bool = True,
 ) -> subprocess.CompletedProcess:
     """
     Execute a PostgreSQL command securely.
@@ -43,12 +43,7 @@ def run_psql_command(
     cmd.extend(["-c", sql])
 
     # Execute command
-    return subprocess.run(
-        cmd,
-        env=env,
-        check=True,
-        capture_output=True,
-        text=True)
+    return subprocess.run(cmd, env=env, check=True, capture_output=True, text=True)
 
 
 def create_pg_database(db_name: str, db_user: str, db_password: str):
@@ -57,15 +52,13 @@ def create_pg_database(db_name: str, db_user: str, db_password: str):
     """
     try:
         # 1. Create User
-        run_psql_command(
-            f"CREATE USER {db_user} WITH PASSWORD '{db_password}';")
+        run_psql_command(f"CREATE USER {db_user} WITH PASSWORD '{db_password}';")
 
         # 2. Create Database
         run_psql_command(f"CREATE DATABASE {db_name} OWNER {db_user};")
 
         # 3. Grant Privileges
-        run_psql_command(
-            f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {db_user};")
+        run_psql_command(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {db_user};")
 
     except subprocess.CalledProcessError as e:
         frappe.log_error(f"PostgreSQL Setup Failed: {e.stderr}")
@@ -78,7 +71,7 @@ def run_pg_dump(
     user: str = "postgres",
     password: Optional[str] = None,
     host: str = "localhost",
-    as_sudo: bool = False
+    as_sudo: bool = False,
 ) -> subprocess.CompletedProcess:
     """
     Execute pg_dump securely without exposing passwords.
@@ -107,7 +100,7 @@ def run_pg_dump(
 
     cmd.extend(["pg_dump", "-h", host, "-U", user, "-Fp", database])
 
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         return subprocess.run(cmd, stdout=f, env=env, check=True, text=True)
 
 
@@ -117,7 +110,7 @@ def run_pg_restore(
     user: str = "postgres",
     password: Optional[str] = None,
     host: str = "localhost",
-    as_sudo: bool = False
+    as_sudo: bool = False,
 ) -> subprocess.CompletedProcess:
     """
     Restore a PostgreSQL database from SQL file securely.
@@ -146,5 +139,5 @@ def run_pg_restore(
 
     cmd.extend(["psql", "-h", host, "-U", user, database])
 
-    with open(input_file, 'r') as f:
+    with open(input_file, "r") as f:
         return subprocess.run(cmd, stdin=f, env=env, check=True, text=True)
