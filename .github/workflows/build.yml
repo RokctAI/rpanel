@@ -63,16 +63,16 @@ jobs:
         run: |
           if [ -f "pubspec.yaml" ]; then
              echo "Flutter project detected."
-             echo "is_flutter=true" >> $GITHUB_OUTPUT
-             echo "is_node=false" >> $GITHUB_OUTPUT
+             echo "is_flutter=true" >> "$GITHUB_OUTPUT"
+             echo "is_node=false" >> "$GITHUB_OUTPUT"
           elif [ -f "package.json" ]; then
              echo "Node.js project detected."
-             echo "is_flutter=false" >> $GITHUB_OUTPUT
-             echo "is_node=true" >> $GITHUB_OUTPUT
+             echo "is_flutter=false" >> "$GITHUB_OUTPUT"
+             echo "is_node=true" >> "$GITHUB_OUTPUT"
           else
              echo "Unknown project type. Skipping builds."
-             echo "is_flutter=false" >> $GITHUB_OUTPUT
-             echo "is_node=false" >> $GITHUB_OUTPUT
+             echo "is_flutter=false" >> "$GITHUB_OUTPUT"
+             echo "is_node=false" >> "$GITHUB_OUTPUT"
           fi
 
   # --- 2. UNIFIED PIPELINE (Smart) ---
@@ -137,7 +137,7 @@ jobs:
 
       - name: Detect Runner OS Version
         id: os-version
-        run: echo "version=$(lsb_release -rs)" >> $GITHUB_OUTPUT
+        run: echo "version=$(lsb_release -rs)" >> "$GITHUB_OUTPUT"
 
       - name: Build and Push
         uses: docker/build-push-action@v4
