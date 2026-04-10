@@ -451,12 +451,13 @@ run_quiet "Starting Supervisor" bash -c "systemctl restart supervisor || service
 # NON-FATAL: bench setup production may fail on 'systemctl reload nginx' in CI.
 # The configs ARE generated before the reload. Our verification block handles the rest.
 echo -n -e "${BLUE}  - Generating production config... ${NC}"
-if sudo -i -u frappe bash <<EOF >>"$INSTALL_LOG" 2>&1; then
+if sudo -i -u frappe bash <<EOF >>"$INSTALL_LOG" 2>&1
 export PATH="/home/frappe/.local/bin:\$PATH"
 export PYTHONPATH=\$(python3.14 -m site --user-site 2>/dev/null || echo "/home/frappe/.local/lib/python3.14/site-packages")
 cd /home/frappe/frappe-bench
 sudo env "PATH=\$PATH" "PYTHONPATH=\$PYTHONPATH" /home/frappe/.local/bin/bench setup production frappe --yes
 EOF
+then
   echo -e "${GREEN}✓ DONE${NC}"
 else
   echo -e "${YELLOW}! COMPLETED (config generated, service reload deferred)${NC}"
