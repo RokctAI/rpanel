@@ -51,6 +51,16 @@ setup_site() {
   else
     echo "✅ Site '$SITE_NAME' already exists."
   fi
+
+  # --- ROK persistence (per-site) ---
+  # ROK (Hermes-agent rebrand) persists by default under ~/.rok.
+  # Tie it to the active site volume: sites/<site>/private/rok
+  mkdir -p "sites/$SITE_NAME/private/rok"
+  if [ -e "/home/frappe/.rok" ] && [ ! -L "/home/frappe/.rok" ]; then
+    echo "⚠️ Found existing /home/frappe/.rok (not a symlink). Leaving it untouched."
+  else
+    ln -sfn "$PWD/sites/$SITE_NAME/private/rok" "/home/frappe/.rok"
+  fi
 }
 
 # Function to start services
