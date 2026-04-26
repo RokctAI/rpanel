@@ -44,7 +44,7 @@ setup_site() {
       # Merge base apps with additional apps, ensuring no duplicates
       # Use :- to guard against unset variables (Req 5)
       FINAL_APPS=$(echo "$BASE_APPS ${INSTALL_APPS:-}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
-      
+
       # Use an array for flags to handle spaces and empty lists cleanly (Req 2)
       INSTALL_APP_FLAGS=()
       for app in $FINAL_APPS; do
@@ -120,10 +120,10 @@ start_services() {
     # wait -n requires bash 4.3+ (Ubuntu 24.04 ships 5.2)
     bench serve --port 8000 &
     SERVE_PID=$!
-    
+
     wait -n
     CODE=$?
-    
+
     # Identify which process triggered the exit for better logs
     for pid in $WORKER_PID $SCHED_PID $SERVE_PID; do
       if ! kill -0 "$pid" 2>/dev/null; then
