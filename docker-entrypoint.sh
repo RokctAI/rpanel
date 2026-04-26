@@ -35,7 +35,7 @@ setup_site() {
       # Base apps are always installed, INSTALL_APPS contains additions from the Hub
       BASE_APPS="rcore brain"
       if [ "$MODE" = "full" ]; then BASE_APPS="rpanel rcore paas control brain"; fi
-      
+
       # Merge base apps with additional apps, ensuring no duplicates
       FINAL_APPS=$(echo "$BASE_APPS $INSTALL_APPS" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
 
