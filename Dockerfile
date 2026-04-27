@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     git postgresql-client gettext-base build-essential \
     cron vim nodejs redis-server netcat-openbsd \
     libffi-dev libjpeg-dev zlib1g-dev \
+    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g yarn pnpm
