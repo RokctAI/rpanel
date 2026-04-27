@@ -139,7 +139,7 @@ class HostedWebsite(Document):
             user_mgr = SystemUserManager()
             if not user_mgr.user_exists(self.system_user):
                 user_mgr.create_user(self.system_user)
-                frappe.msgprint(f"Created Linux user: {self.system_user}")
+                frappe.logger().info(f"Created Linux user: {self.system_user}")
             user_mgr.increment_user_reference(self.system_user, self.domain)
 
             # 0b. Create PHP-FPM pool if using PHP-FPM mode
@@ -200,15 +200,15 @@ class HostedWebsite(Document):
             if not self.ssl_status or self.ssl_status != "Active":
                 self.issue_ssl()
 
-            frappe.msgprint(f"Site {self.domain} provisioned successfully.")
+            frappe.logger().info(f"Site {self.domain} provisioned successfully.")
 
         except Exception as e:
             frappe.log_error(f"Provisioning failed for {self.domain}: {e}")
-            frappe.msgprint(f"Provisioning Warning: {e}")
+            frappe.logger().info(f"Provisioning Warning: {e}")
 
     def provision_frappe_tenant(self):
         """Provisions a new Frappe site and installs selected apps"""
-        frappe.msgprint("Provisioning Frappe Tenant...")
+        frappe.logger().info("Provisioning Frappe Tenant...")
         try:
             # 1. Create Site
             # We use the current bench to create a new site
@@ -221,7 +221,7 @@ class HostedWebsite(Document):
             if os.path.exists(
                 os.path.join(frappe.utils.get_bench_path(), "sites", self.domain)
             ):
-                frappe.msgprint("Site directory already exists. Skipping creation.")
+                frappe.logger().info("Site directory already exists. Skipping creation.")
             else:
                 # Create site
                 # We need to pass the admin password.
@@ -266,7 +266,7 @@ class HostedWebsite(Document):
                 with open(site_config_path, "w") as f:
                     json.dump(config, f, indent=4)
 
-            frappe.msgprint(f"Frappe Tenant {self.domain} created successfully.")
+            frappe.logger().info(f"Frappe Tenant {self.domain} created successfully.")
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"Frappe Tenant Creation Failed: {e}")
@@ -276,7 +276,7 @@ class HostedWebsite(Document):
         if os.path.exists(os.path.join(self.site_path, "wp-config.php")):
             return  # Already installed
 
-        frappe.msgprint("Installing WordPress...")
+        frappe.logger().info("Installing WordPress...")
         try:
             # Use WP-CLI to download WordPress (uses version installed on server)
             # This gives admins control over WP version via Service Version
@@ -309,7 +309,7 @@ class HostedWebsite(Document):
                 ["sudo", "chown", "-R", "www-data:www-data", self.site_path], check=True
             )
 
-            frappe.msgprint("WordPress installed successfully")
+            frappe.logger().info("WordPress installed successfully")
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"WP Install Failed: {e}")
@@ -358,7 +358,7 @@ require_once ABSPATH . 'wp-settings.php';
 
     def setup_wordpress_postgres_bridge(self):
         """Install PG4WP bridge for WordPress on PostgreSQL"""
-        frappe.msgprint("Setting up PostgreSQL bridge for WordPress...")
+        frappe.logger().info("Setting up PostgreSQL bridge for WordPress...")
         try:
             # 1. Download PG4WP
             # We can use a pre-installed version on the server or download it.
@@ -402,11 +402,11 @@ require_once ABSPATH . 'wp-settings.php';
                 check=True,
             )
 
-            frappe.msgprint("PostgreSQL bridge configured")
+            frappe.logger().info("PostgreSQL bridge configured")
 
         except Exception as e:
             frappe.log_error(f"WP PG Bridge Failed: {e}")
-            frappe.msgprint(
+            frappe.logger().info(
                 f"Warning: Failed to setup PG bridge. WordPress might not connect. {e}"
             )
 
@@ -421,10 +421,10 @@ require_once ABSPATH . 'wp-settings.php';
             self.db_set("ssl_issuer", "Let's Encrypt")
             # Update Nginx to use SSL
             self.update_nginx_config(ssl=True)
-            frappe.msgprint(msg)
+            frappe.logger().info(msg)
         else:
             self.db_set("ssl_status", "Failed")
-            frappe.msgprint(f"SSL Issuance Failed: {msg}")
+            frappe.logger().info(f"SSL Issuance Failed: {msg}")
 
     def update_nginx_config(self, ssl=False):
         """Generates and reloads Nginx config"""
@@ -538,7 +538,7 @@ server {{
 
         success, msg = update_exim_config(self.domain, accounts)
         if not success:
-            frappe.msgprint(f"Email Update Warning: {msg}")
+            frappe.logger().info(f"Email Update Warning: {msg}")
 
     def setup_database(self):
         """Creates database and user based on engine"""
@@ -605,12 +605,12 @@ server {{
             remaining_sites = user_mgr.get_user_reference_count(self.system_user)
             if remaining_sites == 0:
                 # No other sites use this user, safe to delete
-                frappe.msgprint(
+                frappe.logger().info(
                     f"No other sites use {self.system_user}, removing user..."
                 )
                 user_mgr.delete_user(self.system_user)
             else:
-                frappe.msgprint(
+                frappe.logger().info(
                     f"User {self.system_user} still used by {
                         remaining_sites
                     } other site(s), preserving..."
@@ -672,8 +672,8 @@ server {{
 
             subprocess.run(["sudo", "mv", temp_conf, config_path], check=True)
             subprocess.run(["sudo", "systemctl", "reload", "nginx"], check=True)
-            frappe.msgprint(f"Site {self.domain} suspended.")
+            frappe.logger().info(f"Site {self.domain} suspended.")
 
         except Exception as e:
             frappe.log_error(f"Suspension failed: {e}")
-            frappe.msgprint(f"Suspension failed: {e}")
+            frappe.logger().info(f"Suspension failed: {e}")

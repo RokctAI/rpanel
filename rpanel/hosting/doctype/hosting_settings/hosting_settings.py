@@ -29,10 +29,10 @@ class HostingSettings(Document):
         target_dir = "/var/www/roundcube"
 
         if os.path.exists(os.path.join(target_dir, "config", "config.inc.php")):
-            frappe.msgprint("Roundcube appears to be already installed.")
+            frappe.logger().info("Roundcube appears to be already installed.")
             # We could offer update logic here
 
-        frappe.msgprint("Starting Roundcube Installation...")
+        frappe.logger().info("Starting Roundcube Installation...")
         try:
             # 1. Database Setup
             db_name = "roundcubemail"
@@ -150,7 +150,7 @@ $config['skin'] = 'elastic';
                 check=True,
             )
 
-            frappe.msgprint(
+            frappe.logger().info(
                 "Roundcube Installed Successfully! Access it at /webmail on any hosted site."
             )
 
@@ -166,7 +166,7 @@ $config['skin'] = 'elastic';
             process = subprocess.run(
                 cmd_parts, capture_output=True, text=True, check=True
             )
-            frappe.msgprint(f"{description} Successful.<br><pre>{process.stdout}</pre>")
+            frappe.logger().info(f"{description} Successful.<br><pre>{process.stdout}</pre>")
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"{description} Failed: {e.stderr}")

@@ -253,7 +253,7 @@ echo "  ✓ UFW (Firewall)"
 
     try:
         # Execute installation script on remote server
-        frappe.msgprint("Starting server provisioning... This may take 10-15 minutes.")
+        frappe.logger().info("Starting server provisioning... This may take 10-15 minutes.")
 
         result = execute_remote_command(
             server_name=server_name,
@@ -266,7 +266,7 @@ echo "  ✓ UFW (Firewall)"
             server.db_set("provisioned", 1)
             server.db_set("health_status", "Healthy")
 
-            frappe.msgprint(f"""
+            frappe.logger().info(f"""
                 <h3>✅ Server Provisioned Successfully!</h3>
                 <p>All services installed and configured on <b>{server.server_name}</b></p>
                 <p>The server is now ready to host websites.</p>

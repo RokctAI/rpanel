@@ -33,7 +33,7 @@ class PHPFPMManager:
 
         # Check if pool already exists
         if pool_file.exists():
-            frappe.msgprint(f"PHP-FPM pool already exists for {domain}")
+            frappe.logger().info(f"PHP-FPM pool already exists for {domain}")
             return socket_path
 
         pool_config = f"""[{domain}]
@@ -101,7 +101,7 @@ php_admin_value[post_max_size] = 64M
                 check=True,
             )
 
-            frappe.msgprint(
+            frappe.logger().info(
                 f"Created PHP-FPM pool for {domain} running as {system_user}"
             )
             return socket_path
@@ -128,7 +128,7 @@ php_admin_value[post_max_size] = 64M
                 ["sudo", "systemctl", "reload", f"php{self.php_version}-fpm"],
                 check=True,
             )
-            frappe.msgprint(f"Deleted PHP-FPM pool for {domain}")
+            frappe.logger().info(f"Deleted PHP-FPM pool for {domain}")
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"Failed to delete PHP-FPM pool: {e}")

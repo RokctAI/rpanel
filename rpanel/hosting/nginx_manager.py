@@ -92,7 +92,7 @@ class NginxManager:
             # Test and reload Nginx
             self.test_and_reload()
 
-            frappe.msgprint(f"Nginx configuration created for {domain}")
+            frappe.logger().info(f"Nginx configuration created for {domain}")
 
         except Exception as e:
             frappe.log_error(f"Failed to create Nginx config for {domain}: {str(e)}")
@@ -350,7 +350,7 @@ def secure_website_permissions(site_path, owner="www-data"):
             if os.path.exists(config_file):
                 subprocess.run(["chmod", "600", config_file], check=True)
 
-        frappe.msgprint(f"File permissions secured for {site_path}")
+        frappe.logger().info(f"File permissions secured for {site_path}")
 
     except subprocess.CalledProcessError as e:
         frappe.log_error(f"Failed to secure permissions for {site_path}: {str(e)}")

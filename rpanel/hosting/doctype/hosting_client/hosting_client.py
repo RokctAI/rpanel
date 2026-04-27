@@ -45,7 +45,7 @@ class HostingClient(Document):
                     if doc.status != "Suspended":
                         doc.status = "Suspended"
                         doc.save()
-                frappe.msgprint(
+                frappe.logger().info(
                     f"Suspended {len(websites)} websites for client {self.client_name}"
                 )
 
@@ -55,7 +55,7 @@ class HostingClient(Document):
                     if doc.status == "Suspended":
                         doc.status = "Active"
                         doc.save()
-                frappe.msgprint(
+                frappe.logger().info(
                     f"Re-activated {len(websites)} websites for client {self.client_name}"
                 )
 

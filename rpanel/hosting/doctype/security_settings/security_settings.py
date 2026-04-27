@@ -35,7 +35,7 @@ class SecuritySettings(Document):
         for manager in system_managers:
             user = manager.parent
             if not frappe.db.get_value("User", user, "two_factor_auth"):
-                frappe.msgprint(f"2FA enforcement: User {user} needs to enable 2FA")
+                frappe.logger().info(f"2FA enforcement: User {user} needs to enable 2FA")
 
 
 @frappe.whitelist()

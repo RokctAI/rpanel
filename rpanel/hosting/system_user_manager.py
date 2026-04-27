@@ -44,7 +44,7 @@ class SystemUserManager:
         try:
             # Check if user already exists
             if self.user_exists(username):
-                frappe.msgprint(f"User {username} already exists")
+                frappe.logger().info(f"User {username} already exists")
                 return
 
             # Create user with no shell access
@@ -71,7 +71,7 @@ class SystemUserManager:
                 )
                 subprocess.run(["sudo", "chmod", "750", web_dir], check=True)
 
-            frappe.msgprint(f"Created system user: {username}")
+            frappe.logger().info(f"Created system user: {username}")
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"Failed to create user {username}: {e}")
@@ -93,7 +93,7 @@ class SystemUserManager:
             # Delete user
             subprocess.run(["sudo", "userdel", username], check=True)
 
-            frappe.msgprint(f"Deleted system user: {username}")
+            frappe.logger().info(f"Deleted system user: {username}")
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"Failed to delete user {username}: {e}")

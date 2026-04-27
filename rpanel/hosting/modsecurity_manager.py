@@ -238,7 +238,7 @@ SecRule REQUEST_URI "@rx \\?author=[0-9]+" \\
 
         # Check if ModSecurity already enabled
         if "modsecurity on" in config:
-            frappe.msgprint(f"ModSecurity already enabled for {domain}")
+            frappe.logger().info(f"ModSecurity already enabled for {domain}")
             return
 
         # Add ModSecurity directives after server_name
@@ -269,7 +269,7 @@ SecRule REQUEST_URI "@rx \\?author=[0-9]+" \\
         # Test and reload Nginx
         nginx_mgr.test_and_reload()
 
-        frappe.msgprint(f"ModSecurity enabled for {domain}")
+        frappe.logger().info(f"ModSecurity enabled for {domain}")
 
     def disable_for_website(self, domain):
         """
@@ -327,7 +327,7 @@ SecRule REQUEST_URI "@rx \\?author=[0-9]+" \\
         # Test and reload Nginx
         nginx_mgr.test_and_reload()
 
-        frappe.msgprint(f"ModSecurity disabled for {domain}")
+        frappe.logger().info(f"ModSecurity disabled for {domain}")
 
     def get_blocked_requests(self, domain=None, limit=100):
         """
