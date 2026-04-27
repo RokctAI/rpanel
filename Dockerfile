@@ -11,22 +11,14 @@ RUN apt-get update && apt-get install -y curl ca-certificates gnupg sudo wget \
     && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x bookworm main" > /etc/apt/sources.list.d/nodesource.list
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
 
-# System Dependencies - Step 2: Install packages one by one to identify failures
-RUN apt-get update
-RUN apt-get install -y git && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y vim && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y redis-server && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y libjpeg-dev && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y zlib1g-dev && rm -rf /var/lib/apt/lists/*
+# System Dependencies - Step 2: Install packages (after repos are added)
+RUN apt-get update && apt-get install -y \
+    git postgresql-client gettext-base build-essential \
+    cron vim nodejs redis-server netcat-openbsd \
+    libffi-dev libjpeg-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g yarn pnpm
 RUN useradd -ms /bin/bash frappe && \
