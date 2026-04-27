@@ -253,7 +253,9 @@ echo "  ✓ UFW (Firewall)"
 
     try:
         # Execute installation script on remote server
-        frappe.logger().info("Starting server provisioning... This may take 10-15 minutes.")
+        frappe.logger().info(
+            "Starting server provisioning... This may take 10-15 minutes."
+        )
 
         result = execute_remote_command(
             server_name=server_name,

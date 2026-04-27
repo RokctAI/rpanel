@@ -221,7 +221,9 @@ class HostedWebsite(Document):
             if os.path.exists(
                 os.path.join(frappe.utils.get_bench_path(), "sites", self.domain)
             ):
-                frappe.logger().info("Site directory already exists. Skipping creation.")
+                frappe.logger().info(
+                    "Site directory already exists. Skipping creation."
+                )
             else:
                 # Create site
                 # We need to pass the admin password.

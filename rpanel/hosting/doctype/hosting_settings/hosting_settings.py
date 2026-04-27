@@ -166,7 +166,9 @@ $config['skin'] = 'elastic';
             process = subprocess.run(
                 cmd_parts, capture_output=True, text=True, check=True
             )
-            frappe.logger().info(f"{description} Successful.<br><pre>{process.stdout}</pre>")
+            frappe.logger().info(
+                f"{description} Successful.<br><pre>{process.stdout}</pre>"
+            )
 
         except subprocess.CalledProcessError as e:
             frappe.log_error(f"{description} Failed: {e.stderr}")
