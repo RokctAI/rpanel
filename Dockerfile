@@ -1,23 +1,19 @@
 # Copyright 2024 RokctAI
 # Stage 1: Base - System Dependencies
-ARG UBUNTU_VERSION=24.04
-FROM ubuntu:${UBUNTU_VERSION} AS base
+FROM python:3.14-slim AS base
 
 ARG GITHUB_TOKEN
 ENV DEBIAN_FRONTEND=noninteractive
 
 # System Dependencies
-RUN apt-get update && apt-get install -y software-properties-common lsb-release curl ca-certificates gnupg sudo wget \
-    && add-apt-repository -y ppa:deadsnakes/ppa \
+RUN apt-get update && apt-get install -y lsb-release curl ca-certificates gnupg sudo wget \
     && mkdir -p /etc/apt/keyrings \
     && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x $(. /etc/os-release && echo $VERSION_CODENAME) main" > /etc/apt/sources.list.d/nodesource.list \
     && apt-get update && apt-get install -y \
-    git postgresql-client gettext-base \
-    python3.14 python3.14-dev python3.14-venv \
-    python3-pip python3-setuptools build-essential \
+    git postgresql-client gettext-base build-essential \
     cron vim nodejs redis-server netcat-openbsd su-exec \
     libffi-dev libjpeg-dev zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -31,7 +27,7 @@ RUN useradd -ms /bin/bash frappe && \
 USER frappe
 WORKDIR /home/frappe
 ENV PATH="/home/frappe/.local/bin:${PATH}"
-RUN pip3 install --break-system-packages frappe-bench
+RUN pip install frappe-bench
 
 # Stage 2: The Giant Builder (Clones everything)
 FROM base AS builder
