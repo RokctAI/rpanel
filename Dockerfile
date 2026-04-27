@@ -13,10 +13,15 @@ RUN apt-get update && apt-get install -y curl ca-certificates gnupg sudo wget \
     && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
 
-# System Dependencies - Step 2: Install packages (after repos are added)
+# System Dependencies - Step 2: Install packages - first half
 RUN apt-get update && apt-get install -y \
     git postgresql-client gettext-base build-essential \
-    cron vim nodejs redis-server netcat-openbsd \
+    cron vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# System Dependencies - Step 3: Install packages - second half
+RUN apt-get update && apt-get install -y \
+    nodejs redis-server netcat-openbsd \
     libffi-dev libjpeg-dev zlib1g-dev \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
