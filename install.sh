@@ -114,11 +114,11 @@ install_system_deps() {
       run_quiet "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
     else
       mkdir -p /etc/apt/keyrings
-      curl -fsSL https://packages.sury.org/php/apt.gpg \
-        | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg
+      curl -fsSL https://packages.sury.org/php/apt.gpg |
+        gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg
       echo "deb [signed-by=/etc/apt/keyrings/sury-php.gpg] \
         https://packages.sury.org/php/ trixie main" \
-        > /etc/apt/sources.list.d/sury-php.list
+        >/etc/apt/sources.list.d/sury-php.list
     fi
   fi
 
