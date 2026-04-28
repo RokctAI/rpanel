@@ -108,20 +108,23 @@ run_quiet() {
 install_system_deps() {
   # PHP PPA for modern Ubuntu ( Noble/Jammy compatibility )
   if [[ "$CI" == "true" || "$NON_INTERACTIVE" == "true" ]]; then
-    run_quiet "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
+    curl -fsSL https://packages.sury.org/php/apt.gpg \
+        | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/sury-php.gpg] \
+        https://packages.sury.org/php/ trixie main" \
+        > /etc/apt/sources.list.d/sury-php.list
   fi
 
   # Core dependencies for Frappe/RPanel
   if [[ "$DB_TYPE" == "postgres" ]]; then
     # Install PGDG Repo for latest Postgres + pgvector
     echo -e "${GREEN}Configuring PostgreSQL PGDG Repo...${NC}"
-    run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg software-properties-common
+    run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg
     install -d /usr/share/postgresql-common/pgdg
     run_quiet "Downloading PostgreSQL key" curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
     sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 
     # Add Python 3.14 (Required for Frappe v16)
-    run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     run_quiet "Updating package lists" apt-get update
 
     # Install Essential System Tools (-qq for clean logs, kill PTY for one-liners)
