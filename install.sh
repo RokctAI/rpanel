@@ -145,7 +145,17 @@ install_system_deps() {
     run_quiet "Updating package lists" apt-get update
 
     # Install Essential System Tools (-qq for clean logs, kill PTY for one-liners)
-    run_quiet "Installing system tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git curl redis-server xvfb libfontconfig wkhtmltopdf build-essential pkg-config default-libmysqlclient-dev
+    if [[ "$DISTRO" == "ubuntu" ]]; then
+      run_quiet "Installing system tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git curl redis-server xvfb libfontconfig wkhtmltopdf build-essential pkg-config default-libmysqlclient-dev
+    else
+      run_quiet "Installing system tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git curl redis-server xvfb libfontconfig build-essential pkg-config default-libmysqlclient-dev
+      run_quiet "Installing wkhtmltopdf manually" bash -c "
+            curl -fsSL -o /tmp/wkhtmltopdf.deb \
+            https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+            && apt-get install -y /tmp/wkhtmltopdf.deb \
+            && rm /tmp/wkhtmltopdf.deb
+        "
+    fi
 
     # Install Python 3.14 (Required for Frappe v16)
     run_quiet "Installing Python 3.14" apt-get install -y -qq -o=Dpkg::Use-Pty=0 python3.14-dev python3.14-venv python3-pip python-is-python3
@@ -161,7 +171,17 @@ install_system_deps() {
     fi
     run_quiet "Updating package lists" apt-get update
 
-    run_quiet "Installing system dependencies" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf libjpeg-dev zlib1g-dev default-libmysqlclient-dev pkg-config
+    if [[ "$DISTRO" == "ubuntu" ]]; then
+      run_quiet "Installing system dependencies" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf libjpeg-dev zlib1g-dev default-libmysqlclient-dev pkg-config
+    else
+      run_quiet "Installing system dependencies" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig libjpeg-dev zlib1g-dev default-libmysqlclient-dev pkg-config
+      run_quiet "Installing wkhtmltopdf manually" bash -c "
+            curl -fsSL -o /tmp/wkhtmltopdf.deb \
+            https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+            && apt-get install -y /tmp/wkhtmltopdf.deb \
+            && rm /tmp/wkhtmltopdf.deb
+        "
+    fi
   fi
 
   # Configure Exim4 for internet mail
