@@ -106,20 +106,32 @@ run_quiet() {
 
 # Helper to install system packages (only for fresh mode)
 install_system_deps() {
+  DISTRO=$(grep ^ID= /etc/os-release | cut -d= -f2)
+
   # PHP PPA for modern Ubuntu ( Noble/Jammy compatibility )
   if [[ "$CI" == "true" || "$NON_INTERACTIVE" == "true" ]]; then
-    curl -fsSL https://packages.sury.org/php/apt.gpg \
+    if [[ "$DISTRO" == "ubuntu" ]]; then
+      run_quiet "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
+    else
+      mkdir -p /etc/apt/keyrings
+      curl -fsSL https://packages.sury.org/php/apt.gpg \
         | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg
-    echo "deb [signed-by=/etc/apt/keyrings/sury-php.gpg] \
+      echo "deb [signed-by=/etc/apt/keyrings/sury-php.gpg] \
         https://packages.sury.org/php/ trixie main" \
         > /etc/apt/sources.list.d/sury-php.list
+    fi
   fi
 
   # Core dependencies for Frappe/RPanel
   if [[ "$DB_TYPE" == "postgres" ]]; then
     # Install PGDG Repo for latest Postgres + pgvector
     echo -e "${GREEN}Configuring PostgreSQL PGDG Repo...${NC}"
-    run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg
+    if [[ "$DISTRO" == "ubuntu" ]]; then
+      run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg software-properties-common
+      run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
+    else
+      run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg
+    fi
     install -d /usr/share/postgresql-common/pgdg
     run_quiet "Downloading PostgreSQL key" curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
     sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
@@ -136,8 +148,12 @@ install_system_deps() {
     # Install Postgres 16 (Native to Noble) + Matching Contrib & Vector
     run_quiet "Installing PostgreSQL 16 & Extensions" apt-get install -y -qq -o=Dpkg::Use-Pty=0 postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector libpq-dev
   else
-    run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 software-properties-common
-    run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
+    if [[ "$DISTRO" == "ubuntu" ]]; then
+      run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 software-properties-common
+      run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
+    else
+      run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 lsb-release curl ca-certificates gnupg
+    fi
     run_quiet "Updating package lists" apt-get update
 
     run_quiet "Installing system dependencies" apt-get install -y -qq -o=Dpkg::Use-Pty=0 git python3.14-dev python3.14-venv python3-pip python-is-python3 redis-server mariadb-server mariadb-client curl build-essential xvfb libfontconfig wkhtmltopdf libjpeg-dev zlib1g-dev default-libmysqlclient-dev pkg-config
