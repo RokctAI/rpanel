@@ -130,11 +130,16 @@ install_system_deps() {
       run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg software-properties-common
       run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     else
-      run_quiet "Installing repo tools" apt-get install -y lsb-release curl ca-certificates gnupg
+      run_quiet "Installing repo tools" apt-get install -y curl ca-certificates gnupg
     fi
     install -d /usr/share/postgresql-common/pgdg
     run_quiet "Downloading PostgreSQL key" curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
-    sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+    if [[ "$DISTRO" == "ubuntu" ]]; then
+      CODENAME=$(lsb_release -cs)
+    else
+      CODENAME="trixie"
+    fi
+    sh -c "echo \"deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $CODENAME-pgdg main\" > /etc/apt/sources.list.d/pgdg.list"
 
     # Add Python 3.14 (Required for Frappe v16)
     run_quiet "Updating package lists" apt-get update
@@ -152,7 +157,7 @@ install_system_deps() {
       run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 software-properties-common
       run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
     else
-      run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 lsb-release curl ca-certificates gnupg
+      run_quiet "Installing repo tools" apt-get install -y -qq -o=Dpkg::Use-Pty=0 curl ca-certificates gnupg
     fi
     run_quiet "Updating package lists" apt-get update
 
