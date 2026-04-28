@@ -108,11 +108,11 @@ run_quiet() {
 install_system_deps() {
   # PHP PPA for modern Ubuntu ( Noble/Jammy compatibility )
   if [[ "$CI" == "true" || "$NON_INTERACTIVE" == "true" ]]; then
-    curl -fsSL https://packages.sury.org/php/apt.gpg \
-        | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg
+    curl -fsSL https://packages.sury.org/php/apt.gpg |
+      gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg
     echo "deb [signed-by=/etc/apt/keyrings/sury-php.gpg] \
         https://packages.sury.org/php/ trixie main" \
-        > /etc/apt/sources.list.d/sury-php.list
+      >/etc/apt/sources.list.d/sury-php.list
   fi
 
   # Core dependencies for Frappe/RPanel
