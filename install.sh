@@ -3,7 +3,7 @@
 # RPanel Flexible Installer
 # Usage: DEPLOY_MODE=[fresh|bench|dependency] ./install.sh
 # Default mode is "fresh" (full VPS install).
-INSTALLER_VERSION="v8.9.1-STABLE"
+INSTALLER_VERSION="v8.9.3-STABLE"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
@@ -29,6 +29,7 @@ export CPU_COUNT=1
 export GENERATE_SOURCEMAP=false
 export NODE_ENV=production
 export YARN_NETWORK_TIMEOUT=300000
+export YARN_MEMORY_LIMIT=2048
 export GOGC=50
 
 # Log file for verbose output
@@ -65,6 +66,13 @@ fi
 # Fallback for Debian Trixie (testing) if codename is empty
 if [[ "$DISTRO" == "debian" && -z "$CODENAME" ]]; then
     CODENAME="trixie"
+fi
+
+# Define Python binary globally
+if [[ "$DISTRO" == "ubuntu" ]] || [[ "$CODENAME" == "trixie" ]]; then
+    PYTHON_BIN="python3.14"
+else
+    PYTHON_BIN="python3"
 fi
 
 # Non-interactive mode for CI
@@ -134,6 +142,7 @@ setup_swap() {
 install_system_deps() {
     run_quiet "Updating package lists" apt-get update
     run_quiet "Installing basic tools" apt-get install -y curl ca-certificates gnupg software-properties-common lsb-release build-essential pkg-config git
+    mkdir -p /etc/apt/keyrings
 
     # PHP PPA
     if [[ "$DISTRO" == "ubuntu" ]]; then
@@ -173,13 +182,13 @@ install_system_deps() {
         fail2ban
         supervisor
         nginx
+        unattended-upgrades
     )
 
-    # Python 3.14
-    if [[ "$DISTRO" == "ubuntu" ]] || [[ "$CODENAME" == "trixie" ]]; then
+    # Python Dev Headers
+    if [[ "$PYTHON_BIN" == "python3.14" ]]; then
         packages+=(python3.14-dev python3.14-venv)
     else
-        # Fallback to python3-dev if 3.14 is not easily available, but task requires 3.14
         packages+=(python3-dev python3-venv)
     fi
 
@@ -192,18 +201,57 @@ install_system_deps() {
     run_quiet "Installing system dependencies" apt-get install -y "${packages[@]}"
 
     # Install wkhtmltopdf
-    if [[ "$DISTRO" == "ubuntu" && "$CODENAME" != "noble" ]]; then
+    if [[ "$DISTRO" == "ubuntu" && "$CODENAME" == "noble" ]]; then
+        # Noble: install libjpeg62-turbo compatibility shim first
+        run_quiet "Installing libjpeg62-turbo shim" bash -c "
+            curl -fsSL -o /tmp/libjpeg.deb \
+            http://archive.ubuntu.com/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-2ubuntu1_amd64.deb \
+            && dpkg -i /tmp/libjpeg.deb \
+            && rm /tmp/libjpeg.deb"
+        run_quiet "Installing wkhtmltopdf manually" bash -c "
+            curl -fsSL -o /tmp/wkhtmltopdf.deb \
+            https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+            && apt-get install -y /tmp/wkhtmltopdf.deb \
+            && rm /tmp/wkhtmltopdf.deb"
+    elif [[ "$DISTRO" == "ubuntu" ]]; then
+        # Older Ubuntu: wkhtmltopdf is in the native repos
         run_quiet "Installing wkhtmltopdf" apt-get install -y wkhtmltopdf
     else
+        # Debian trixie: use bookworm .deb, libjpeg62-turbo is available natively
         run_quiet "Installing wkhtmltopdf manually" bash -c "
-            curl -fsSL -o /tmp/wkhtmltopdf.deb https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb && \
-            apt-get install -y /tmp/wkhtmltopdf.deb && rm /tmp/wkhtmltopdf.deb"
+            curl -fsSL -o /tmp/wkhtmltopdf.deb \
+            https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+            && apt-get install -y /tmp/wkhtmltopdf.deb \
+            && rm /tmp/wkhtmltopdf.deb"
     fi
 
     # Node.js
-    run_quiet "Setting up NodeSource" bash -c "curl -fsSL https://deb.nodesource.com/setup_22.x | bash -"
+    run_quiet "Setting up NodeSource" bash -c "curl -fsSL https://deb.nodesource.com/setup_24.x | bash -"
     run_quiet "Installing Node.js" apt-get install -y nodejs
     run_quiet "Installing Yarn" npm install -g yarn
+    run_quiet "Configuring Yarn global policy" yarn config set ignore-engines true -g
+
+    # Configure automatic security updates
+    if [[ "$CI" != "true" ]]; then
+        echo -e "${GREEN}Configuring automatic security updates...${NC}"
+        cat >/etc/apt/apt.conf.d/50unattended-upgrades <<EOF
+Unattended-Upgrade::Allowed-Origins {
+    "\${distro_id}:\${distro_codename}-security";
+};
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+Unattended-Upgrade::MinimalSteps "true";
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Automatic-Reboot "false";
+EOF
+        cat >/etc/apt/apt.conf.d/20auto-upgrades <<EOF
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";
+EOF
+        systemctl enable unattended-upgrades || true
+        systemctl start unattended-upgrades || true
+    fi
 }
 
 configure_exim4() {
@@ -252,6 +300,26 @@ user=root
 password=$DB_ROOT_PASS
 EOF
     chmod 600 /root/.my.cnf
+
+    # Configure MariaDB for Frappe
+    cat >/etc/mysql/mariadb.conf.d/frappe.cnf <<EOF
+[mysqld]
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+max_allowed_packet = 256M
+innodb_buffer_pool_size = 1G
+innodb_log_file_size = 256M
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+
+# Security hardening
+bind-address = 127.0.0.1
+skip-networking = 0
+local-infile = 0
+EOF
+    run_quiet "Restarting MariaDB" systemctl restart mariadb
 }
 
 create_frappe_user() {
@@ -271,9 +339,21 @@ set -e
 export PATH="\$PATH:/home/frappe/.local/bin"
 cd /home/frappe
 if [ ! -d "frappe-bench" ]; then
-    bench init frappe-bench --frappe-branch version-16 --python python3.14 --skip-assets --skip-redis-config-generation
+    bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation
+fi
+
+if [[ "$DB_TYPE" == "postgres" ]]; then
+    ./frappe-bench/env/bin/pip install psycopg2-binary
 fi
 EOF
+}
+
+fetch_latest_tag() {
+    if [ -f "/home/frappe/frappe-bench/apps/rpanel/scripts/get_latest_release.py" ]; then
+        sudo -u frappe "$PYTHON_BIN" /home/frappe/frappe-bench/apps/rpanel/scripts/get_latest_release.py 2>/dev/null || echo ""
+    else
+        echo ""
+    fi
 }
 
 # Main installation flow
@@ -297,15 +377,20 @@ esac
 
 # RPanel App Installation
 echo -e "${GREEN}Installing/Updating RPanel app...${NC}"
+LATEST_TAG=$(fetch_latest_tag || echo "")
+TAG_OPTION=""
+[ -n "$LATEST_TAG" ] && TAG_OPTION="--branch $LATEST_TAG"
+
 sudo -u frappe -i bash <<EOF >>"$INSTALL_LOG" 2>&1
 set -e
 export PATH="\$PATH:/home/frappe/.local/bin"
 cd /home/frappe/frappe-bench
 
 if [ ! -d "apps/rpanel" ]; then
-    bench get-app https://github.com/RokctAI/rpanel.git --skip-assets
+    bench get-app https://github.com/RokctAI/rpanel.git $TAG_OPTION --skip-assets
 else
-    cd apps/rpanel && git pull && cd ../..
+    cd apps/rpanel && git fetch --tags && [ -n "$LATEST_TAG" ] && git checkout "$LATEST_TAG" || git pull
+    cd ../..
 fi
 
 if [ ! -d "sites/${DOMAIN_NAME:-rpanel.local}" ]; then
@@ -332,6 +417,14 @@ systemctl restart supervisor >>"$INSTALL_LOG" 2>&1 || true
 # Provision localhost if self-hosted
 if [[ "$SELF_HOSTED" =~ ^[Yy]$ ]]; then
     run_quiet "Provisioning localhost" bash /home/frappe/frappe-bench/apps/rpanel/scripts/provision_localhost.sh
+fi
+
+# Setup SSL if domain is not localhost/rpanel.local
+if [[ "$MODE" == "fresh" && "$DOMAIN_NAME" != "rpanel.local" && "$DOMAIN_NAME" != "localhost" && "$SKIP_SSL" != "true" ]]; then
+    echo -e "${GREEN}Setting up SSL for $DOMAIN_NAME...${NC}"
+    certbot --nginx -d "$DOMAIN_NAME" --non-interactive --agree-tos --register-unsafely-without-email || {
+        echo -e "${RED}SSL setup failed. You can run 'sudo certbot --nginx -d $DOMAIN_NAME' manually later.${NC}"
+    }
 fi
 
 echo -e "${GREEN}Installation complete!${NC}"
