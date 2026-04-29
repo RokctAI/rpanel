@@ -22,8 +22,8 @@
         },
         "postgresql": {
             "check": "command -v psql",
-            "install": "apt-get install -y lsb-release curl ca-certificates gnupg && install -d /usr/share/postgresql-common/pgdg && curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && sh -c 'echo \"deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" > /etc/apt/sources.list.d/pgdg.list' && apt-get update && apt-get install -y postgresql-15 postgresql-contrib-15 postgresql-15-pgvector && sudo systemctl enable postgresql && sudo systemctl start postgresql",
-            "description": "PostgreSQL 15 server with pgvector"
+            "install": "apt-get install -y lsb-release curl ca-certificates gnupg && install -d /usr/share/postgresql-common/pgdg && curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && sh -c 'echo \"deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main\" > /etc/apt/sources.list.d/pgdg.list' && apt-get update && apt-get install -y postgresql-16 postgresql-contrib-16 postgresql-16-pgvector && sudo systemctl enable postgresql && sudo systemctl start postgresql",
+            "description": "PostgreSQL 16 server with pgvector"
         },
         "php8.3-fpm": {
             "check": "dpkg -l | grep -q php8.3-fpm",

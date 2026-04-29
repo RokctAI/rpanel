@@ -62,7 +62,7 @@ jobs:
       node-version: ${{ inputs.node-version || '24' }}
       python-version: ${{ inputs.python-version || '3.14' }}
       mariadb-version: ${{ inputs.mariadb-version || '10.6' }}
-      postgres-version: ${{ inputs.postgres-version || '15' }}
+      postgres-version: ${{ inputs.postgres-version || '16' }}
       db-type: 'postgres'
       version_format: ${{ inputs.version_format || '##.##.##' }}
       bootstrap: true
