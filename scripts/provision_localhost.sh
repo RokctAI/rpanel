@@ -32,17 +32,17 @@ echo "Installing hosting services on this server..."
 
 # Detect OS
 if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    DISTRO=$ID
-    CODENAME=$VERSION_CODENAME
+  . /etc/os-release
+  DISTRO=$ID
+  CODENAME=$VERSION_CODENAME
 else
-    echo -e "${RED}Unsupported OS: /etc/os-release not found.${NC}"
-    exit 1
+  echo -e "${RED}Unsupported OS: /etc/os-release not found.${NC}"
+  exit 1
 fi
 
 # Fallback for Debian Trixie (testing) if codename is empty
 if [[ "$DISTRO" == "debian" && -z "$CODENAME" ]]; then
-    CODENAME="trixie"
+  CODENAME="trixie"
 fi
 
 # Update system
@@ -55,9 +55,9 @@ mkdir -p /etc/apt/keyrings
 echo -e "${BLUE}[2/12] Setting up repositories...${NC}"
 # PHP PPA/Repo
 if [[ "$DISTRO" == "ubuntu" ]]; then
-    run_prov "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
+  run_prov "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
 else
-    run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
+  run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
         echo \"deb [signed-by=/etc/apt/keyrings/sury-php.gpg] https://packages.sury.org/php/ $CODENAME main\" > /etc/apt/sources.list.d/sury-php.list"
 fi
 
