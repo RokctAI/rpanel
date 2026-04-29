@@ -32,12 +32,49 @@ set -e
 echo "=== ROKCT Hosting Server Provisioning ==="
 echo "Checking installed services and installing missing ones..."
 
+# Detect OS
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    DISTRO=$ID
+    CODENAME=$VERSION_CODENAME
+else
+    echo "Unsupported OS: /etc/os-release not found."
+    exit 1
+fi
+
+# Fallback for Debian Trixie (testing) if codename is empty
+if [[ "$DISTRO" == "debian" && -z "$CODENAME" ]]; then
+    CODENAME="trixie"
+fi
+
 # Update system
 echo "[1/12] Updating system packages..."
 apt update && apt upgrade -y
+apt install -y curl ca-certificates gnupg software-properties-common lsb-release build-essential pkg-config git
+mkdir -p /etc/apt/keyrings
+
+# Repository Setup
+echo "[2/12] Setting up repositories..."
+# PHP PPA/Repo
+if [[ "$DISTRO" == "ubuntu" ]]; then
+    add-apt-repository -y ppa:ondrej/php
+else
+    curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/sury-php.gpg] https://packages.sury.org/php/ $CODENAME main" > /etc/apt/sources.list.d/sury-php.list
+fi
+
+# PostgreSQL PGDG Repo
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
+echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $CODENAME-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+# Node.js 24 Repo (Modern Setup)
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+
+apt update
 
 # Install Nginx (if not installed)
-echo "[2/12] Checking Nginx..."
+echo "[3/12] Checking Nginx..."
 if ! command -v nginx &> /dev/null; then
     echo "Installing Nginx..."
     apt install -y nginx
@@ -48,7 +85,7 @@ else
 fi
 
 # Install MariaDB (if not installed)
-echo "[3/12] Checking MariaDB..."
+echo "[4/12] Checking MariaDB..."
 if ! command -v mysql &> /dev/null; then
     echo "Installing MariaDB..."
     apt install -y mariadb-server mariadb-client
@@ -64,27 +101,21 @@ else
     echo "✓ MariaDB already installed"
 fi
 
-# Install PostgreSQL (if not installed)
-echo "[4/12] Checking PostgreSQL..."
+# Install PostgreSQL 16 (if not installed)
+echo "[5/12] Checking PostgreSQL..."
 if ! command -v psql &> /dev/null; then
-    echo "Installing PostgreSQL..."
-    apt install -y postgresql postgresql-contrib
+    echo "Installing PostgreSQL 16..."
+    apt install -y postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector libpq-dev
     systemctl enable postgresql
     systemctl start postgresql
-
-    # Setup standard rpanel role if needed
-    # sudo -u postgres psql -c "CREATE ROLE rpanel WITH LOGIN SUPERUSER PASSWORD 'rpanel_secured';"
 else
     echo "✓ PostgreSQL already installed"
 fi
 
 # Install PHP versions (if not installed)
-echo "[5/12] Checking PHP versions..."
+echo "[6/12] Checking PHP versions..."
 if ! dpkg -l | grep -q php8.3-fpm; then
     echo "Installing PHP 8.3..."
-    apt install -y software-properties-common
-    add-apt-repository -y ppa:ondrej/php
-    apt update
     apt install -y php8.3-fpm php8.3-mysql php8.3-pgsql php8.3-curl php8.3-gd php8.3-mbstring php8.3-xml php8.3-zip
     systemctl enable php8.3-fpm
     systemctl start php8.3-fpm
@@ -111,7 +142,7 @@ else
 fi
 
 # Install Certbot (if not installed)
-echo "[5/12] Checking Certbot..."
+echo "[7/12] Checking Certbot..."
 if ! command -v certbot &> /dev/null; then
     echo "Installing Certbot..."
     apt install -y certbot python3-certbot-nginx
@@ -120,7 +151,7 @@ else
 fi
 
 # Install Exim4 (if not installed)
-echo "[6/12] Checking Exim4..."
+echo "[8/12] Checking Exim4..."
 if ! dpkg -l | grep -q exim4; then
     echo "Installing Exim4..."
     apt install -y exim4 exim4-daemon-heavy dovecot-core dovecot-imapd dovecot-pop3d
@@ -140,7 +171,7 @@ else
 fi
 
 # Install Roundcube (if not installed)
-echo "[7/12] Checking Roundcube..."
+echo "[9/12] Checking Roundcube..."
 if ! dpkg -l | grep -q roundcube; then
     echo "Installing Roundcube..."
     DEBIAN_FRONTEND=noninteractive apt install -y roundcube roundcube-core roundcube-mysql roundcube-plugins
@@ -158,7 +189,7 @@ else
 fi
 
 # Install phpMyAdmin (if not installed)
-echo "[8/12] Checking phpMyAdmin..."
+echo "[10/12] Checking phpMyAdmin..."
 if [ ! -d "/usr/share/phpmyadmin" ]; then
     echo "Installing phpMyAdmin..."
     DEBIAN_FRONTEND=noninteractive apt install -y phpmyadmin
@@ -167,7 +198,7 @@ else
 fi
 
 # Install WP-CLI (if not installed)
-echo "[9/12] Checking WP-CLI..."
+echo "[11/12] Checking WP-CLI..."
 if ! command -v wp &> /dev/null; then
     echo "Installing WP-CLI..."
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
@@ -178,12 +209,12 @@ else
 fi
 
 # Install ClamAV (if not installed)
-echo "[10/12] Checking ClamAV..."
+echo "[12/12] Checking ClamAV..."
 if ! command -v clamscan &> /dev/null; then
     echo "Installing ClamAV..."
     apt install -y clamav clamav-daemon
     systemctl stop clamav-freshclam
-    freshclam
+    # freshclam
     systemctl start clamav-freshclam
     systemctl enable clamav-daemon
     systemctl start clamav-daemon
@@ -192,7 +223,6 @@ else
 fi
 
 # Install Fail2Ban (if not installed)
-echo "[11/12] Checking Fail2Ban..."
 if ! command -v fail2ban-client &> /dev/null; then
     echo "Installing Fail2Ban..."
     apt install -y fail2ban
@@ -203,7 +233,6 @@ else
 fi
 
 # Install UFW (if not installed)
-echo "[12/12] Checking UFW..."
 if ! command -v ufw &> /dev/null; then
     echo "Installing UFW..."
     apt install -y ufw
@@ -213,13 +242,8 @@ if ! command -v ufw &> /dev/null; then
     ufw allow http
     ufw allow https
     ufw allow 'Nginx Full'
-    echo "y" | ufw enable
 else
     echo "✓ UFW already installed"
-    # Ensure firewall rules are set
-    ufw allow ssh 2>/dev/null || true
-    ufw allow http 2>/dev/null || true
-    ufw allow https 2>/dev/null || true
 fi
 
 # Create directory structure (if not exists)
@@ -235,20 +259,6 @@ chmod 755 /var/www
 echo ""
 echo "=== Provisioning Complete! ==="
 echo "Server is ready for hosting!"
-echo ""
-echo "Installed/Verified services:"
-echo "  ✓ Nginx"
-echo "  ✓ MariaDB"
-echo "  ✓ PostgreSQL"
-echo "  ✓ PHP (8.3, 8.2, 8.1)"
-echo "  ✓ phpMyAdmin"
-echo "  ✓ Certbot (Let's Encrypt)"
-echo "  ✓ Exim4 + Dovecot (Email)"
-echo "  ✓ Roundcube (Webmail)"
-echo "  ✓ WP-CLI"
-echo "  ✓ ClamAV (Malware Scanner)"
-echo "  ✓ Fail2Ban"
-echo "  ✓ UFW (Firewall)"
 """
 
     try:
@@ -268,7 +278,7 @@ echo "  ✓ UFW (Firewall)"
             server.db_set("provisioned", 1)
             server.db_set("health_status", "Healthy")
 
-            frappe.logger().info(f"""
+            frappe.logger().info("""
                 <h3>✅ Server Provisioned Successfully!</h3>
                 <p>All services installed and configured on <b>{server.server_name}</b></p>
                 <p>The server is now ready to host websites.</p>
