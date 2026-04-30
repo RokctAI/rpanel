@@ -13,16 +13,16 @@ NC='\033[0;0m'
 
 # Helper: run a command quietly with status output
 run_prov() {
-	local label="$1"
-	shift
-	echo -n -e "${BLUE}  - ${label}... ${NC}"
-	if "$@" >>"$INSTALL_LOG" 2>&1; then
-		echo -e "${GREEN}✓ DONE${NC}"
-	else
-		echo -e "${RED}✗ FAILED${NC}"
-		echo -e "${RED}Check $INSTALL_LOG for details.${NC}"
-		exit 1
-	fi
+  local label="$1"
+  shift
+  echo -n -e "${BLUE}  - ${label}... ${NC}"
+  if "$@" >>"$INSTALL_LOG" 2>&1; then
+    echo -e "${GREEN}✓ DONE${NC}"
+  else
+    echo -e "${RED}✗ FAILED${NC}"
+    echo -e "${RED}Check $INSTALL_LOG for details.${NC}"
+    exit 1
+  fi
 }
 
 APT_QUIET=(-y -o=Dpkg::Use-Pty=0)
@@ -32,17 +32,17 @@ echo "Installing hosting services on this server..."
 
 # Detect OS
 if [ -f /etc/os-release ]; then
-	. /etc/os-release
-	DISTRO=$ID
-	CODENAME=$VERSION_CODENAME
+  . /etc/os-release
+  DISTRO=$ID
+  CODENAME=$VERSION_CODENAME
 else
-	echo -e "${RED}Unsupported OS: /etc/os-release not found.${NC}"
-	exit 1
+  echo -e "${RED}Unsupported OS: /etc/os-release not found.${NC}"
+  exit 1
 fi
 
 # Fallback for Debian Trixie (testing) if codename is empty
 if [[ "$DISTRO" == "debian" && -z "$CODENAME" ]]; then
-	CODENAME="trixie"
+  CODENAME="trixie"
 fi
 
 # Update system
@@ -55,9 +55,9 @@ mkdir -p /etc/apt/keyrings
 echo -e "${BLUE}[2/12] Setting up repositories...${NC}"
 # PHP PPA/Repo
 if [[ "$DISTRO" == "ubuntu" ]]; then
-	run_prov "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
+  run_prov "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
 else
-	run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
+  run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
         echo \"deb [signed-by=/etc/apt/keyrings/sury-php.gpg] https://packages.sury.org/php/ $CODENAME main\" > /etc/apt/sources.list.d/sury-php.list"
 fi
 
@@ -111,11 +111,11 @@ run_prov "Installing phpMyAdmin" env DEBIAN_FRONTEND=noninteractive apt-get inst
 # Install WP-CLI
 echo -e "${BLUE}[10/12] Installing WP-CLI...${NC}"
 if ! command -v wp &>/dev/null; then
-	run_prov "Downloading WP-CLI" curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-	chmod +x wp-cli.phar
-	mv wp-cli.phar /usr/local/bin/wp
+  run_prov "Downloading WP-CLI" curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+  chmod +x wp-cli.phar
+  mv wp-cli.phar /usr/local/bin/wp
 else
-	echo -e "  ${GREEN}✓ WP-CLI already installed${NC}"
+  echo -e "  ${GREEN}✓ WP-CLI already installed${NC}"
 fi
 
 # Install Security Tools
