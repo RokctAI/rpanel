@@ -60,7 +60,9 @@ jobs:
       is_node: ${{ steps.check.outputs.is_node }}
     steps:
       - name: Install dependencies
-        run: apt-get update && apt-get install -y git
+        run: |
+          apt-get update && apt-get install -y git
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/checkout@v4
       - name: Check Project Type
         id: check

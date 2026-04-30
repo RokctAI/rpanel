@@ -13,16 +13,16 @@ NC='\033[0;0m'
 
 # Helper: run a command quietly with status output
 run_prov() {
-  local label="$1"
-  shift
-  echo -n -e "${BLUE}  - ${label}... ${NC}"
-  if "$@" >>"$INSTALL_LOG" 2>&1; then
-    echo -e "${GREEN}✓ DONE${NC}"
-  else
-    echo -e "${RED}✗ FAILED${NC}"
-    echo -e "${RED}Check $INSTALL_LOG for details.${NC}"
-    exit 1
-  fi
+	local label="$1"
+	shift
+	echo -n -e "${BLUE}  - ${label}... ${NC}"
+	if "$@" >>"$INSTALL_LOG" 2>&1; then
+		echo -e "${GREEN}✓ DONE${NC}"
+	else
+		echo -e "${RED}✗ FAILED${NC}"
+		echo -e "${RED}Check $INSTALL_LOG for details.${NC}"
+		exit 1
+	fi
 }
 
 APT_QUIET=(-y -o=Dpkg::Use-Pty=0)
@@ -32,32 +32,32 @@ echo "Installing hosting services on this server..."
 
 # Detect OS
 if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    DISTRO=$ID
-    CODENAME=$VERSION_CODENAME
+	. /etc/os-release
+	DISTRO=$ID
+	CODENAME=$VERSION_CODENAME
 else
-    echo -e "${RED}Unsupported OS: /etc/os-release not found.${NC}"
-    exit 1
+	echo -e "${RED}Unsupported OS: /etc/os-release not found.${NC}"
+	exit 1
 fi
 
 # Fallback for Debian Trixie (testing) if codename is empty
 if [[ "$DISTRO" == "debian" && -z "$CODENAME" ]]; then
-    CODENAME="trixie"
+	CODENAME="trixie"
 fi
 
 # Update system
 echo -e "${BLUE}[1/12] Updating system packages...${NC}"
 run_prov "Updating package lists" apt-get update
-run_prov "Installing basic tools" apt-get install "${APT_QUIET[@]}" curl ca-certificates gnupg software-properties-common lsb-release build-essential pkg-config git
+run_prov "Installing basic tools" apt-get install "${APT_QUIET[@]}" curl ca-certificates gnupg software-properties-common build-essential pkg-config git
 mkdir -p /etc/apt/keyrings
 
 # Repository Setup
 echo -e "${BLUE}[2/12] Setting up repositories...${NC}"
 # PHP PPA/Repo
 if [[ "$DISTRO" == "ubuntu" ]]; then
-    run_prov "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
+	run_prov "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
 else
-    run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
+	run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
         echo \"deb [signed-by=/etc/apt/keyrings/sury-php.gpg] https://packages.sury.org/php/ $CODENAME main\" > /etc/apt/sources.list.d/sury-php.list"
 fi
 
@@ -67,7 +67,7 @@ run_prov "Adding PostgreSQL Repo" bash -c "curl -fsSL https://www.postgresql.org
 
 # Node.js 24 Repo (Modern Setup)
 run_prov "Adding NodeSource GPG key" bash -c "curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg"
-run_prov "Adding NodeSource Repo" bash -c "echo \"deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main\" > /etc/apt/sources.list.d/nodesource.list"
+run_prov "Adding NodeSource Repo" bash -c "echo \"deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main\" > /etc/apt/sources.list.d/nodesource.list"
 
 run_prov "Updating package lists after repo additions" apt-get update
 
@@ -111,18 +111,18 @@ run_prov "Installing phpMyAdmin" env DEBIAN_FRONTEND=noninteractive apt-get inst
 # Install WP-CLI
 echo -e "${BLUE}[10/12] Installing WP-CLI...${NC}"
 if ! command -v wp &>/dev/null; then
-  run_prov "Downloading WP-CLI" curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-  chmod +x wp-cli.phar
-  mv wp-cli.phar /usr/local/bin/wp
+	run_prov "Downloading WP-CLI" curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+	chmod +x wp-cli.phar
+	mv wp-cli.phar /usr/local/bin/wp
 else
-  echo -e "  ${GREEN}✓ WP-CLI already installed${NC}"
+	echo -e "  ${GREEN}✓ WP-CLI already installed${NC}"
 fi
 
 # Install Security Tools
 echo -e "${BLUE}[11/12] Installing security tools...${NC}"
 run_prov "Installing ClamAV" apt-get install "${APT_QUIET[@]}" clamav clamav-daemon
 systemctl stop clamav-freshclam >>"$INSTALL_LOG" 2>&1 || true
-# run_prov "Updating ClamAV" freshclam # Can be slow/fail in CI
+run_prov "Updating ClamAV" freshclam # Can be slow/fail in CI
 systemctl start clamav-freshclam >>"$INSTALL_LOG" 2>&1 || true
 systemctl enable clamav-daemon >>"$INSTALL_LOG" 2>&1 || true
 systemctl start clamav-daemon >>"$INSTALL_LOG" 2>&1 || true
