@@ -161,10 +161,10 @@ exim4-config exim4/dc_eximconfig_configtype select internet site; mail is sent a
 exim4-config exim4/dc_other_hostnames string
 exim4-config exim4/dc_local_interfaces string 127.0.0.1 ; ::1
 EOF
-    dpkg-reconfigure -f noninteractive exim4-config
-    systemctl enable exim4
+    dpkg-reconfigure -f noninteractive xim4-config
+    systemctl enable xim4
     systemctl enable dovecot
-    systemctl start exim4
+    systemctl start xim4
     systemctl start dovecot
 else
     echo "✓ Exim4 already installed"
@@ -214,7 +214,7 @@ if ! command -v clamscan &> /dev/null; then
     echo "Installing ClamAV..."
     apt install -y clamav clamav-daemon
     systemctl stop clamav-freshclam
-    freshclam
+    # freshclam
     systemctl start clamav-freshclam
     systemctl enable clamav-daemon
     systemctl start clamav-daemon
@@ -278,7 +278,7 @@ echo "Server is ready for hosting!"
             server.db_set("provisioned", 1)
             server.db_set("health_status", "Healthy")
 
-            frappe.logger().info(f"""
+            frappe.logger().info("""
                 <h3>✅ Server Provisioned Successfully!</h3>
                 <p>All services installed and configured on <b>{server.server_name}</b></p>
                 <p>The server is now ready to host websites.</p>
