@@ -111,8 +111,12 @@ jobs:
   docker-release:
     needs: pipeline
     runs-on: ubuntu-latest
+    container: python:3.14-slim
     permissions: write-all
     steps:
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y rsync curl
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
