@@ -161,10 +161,10 @@ exim4-config exim4/dc_eximconfig_configtype select internet site; mail is sent a
 exim4-config exim4/dc_other_hostnames string
 exim4-config exim4/dc_local_interfaces string 127.0.0.1 ; ::1
 EOF
-    dpkg-reconfigure -f noninteractive exim4-config
-    systemctl enable exim4
+    dpkg-reconfigure -f noninteractive xim4-config
+    systemctl enable xim4
     systemctl enable dovecot
-    systemctl start exim4
+    systemctl start xim4
     systemctl start dovecot
 else
     echo "✓ Exim4 already installed"

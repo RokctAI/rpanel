@@ -2,6 +2,7 @@ name: Build (Smart)
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PIP_BREAK_SYSTEM_PACKAGES: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -58,6 +59,8 @@ jobs:
       is_flutter: ${{ steps.check.outputs.is_flutter }}
       is_node: ${{ steps.check.outputs.is_node }}
     steps:
+      - name: Install dependencies
+        run: apt-get update && apt-get install -y git
       - uses: actions/checkout@v4
       - name: Check Project Type
         id: check
