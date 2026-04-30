@@ -4,6 +4,7 @@ FROM python:3.14-slim AS base
 
 ARG GITHUB_TOKEN
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # System Dependencies - Step 1: Setup tools and external repo definitions
 RUN apt-get update && apt-get install -y curl ca-certificates gnupg sudo wget \
@@ -15,7 +16,8 @@ RUN apt-get update && apt-get install -y curl ca-certificates gnupg sudo wget \
 
 # System Dependencies - Step 2: Install packages (after repos are added)
 RUN apt-get update && apt-get install -y \
-    git postgresql-client gettext-base build-essential \
+    git postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector \
+    gettext-base build-essential \
     cron vim nodejs redis-server netcat-openbsd \
     libffi-dev libjpeg-dev zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
