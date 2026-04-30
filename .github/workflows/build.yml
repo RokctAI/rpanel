@@ -2,6 +2,7 @@ name: Build (Smart)
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PIP_BREAK_SYSTEM_PACKAGES: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,7 +41,7 @@ on:
         default: '10.6'
       postgres-version:
         type: string
-        default: '15'
+        default: '16'
       db-type:
         type: string
         default: 'postgres'
@@ -53,10 +54,15 @@ jobs:
   # --- 1. DETECT PROJECT TYPE ---
   detect:
     runs-on: ubuntu-latest
+    container: python:3.14-slim
     outputs:
       is_flutter: ${{ steps.check.outputs.is_flutter }}
       is_node: ${{ steps.check.outputs.is_node }}
     steps:
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y git
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/checkout@v4
       - name: Check Project Type
         id: check
@@ -94,7 +100,7 @@ jobs:
       node-version: ${{ inputs.node-version || '24' }}
       python-version: ${{ inputs.python-version || '3.14.2' }}
       mariadb-version: ${{ inputs.mariadb-version || '10.6' }}
-      postgres-version: ${{ inputs.postgres-version || '15' }}
+      postgres-version: ${{ inputs.postgres-version || '16' }}
       db-type: 'postgres'
       version_format: ${{ inputs.version_format || '##.##.##' }}
       bootstrap: true
@@ -136,10 +142,6 @@ jobs:
           # Exclude the docker-context folder itself to avoid recursion
           rsync -a --exclude 'docker-context' . ./docker-context/current_repo/
 
-      - name: Detect Runner OS Version
-        id: os-version
-        run: echo "version=$(lsb_release -rs)" >> "$GITHUB_OUTPUT"
-
       - name: Build and Push
         uses: docker/build-push-action@v4
         with:
@@ -148,6 +150,5 @@ jobs:
           push: true
           tags: ghcr.io/rokctai/monorepo/rpanel:latest
           build-args: |
-            UBUNTU_VERSION=${{ steps.os-version.outputs.version }}
             GITHUB_TOKEN=${{ secrets.MONOREPO_PAT || github.token }}
             IS_ROKCTAI_REPO=${{ github.repository_owner == 'RokctAI' && 'true' || 'false' }}

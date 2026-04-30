@@ -2,6 +2,7 @@ name: Auto Release (Weekly)
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PIP_BREAK_SYSTEM_PACKAGES: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-release
@@ -28,7 +29,7 @@ on:
         default: '10.6'
       postgres-version:
         type: string
-        default: '15'
+        default: '16'
       db-type:
         type: string
         default: 'postgres'
@@ -62,10 +63,8 @@ jobs:
       node-version: ${{ inputs.node-version || '24' }}
       python-version: ${{ inputs.python-version || '3.14' }}
       mariadb-version: ${{ inputs.mariadb-version || '10.6' }}
-      postgres-version: ${{ inputs.postgres-version || '15' }}
+      postgres-version: ${{ inputs.postgres-version || '16' }}
       db-type: 'postgres'
       version_format: ${{ inputs.version_format || '##.##.##' }}
       bootstrap: true
     secrets: inherit
-
-
