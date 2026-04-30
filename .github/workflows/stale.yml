@@ -1,4 +1,6 @@
 name: Stale
+env:
+  PIP_BREAK_SYSTEM_PACKAGES: 1
 on:
   schedule:
     - cron: '30 1 * * *'
