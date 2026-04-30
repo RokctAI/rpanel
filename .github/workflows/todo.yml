@@ -1,4 +1,6 @@
 name: ToDo Bot
+env:
+  PIP_BREAK_SYSTEM_PACKAGES: 1
 on:
   push:
     branches: [main]
