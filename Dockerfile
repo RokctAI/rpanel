@@ -31,7 +31,7 @@ RUN useradd -ms /bin/bash frappe && \
 USER frappe
 WORKDIR /home/frappe
 ENV PATH="/home/frappe/.local/bin:${PATH}"
-RUN pip install frappe-bench
+RUN pip install --user frappe-bench
 
 # Stage 2: The Giant Builder (Clones everything)
 FROM base AS builder
