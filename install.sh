@@ -63,16 +63,22 @@ else
   exit 1
 fi
 
-# Fallback for Debian Trixie (testing) if codename is empty
+# Fallback for Debian if codename is empty
 if [[ "$DISTRO" == "debian" && -z "$CODENAME" ]]; then
-  CODENAME="trixie"
+  CODENAME="bookworm"
 fi
 
 # Define Python binary globally
-if [[ "$DISTRO" == "ubuntu" ]] || [[ "$CODENAME" == "trixie" ]]; then
-  PYTHON_BIN="python3.14"
-else
-  PYTHON_BIN="python3"
+# Define Python binary globally
+if [[ -z "$PYTHON_BIN" ]]; then
+  if command -v python3.14 >/dev/null 2>&1; then
+    PYTHON_BIN="python3.14"
+  elif [[ "$DISTRO" == "ubuntu" ]] || [[ "$CODENAME" == "trixie" ]]; then
+    # Default to 3.14 for these distros if not explicitly overridden
+    PYTHON_BIN="python3.14"
+  else
+    PYTHON_BIN="python3"
+  fi
 fi
 
 # Non-interactive mode for CI
@@ -336,18 +342,18 @@ create_frappe_user() {
 install_bench() {
   run_quiet "Installing frappe-bench" sudo -u frappe -i bash -c "export PATH=\$PATH:/home/frappe/.local/bin; python3 -m pip install frappe-bench --user --break-system-packages || python3 -m pip install frappe-bench --user"
 
-  sudo -u frappe -i bash <<EOF >>"$INSTALL_LOG" 2>&1
+  run_quiet "Initializing frappe-bench" sudo -u frappe -i bash -c "
 set -e
-export PATH="\$PATH:/home/frappe/.local/bin"
+export PATH=\"\$PATH:/home/frappe/.local/bin\"
 cd /home/frappe
-if [ ! -d "frappe-bench" ]; then
+if [ ! -d \"frappe-bench\" ]; then
     bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation
 fi
 
-if [[ "$DB_TYPE" == "postgres" ]]; then
+if [[ \"$DB_TYPE\" == \"postgres\" ]]; then
     ./frappe-bench/env/bin/pip install psycopg2-binary
 fi
-EOF
+"
 }
 
 fetch_latest_tag() {
