@@ -342,18 +342,7 @@ create_frappe_user() {
 install_bench() {
   run_quiet "Installing frappe-bench" sudo -u frappe -i bash -c "export PATH=\$PATH:/home/frappe/.local/bin; python3 -m pip install frappe-bench --user --break-system-packages || python3 -m pip install frappe-bench --user"
 
-  run_quiet "Initializing frappe-bench" sudo -u frappe -i bash -c "
-set -e
-export PATH=\"\$PATH:/home/frappe/.local/bin\"
-cd /home/frappe
-if [ ! -d \"frappe-bench\" ]; then
-    bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation
-fi
-
-if [[ \"$DB_TYPE\" == \"postgres\" ]]; then
-    ./frappe-bench/env/bin/pip install psycopg2-binary
-fi
-"
+  run_quiet "Initializing frappe-bench" sudo -u frappe -i bash -c "set -e; export PATH=\"\$PATH:/home/frappe/.local/bin\"; cd /home/frappe; if [ ! -d \"frappe-bench\" ]; then bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation; fi; if [[ \"$DB_TYPE\" == \"postgres\" ]]; then ./frappe-bench/env/bin/pip install psycopg2-binary; fi"
 }
 
 fetch_latest_tag() {
