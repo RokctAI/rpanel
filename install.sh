@@ -73,9 +73,16 @@ fi
 if [[ -z "$PYTHON_BIN" ]]; then
   if command -v python3.14 >/dev/null 2>&1; then
     PYTHON_BIN="python3.14"
+  elif command -v python3.13 >/dev/null 2>&1; then
+    PYTHON_BIN="python3.13"
+  elif command -v python3.12 >/dev/null 2>&1; then
+    PYTHON_BIN="python3.12"
   elif [[ "$DISTRO" == "ubuntu" ]] || [[ "$CODENAME" == "trixie" ]]; then
     # Default to 3.14 for these distros if not explicitly overridden
     PYTHON_BIN="python3.14"
+  elif [[ "$DISTRO" == "debian" && "$CODENAME" == "bookworm" ]]; then
+    # Prefer 3.12 for Bookworm to support Frappe v16
+    PYTHON_BIN="python3.12"
   else
     PYTHON_BIN="python3"
   fi
@@ -162,12 +169,13 @@ install_system_deps() {
   run_quiet "Adding PostgreSQL Repo" bash -c "curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg && \
         echo \"deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $CODENAME-pgdg main\" > /etc/apt/sources.list.d/pgdg.list"
 
-  # Python PPA for Ubuntu
   if [[ "$DISTRO" == "ubuntu" ]]; then
     run_quiet "Adding Python PPA" add-apt-repository -y ppa:deadsnakes/ppa
+  elif [[ "$DISTRO" == "debian" && "$CODENAME" == "bookworm" ]]; then
+    run_quiet "Adding Debian Backports" bash -c "echo 'deb http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/backports.list"
   fi
 
-  run_quiet "Updating package lists after repo additions" apt-get update
+  run_quiet "Updating package lists after repo additions" apt-get update --fix-missing || (sleep 2 && apt-get update)
 
   # Common dependencies
   local packages=(
@@ -194,6 +202,8 @@ install_system_deps() {
   # Python Dev Headers
   if [[ "$PYTHON_BIN" == "python3.14" ]]; then
     packages+=(python3.14-dev python3.14-venv)
+  elif [[ "$PYTHON_BIN" == "python3.12" ]]; then
+    packages+=(python3.12-dev python3.12-venv)
   else
     packages+=(python3-dev python3-venv)
   fi
