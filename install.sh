@@ -71,20 +71,36 @@ fi
 # Define Python binary globally
 # Define Python binary globally
 if [[ -z "$PYTHON_BIN" ]]; then
+  # 1. Try to find existing 3.14
   if command -v python3.14 >/dev/null 2>&1; then
     PYTHON_BIN="python3.14"
-  elif command -v python3.13 >/dev/null 2>&1; then
-    PYTHON_BIN="python3.13"
-  elif command -v python3.12 >/dev/null 2>&1; then
-    PYTHON_BIN="python3.12"
-  elif [[ "$DISTRO" == "ubuntu" ]] || [[ "$CODENAME" == "trixie" ]]; then
-    # Default to 3.14 for these distros if not explicitly overridden
-    PYTHON_BIN="python3.14"
-  elif [[ "$DISTRO" == "debian" && "$CODENAME" == "bookworm" ]]; then
-    # Prefer 3.12 for Bookworm to support Frappe v16
-    PYTHON_BIN="python3.12"
+  # 2. Try to use uv to install/find 3.14 (essential for Frappe v16+)
   else
-    PYTHON_BIN="python3"
+    echo -e "${BLUE}  - Bootstrapping Python 3.14 via uv...${NC}"
+    if ! command -v uv >/dev/null 2>&1; then
+      curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh >>"$INSTALL_LOG" 2>&1 || true
+    fi
+    if command -v uv >/dev/null 2>&1; then
+      # Ensure uv is in the path for the current shell
+      export PATH="/usr/local/bin:$PATH"
+      uv python install 3.14 >>"$INSTALL_LOG" 2>&1 || true
+      PYTHON_BIN=$(uv python find 3.14 2>/dev/null || echo "")
+    fi
+  fi
+
+  # Fallback logic if 3.14 bootstrap failed
+  if [[ -z "$PYTHON_BIN" ]]; then
+    if command -v python3.13 >/dev/null 2>&1; then
+      PYTHON_BIN="python3.13"
+    elif command -v python3.12 >/dev/null 2>&1; then
+      PYTHON_BIN="python3.12"
+    elif [[ "$DISTRO" == "ubuntu" ]] || [[ "$CODENAME" == "trixie" ]]; then
+      PYTHON_BIN="python3.14"
+    elif [[ "$DISTRO" == "debian" && "$CODENAME" == "bookworm" ]]; then
+      PYTHON_BIN="python3.12"
+    else
+      PYTHON_BIN="python3"
+    fi
   fi
 fi
 
@@ -199,12 +215,12 @@ install_system_deps() {
     unattended-upgrades
   )
 
-  # Python Dev Headers
-  if [[ "$PYTHON_BIN" == "python3.14" ]]; then
+  # Python Dev Headers (only if not using uv managed python)
+  if [[ "$PYTHON_BIN" == "/usr/bin/python3.14" || "$PYTHON_BIN" == "python3.14" ]]; then
     packages+=(python3.14-dev python3.14-venv)
-  elif [[ "$PYTHON_BIN" == "python3.12" ]]; then
+  elif [[ "$PYTHON_BIN" == "/usr/bin/python3.12" || "$PYTHON_BIN" == "python3.12" ]]; then
     packages+=(python3.12-dev python3.12-venv)
-  else
+  elif [[ "$PYTHON_BIN" == "python3" ]]; then
     packages+=(python3-dev python3-venv)
   fi
 
