@@ -408,7 +408,11 @@ TAG_OPTION=""
   run_quiet "Installing RPanel app" sudo -u frappe -i bash -c "set -e; export PATH=\"\$PATH:/home/frappe/.local/bin\"; cd /home/frappe/frappe-bench; if [ ! -d \"apps/rpanel\" ]; then bench get-app https://github.com/RokctAI/rpanel.git $TAG_OPTION --skip-assets; else cd apps/rpanel && git fetch --tags && ([ -n \"$LATEST_TAG\" ] && git checkout \"$LATEST_TAG\" || git pull); cd ../..; fi; if [ ! -d \"sites/${DOMAIN_NAME:-rpanel.local}\" ]; then bench new-site --admin-password admin --db-root-password \"$DB_ROOT_PASS\" $([[ \"$DB_TYPE\" == \"postgres\" ]] && echo \"--db-type=postgres\") --force \"${DOMAIN_NAME:-rpanel.local}\"; fi; $PYTHON_BIN -c \"import os; f='sites/apps.txt'; apps=open(f).read().splitlines() if os.path.exists(f) else []; (apps.append('rpanel') if 'rpanel' not in apps else None); open(f, 'w').write('\\n'.join(apps) + '\\n')\"; bench --site \"${DOMAIN_NAME:-rpanel.local}\" install-app rpanel; bench setup redis"
 
 # Asset build
-run_quiet "Building assets" sudo -u frappe -i bash -c "cd /home/frappe/frappe-bench && export NODE_OPTIONS='--max-old-space-size=1536' && /home/frappe/.local/bin/bench build --app rpanel --hard-link"
+if [[ "$SKIP_ASSETS" != "true" ]]; then
+  run_quiet "Building assets" sudo -u frappe -i bash -c "cd /home/frappe/frappe-bench && export NODE_OPTIONS='--max-old-space-size=2048' && /home/frappe/.local/bin/bench build --app rpanel --hard-link"
+else
+  echo -e "${YELLOW}  - Skipping asset build (Headless mode)...${NC}"
+fi
 
 # Production setup
 run_quiet "Setting up production" sudo -u frappe -i bash -c "cd /home/frappe/frappe-bench && sudo /home/frappe/.local/bin/bench setup production frappe --yes"
