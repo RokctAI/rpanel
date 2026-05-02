@@ -7,9 +7,11 @@ INSTALLER_VERSION="v8.9.3-STABLE"
 
 echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 
-# Fail on error, but be careful with piped commands
-set -e
-set -o pipefail
+# Copyright (c) 2025, Rokct Holdings and contributors
+# For license information, please see license.txt
+
+import os
+import frappe
 
 # Colors
 GREEN='\033[0;32m'
@@ -69,7 +71,6 @@ if [[ "$DISTRO" == "debian" && -z "$CODENAME" ]]; then
 fi
 
 # Define Python binary globally
-# Define Python binary globally
 if [[ -z "$PYTHON_BIN" ]]; then
   # 1. Try to find existing 3.14
   if command -v python3.14 >/dev/null 2>&1; then
@@ -91,6 +92,9 @@ if [[ -z "$PYTHON_BIN" ]]; then
       fi
     fi
   fi
+
+  # Ensure pip is up to date for the selected binary
+  $PYTHON_BIN -m pip install --upgrade pip >>"$INSTALL_LOG" 2>&1 || true
 
   # Fallback logic if 3.14 bootstrap failed
   if [[ -z "$PYTHON_BIN" ]]; then
@@ -371,7 +375,8 @@ create_frappe_user() {
 }
 
 install_bench() {
-  run_quiet "Installing frappe-bench" sudo -u frappe -i bash -c "export PATH=\$PATH:/home/frappe/.local/bin; python3 -m pip install frappe-bench --user --break-system-packages || python3 -m pip install frappe-bench --user"
+  # Install bench globally to avoid PATH/Module issues between users
+  run_quiet "Installing frappe-bench" $PYTHON_BIN -m pip install frappe-bench
 
   run_quiet "Initializing frappe-bench" sudo -u frappe -i bash -c "set -e; export PATH=\"\$PATH:/home/frappe/.local/bin\"; cd /home/frappe; if [ ! -d \"frappe-bench\" ]; then bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation; fi; if [[ \"$DB_TYPE\" == \"postgres\" ]]; then ./frappe-bench/env/bin/pip install psycopg2-binary; fi"
 }
@@ -419,7 +424,8 @@ else
 fi
 
 # Production setup
-run_quiet "Setting up production" sudo -u frappe -i bash -c "cd /home/frappe/frappe-bench && sudo /home/frappe/.local/bin/bench setup production frappe --yes"
+# Production setup
+run_quiet "Setting up production" sudo $PYTHON_BIN -m bench.cli setup production frappe --yes
 
 # Fix permissions
 run_quiet "Fixing permissions" chmod o+x /home/frappe /home/frappe/frappe-bench /home/frappe/frappe-bench/sites
