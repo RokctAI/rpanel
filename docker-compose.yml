@@ -6,9 +6,7 @@ version: '3.8'
 services:
   db:
     # Shared Database for Trial Tenants & Control Logic
-    build:
-      context: .
-      dockerfile: postgres.Dockerfile
+    image: ghcr.io/rokctai/monorepo/rpanel-db:latest
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-admin}
       - POSTGRES_USER=postgres
@@ -27,10 +25,7 @@ services:
 
   app:
     # The Orchestrator (Full Stage: Nginx + Exim + Bench)
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: full
+    image: ghcr.io/rokctai/monorepo/rpanel-control:latest
     environment:
       - MODE=full
       - SITE_NAME=${SITE_NAME:-platform.rokct.ai}
