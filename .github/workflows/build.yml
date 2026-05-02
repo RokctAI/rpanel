@@ -111,7 +111,6 @@ jobs:
   docker-release:
     needs: pipeline
     runs-on: ubuntu-latest
-    container: python:3.14-slim
     permissions: write-all
     steps:
       - name: Install dependencies
