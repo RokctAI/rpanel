@@ -10,9 +10,6 @@ echo -e "\033[0;34mRPanel Installer Version: $INSTALLER_VERSION\033[0;0m"
 # Copyright (c) 2025, Rokct Holdings and contributors
 # For license information, please see license.txt
 
-import os
-import frappe
-
 # Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
