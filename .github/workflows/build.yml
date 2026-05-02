@@ -112,6 +112,8 @@ jobs:
     needs: pipeline
     runs-on: ubuntu-latest
     permissions: write-all
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
     steps:
       - name: Install dependencies
         run: |
@@ -204,3 +206,10 @@ jobs:
           tags: |
             ghcr.io/rokctai/monorepo/rpanel-db:latest
             ghcr.io/rokctai/monorepo/rpanel-db:${{ steps.meta.outputs.version }}
+
+  upgrade-test:
+    needs: [pipeline, docker-release]
+    uses: RokctAI/shared-workflows/.github/workflows/universal-upgrade-test.yml@main
+    with:
+      current_version: ${{ needs.docker-release.outputs.version }}
+    secrets: inherit
