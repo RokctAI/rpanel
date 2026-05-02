@@ -146,13 +146,61 @@ jobs:
           # Exclude the docker-context folder itself to avoid recursion
           rsync -a --exclude 'docker-context' . ./docker-context/current_repo/
 
-      - name: Build and Push
+      - name: Extract Version
+        id: meta
+        run: |
+          VERSION=$(grep "__version__" docker-context/rpanel/__init__.py | cut -d'"' -f2)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extract version: $VERSION"
+
+      - name: Build and Push Control Hub (Full)
         uses: docker/build-push-action@v4
         with:
           context: docker-context
           file: docker-context/Dockerfile
+          target: full
           push: true
-          tags: ghcr.io/rokctai/monorepo/rpanel:latest
+          tags: |
+            ghcr.io/rokctai/monorepo/rpanel-control:latest
+            ghcr.io/rokctai/monorepo/rpanel-control:${{ steps.meta.outputs.version }}
           build-args: |
             GITHUB_TOKEN=${{ secrets.MONOREPO_PAT || github.token }}
             IS_ROKCTAI_REPO=${{ github.repository_owner == 'RokctAI' && 'true' || 'false' }}
+
+      - name: Build and Push Tenant Spoke (Tenant)
+        uses: docker/build-push-action@v4
+        with:
+          context: docker-context
+          file: docker-context/Dockerfile
+          target: tenant
+          push: true
+          tags: |
+            ghcr.io/rokctai/monorepo/rpanel-tenant:latest
+            ghcr.io/rokctai/monorepo/rpanel-tenant:${{ steps.meta.outputs.version }}
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.MONOREPO_PAT || github.token }}
+            IS_ROKCTAI_REPO=${{ github.repository_owner == 'RokctAI' && 'true' || 'false' }}
+
+      - name: Build and Push IoT Spoke (IoT)
+        uses: docker/build-push-action@v4
+        with:
+          context: docker-context
+          file: docker-context/Dockerfile
+          target: iot
+          push: true
+          tags: |
+            ghcr.io/rokctai/monorepo/rpanel-iot:latest
+            ghcr.io/rokctai/monorepo/rpanel-iot:${{ steps.meta.outputs.version }}
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.MONOREPO_PAT || github.token }}
+            IS_ROKCTAI_REPO=${{ github.repository_owner == 'RokctAI' && 'true' || 'false' }}
+
+      - name: Build and Push Postgres (Custom)
+        uses: docker/build-push-action@v4
+        with:
+          context: docker-context
+          file: docker-context/postgres.Dockerfile
+          push: true
+          tags: |
+            ghcr.io/rokctai/monorepo/rpanel-db:latest
+            ghcr.io/rokctai/monorepo/rpanel-db:${{ steps.meta.outputs.version }}
