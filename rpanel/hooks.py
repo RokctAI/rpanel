@@ -97,6 +97,10 @@ scheduler_events = {
 # -------------------
 whitelisted_methods = {"rpanel.api.get_version": "rpanel.version.get_version"}
 
+# Bench Commands
+# --------------
+commands = ["rpanel.commands.commands"]
+
 # Overriding Methods
 # ------------------------------
 #
