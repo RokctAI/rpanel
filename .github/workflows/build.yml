@@ -110,6 +110,7 @@ jobs:
 
   docker-release:
     needs: pipeline
+    if: success() && startsWith(github.repository, 'RokctAI/')
     runs-on: ubuntu-latest
     permissions: write-all
     outputs:
