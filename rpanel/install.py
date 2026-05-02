@@ -79,7 +79,9 @@ def install_dependencies():
         except ImportError:
             print(f"Installing {dep}...")
             try:
-                subprocess.check_call([sys.executable, "-m", "pip", "install", dep])
+                subprocess.check_call(
+                    [sys.executable, "-m", "pip", "install", dep, "--break-system-packages"]
+                )
                 print(f"✓ {dep} installed successfully")
             except Exception as e:
                 print(f"✗ Failed to install {dep}: {str(e)}")
