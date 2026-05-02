@@ -5,9 +5,7 @@ version: '3.8'
 
 services:
   db:
-    build:
-      context: .
-      dockerfile: postgres.Dockerfile
+    image: ghcr.io/rokctai/monorepo/rpanel-db:latest
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-admin}
       - POSTGRES_USER=postgres
@@ -33,10 +31,7 @@ services:
       - iot-redis-data:/data
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: lean
+    image: ghcr.io/rokctai/monorepo/rpanel-iot:latest
     environment:
       - MODE=iot
       - SITE_NAME=${SITE_NAME:-drone.local}
