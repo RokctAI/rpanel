@@ -59,7 +59,7 @@ fi
 # Update system
 echo -e "${BLUE}[1/12] Updating system packages...${NC}"
 run_prov "Updating package lists" apt-get update
-run_prov "Installing basic tools" apt-get install "${APT_QUIET[@]}" curl ca-certificates gnupg software-properties-common build-essential pkg-config git
+run_prov "Installing basic tools" apt-get install "${APT_QUIET[@]}" curl ca-certificates gnupg build-essential pkg-config git
 mkdir -p /etc/apt/keyrings
 
 # Repository Setup
