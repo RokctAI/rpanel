@@ -134,7 +134,7 @@ fi
 # Helper for pip to handle PEP 668
 safe_pip() {
   if command -v uv >/dev/null 2>&1; then
-    uv pip install --system "$@"
+    uv pip install --system --break-system-packages --python "$PYTHON_BIN" "$@"
   else
     $PYTHON_BIN -m pip install --break-system-packages "$@"
   fi
