@@ -1,6 +1,7 @@
 # Copyright (c) 2025, Rokct Holdings and contributors
 # For license information, please see license.txt
 
+import os
 import frappe
 import subprocess
 import sys
