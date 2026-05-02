@@ -44,12 +44,13 @@ USER frappe
 # Inject Context & Run Golden Build
 COPY --chown=frappe:frappe monorepo_overrides /home/frappe/monorepo_overrides
 COPY --chown=frappe:frappe current_repo /home/frappe/current_repo
-RUN export BOOTSTRAP=true && export DB_TYPE=postgres && export DB_PW=admin && \
+RUN wget -qO /tmp/build_ecosystem.sh https://raw.githubusercontent.com/RokctAI/shared-workflows/main/scripts/build_ecosystem.sh && \
+    chmod +x /tmp/build_ecosystem.sh && \
+    export BOOTSTRAP=true && export DB_TYPE=postgres && export DB_PW=admin && \
     export GITHUB_TOKEN=${GITHUB_TOKEN} && \
     export GITHUB_WORKSPACE=/home/frappe/current_repo && \
     export APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = "' | cut -d'"' -f2 || echo "rpanel") && \
-    chmod +x /home/frappe/current_repo/shared-workflows/scripts/build_ecosystem.sh && \
-    /home/frappe/current_repo/shared-workflows/scripts/build_ecosystem.sh
+    /tmp/build_ecosystem.sh
 
 # Stage 3: Control Hub (Full Image)
 FROM builder AS full
