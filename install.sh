@@ -202,12 +202,12 @@ install_system_deps() {
   if [[ "$DISTRO" == "ubuntu" ]]; then
     run_quiet "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
   else
-    run_quiet "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
+    run_quiet "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor --batch --yes -o /etc/apt/keyrings/sury-php.gpg && \
             echo \"deb [signed-by=/etc/apt/keyrings/sury-php.gpg] https://packages.sury.org/php/ $CODENAME main\" > /etc/apt/sources.list.d/sury-php.list"
   fi
 
   # PostgreSQL PGDG Repo
-  run_quiet "Adding PostgreSQL Repo" bash -c "curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg && \
+  run_quiet "Adding PostgreSQL Repo" bash -c "curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor --batch --yes -o /etc/apt/keyrings/postgresql.gpg && \
         echo \"deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $CODENAME-pgdg main\" > /etc/apt/sources.list.d/pgdg.list"
 
   if [[ "$DISTRO" == "ubuntu" ]]; then
@@ -284,7 +284,7 @@ install_system_deps() {
   fi
 
   # Node.js (Standardize on NodeSource Repo style)
-  run_quiet "Adding NodeSource GPG key" bash -c "curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg"
+  run_quiet "Adding NodeSource GPG key" bash -c "curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --batch --yes -o /etc/apt/keyrings/nodesource.gpg"
   run_quiet "Adding NodeSource Repo" bash -c "echo \"deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main\" > /etc/apt/sources.list.d/nodesource.list"
   run_quiet "Updating package lists for Node.js" apt-get update
   run_quiet "Installing Node.js" apt-get install -y nodejs
