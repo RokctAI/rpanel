@@ -5,7 +5,7 @@ version: '3.8'
 
 services:
   db:
-    image: pgvector/pgvector:pg15
+    image: ghcr.io/rokctai/monorepo/rpanel-db:latest
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_USER=postgres
@@ -31,10 +31,7 @@ services:
       - tenant-redis-data:/data
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: tenant
+    image: ghcr.io/rokctai/monorepo/rpanel-tenant:latest
     environment:
       - MODE=api
       - SITE_NAME=${SITE_NAME}
