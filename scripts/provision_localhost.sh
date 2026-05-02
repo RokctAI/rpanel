@@ -25,6 +25,17 @@ run_prov() {
   fi
 }
 
+# Helper for services to handle Docker/systemd
+safe_service() {
+  local action="$1"
+  local service="$2"
+  if [ -d /run/systemd/system ]; then
+    systemctl "$action" "$service" >>"$INSTALL_LOG" 2>&1 || true
+  else
+    service "$service" "$action" >>"$INSTALL_LOG" 2>&1 || true
+  fi
+}
+
 APT_QUIET=(-y -o=Dpkg::Use-Pty=0)
 
 echo "=== RPanel Localhost Provisioning ==="
@@ -57,16 +68,16 @@ echo -e "${BLUE}[2/12] Setting up repositories...${NC}"
 if [[ "$DISTRO" == "ubuntu" ]]; then
   run_prov "Adding PHP PPA" add-apt-repository -y ppa:ondrej/php
 else
-  run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /etc/apt/keyrings/sury-php.gpg && \
+  run_prov "Adding Sury PHP Repo" bash -c "curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor --batch --yes -o /etc/apt/keyrings/sury-php.gpg && \
         echo \"deb [signed-by=/etc/apt/keyrings/sury-php.gpg] https://packages.sury.org/php/ $CODENAME main\" > /etc/apt/sources.list.d/sury-php.list"
 fi
 
 # PostgreSQL PGDG Repo
-run_prov "Adding PostgreSQL Repo" bash -c "curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg && \
+run_prov "Adding PostgreSQL Repo" bash -c "curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor --batch --yes -o /etc/apt/keyrings/postgresql.gpg && \
     echo \"deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $CODENAME-pgdg main\" > /etc/apt/sources.list.d/pgdg.list"
 
 # Node.js 24 Repo (Modern Setup)
-run_prov "Adding NodeSource GPG key" bash -c "curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg"
+run_prov "Adding NodeSource GPG key" bash -c "curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --batch --yes -o /etc/apt/keyrings/nodesource.gpg"
 run_prov "Adding NodeSource Repo" bash -c "echo \"deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main\" > /etc/apt/sources.list.d/nodesource.list"
 
 run_prov "Updating package lists after repo additions" apt-get update
@@ -74,14 +85,14 @@ run_prov "Updating package lists after repo additions" apt-get update
 # Install Nginx
 echo -e "${BLUE}[3/12] Installing Nginx...${NC}"
 run_prov "Installing Nginx" apt-get install "${APT_QUIET[@]}" nginx
-systemctl enable nginx >>"$INSTALL_LOG" 2>&1 || true
-systemctl start nginx >>"$INSTALL_LOG" 2>&1 || true
+safe_service enable nginx
+safe_service start nginx
 
 # Install PostgreSQL 16
 echo -e "${BLUE}[4/12] Installing PostgreSQL 16...${NC}"
 run_prov "Installing PostgreSQL" apt-get install "${APT_QUIET[@]}" postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector libpq-dev
-systemctl enable postgresql >>"$INSTALL_LOG" 2>&1 || true
-systemctl start postgresql >>"$INSTALL_LOG" 2>&1 || true
+safe_service enable postgresql
+safe_service start postgresql
 
 # Install PHP versions
 echo -e "${BLUE}[5/12] Installing PHP versions...${NC}"
@@ -97,8 +108,8 @@ run_prov "Installing Yarn" npm install -g yarn
 # Install Dovecot
 echo -e "${BLUE}[7/12] Installing Dovecot...${NC}"
 run_prov "Installing Dovecot" apt-get install "${APT_QUIET[@]}" dovecot-core dovecot-imapd dovecot-pop3d
-systemctl enable dovecot >>"$INSTALL_LOG" 2>&1 || true
-systemctl start dovecot >>"$INSTALL_LOG" 2>&1 || true
+safe_service enable dovecot
+safe_service start dovecot
 
 # Install Roundcube
 echo -e "${BLUE}[8/12] Installing Roundcube...${NC}"
@@ -123,13 +134,13 @@ echo -e "${BLUE}[11/12] Installing security tools...${NC}"
 run_prov "Installing ClamAV" apt-get install "${APT_QUIET[@]}" clamav clamav-daemon
 systemctl stop clamav-freshclam >>"$INSTALL_LOG" 2>&1 || true
 run_prov "Updating ClamAV" freshclam # Can be slow/fail in CI
-systemctl start clamav-freshclam >>"$INSTALL_LOG" 2>&1 || true
-systemctl enable clamav-daemon >>"$INSTALL_LOG" 2>&1 || true
-systemctl start clamav-daemon >>"$INSTALL_LOG" 2>&1 || true
+safe_service start clamav-freshclam
+safe_service enable clamav-daemon
+safe_service start clamav-daemon
 
 run_prov "Installing Fail2Ban" apt-get install "${APT_QUIET[@]}" fail2ban
-systemctl enable fail2ban >>"$INSTALL_LOG" 2>&1 || true
-systemctl start fail2ban >>"$INSTALL_LOG" 2>&1 || true
+safe_service enable fail2ban
+safe_service start fail2ban
 
 # Install UFW
 echo -e "${BLUE}[12/12] Installing/Configuring UFW...${NC}"
