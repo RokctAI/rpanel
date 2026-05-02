@@ -195,7 +195,7 @@ setup_swap() {
 # Helper to install system packages
 install_system_deps() {
   run_quiet "Updating package lists" apt-get update
-  run_quiet "Installing basic tools" apt-get install -y curl ca-certificates gnupg software-properties-common build-essential pkg-config git cron
+  run_quiet "Installing basic tools" apt-get install -y curl ca-certificates gnupg build-essential pkg-config git cron
   mkdir -p /etc/apt/keyrings
 
   # PHP PPA
