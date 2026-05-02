@@ -84,7 +84,11 @@ if [[ -z "$PYTHON_BIN" ]]; then
       # Ensure uv is in the path for the current shell
       export PATH="/usr/local/bin:$PATH"
       uv python install 3.14 >>"$INSTALL_LOG" 2>&1 || true
-      PYTHON_BIN=$(uv python find 3.14 2>/dev/null || echo "")
+      UV_PY_PATH=$(uv python find 3.14 2>/dev/null || echo "")
+      if [[ -n "$UV_PY_PATH" ]]; then
+        ln -sf "$UV_PY_PATH" /usr/bin/python3.14
+        PYTHON_BIN="/usr/bin/python3.14"
+      fi
     fi
   fi
 
