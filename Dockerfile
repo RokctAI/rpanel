@@ -7,19 +7,20 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # System Dependencies - Step 1: Setup tools and external repo definitions
-RUN apt-get update && apt-get install -y curl ca-certificates gnupg sudo wget \
+RUN apt-get update -qq && apt-get install -yqq curl ca-certificates gnupg sudo wget >/dev/null 2>&1 \
     && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg \
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor --batch --yes -o /etc/apt/keyrings/postgresql.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --batch --yes -o /etc/apt/keyrings/nodesource.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
 
 # System Dependencies - Step 2: Install packages (after repos are added)
-RUN apt-get update && apt-get install -y \
+RUN apt-get update -qq && apt-get install -yqq \
     git postgresql-16 postgresql-client-16 postgresql-contrib-16 postgresql-16-pgvector \
     gettext-base build-essential \
     cron vim nodejs redis-server netcat-openbsd \
     libffi-dev libjpeg-dev zlib1g-dev \
+    >/dev/null 2>&1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g yarn pnpm
