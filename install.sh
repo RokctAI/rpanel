@@ -395,7 +395,26 @@ install_bench() {
   # Install bench globally to avoid PATH/Module issues between users
   run_quiet "Installing frappe-bench" safe_pip frappe-bench
 
-  run_quiet "Initializing frappe-bench" sudo -u frappe -i bash -c "set -e; export PATH=\"\$PATH:/home/frappe/.local/bin\"; cd /home/frappe; if [ ! -d \"frappe-bench\" ]; then bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation; fi; if [[ \"$DB_TYPE\" == \"postgres\" ]]; then ./frappe-bench/env/bin/pip install psycopg2-binary; fi"
+  # Ensure bench is in the global path
+  local bench_bin
+  bench_bin=$(which bench 2>/dev/null || true)
+  if [[ -z "$bench_bin" ]]; then
+    # Search in common uv/local paths
+    bench_bin=$(find /root/.local/bin /github/home/.local/bin /usr/local/bin -name bench 2>/dev/null | head -n 1)
+  fi
+
+  if [[ -n "$bench_bin" ]]; then
+    ln -sf "$bench_bin" /usr/local/bin/bench
+  else
+    # Fallback: try to find it relative to Python
+    local py_dir
+    py_dir=$(dirname "$PYTHON_BIN")
+    if [[ -f "$py_dir/bench" ]]; then
+      ln -sf "$py_dir/bench" /usr/local/bin/bench
+    fi
+  fi
+
+  run_quiet "Initializing frappe-bench" sudo -u frappe -i bash -c "set -e; export PATH=\"\$PATH:/home/frappe/.local/bin:/usr/local/bin\"; cd /home/frappe; if [ ! -d \"frappe-bench\" ]; then bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation; fi; if [[ \"$DB_TYPE\" == \"postgres\" ]]; then ./frappe-bench/env/bin/pip install psycopg2-binary; fi"
 }
 
 fetch_latest_tag() {
