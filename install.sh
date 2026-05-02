@@ -91,7 +91,7 @@ if [[ -z "$PYTHON_BIN" ]]; then
   fi
 
   # Ensure pip is up to date for the selected binary
-  $PYTHON_BIN -m pip install --upgrade pip >>"$INSTALL_LOG" 2>&1 || true
+  $PYTHON_BIN -m pip install --upgrade pip --break-system-packages >>"$INSTALL_LOG" 2>&1 || true
 
   # Fallback logic if 3.14 bootstrap failed
   if [[ -z "$PYTHON_BIN" ]]; then
@@ -130,6 +130,26 @@ else
     SELF_HOSTED=${SELF_HOSTED:-Y}
   fi
 fi
+
+# Helper for pip to handle PEP 668
+safe_pip() {
+  if command -v uv >/dev/null 2>&1; then
+    uv pip install --system "$@"
+  else
+    $PYTHON_BIN -m pip install --break-system-packages "$@"
+  fi
+}
+
+# Helper for services to handle Docker/systemd
+safe_service() {
+  local action="$1"
+  local service="$2"
+  if [ -d /run/systemd/system ]; then
+    systemctl "$action" "$service" >>"$INSTALL_LOG" 2>&1 || true
+  else
+    service "$service" "$action" >>"$INSTALL_LOG" 2>&1 || true
+  fi
+}
 
 # Helper to run commands quietly but log details
 run_quiet() {
@@ -289,8 +309,8 @@ APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 APT::Periodic::AutocleanInterval "7";
 EOF
-    systemctl enable unattended-upgrades || true
-    systemctl start unattended-upgrades || true
+    safe_service enable unattended-upgrades
+    safe_service start unattended-upgrades
   fi
 }
 
@@ -301,12 +321,12 @@ exim4-config exim4/dc_other_hostnames string
 exim4-config exim4/dc_local_interfaces string 127.0.0.1 ; ::1
 EOF
     dpkg-reconfigure -f noninteractive exim4-config"
-  systemctl enable exim4 >>"$INSTALL_LOG" 2>&1 || true
-  systemctl start exim4 >>"$INSTALL_LOG" 2>&1 || true
+  safe_service enable exim4
+  safe_service start exim4
 }
 
 configure_postgresql() {
-  systemctl start postgresql >>"$INSTALL_LOG" 2>&1 || true
+  safe_service start postgresql
   echo -n -e "${BLUE}  - Waiting for PostgreSQL... ${NC}"
   for i in {1..30}; do
     if sudo -u postgres psql -c "select 1" >/dev/null 2>&1; then
@@ -327,12 +347,12 @@ configure_postgresql() {
   pg_hba=$(sudo -u postgres psql -t -P format=unaligned -c "show hba_file;")
   if [[ -f "$pg_hba" ]]; then
     run_quiet "Configuring pg_hba.conf" bash -c "sed -i '/^local/s/peer/md5/' '$pg_hba' && sed -i '/^host/s/ident/md5/' '$pg_hba'"
-    systemctl restart postgresql >>"$INSTALL_LOG" 2>&1 || true
+    safe_service restart postgresql
   fi
 }
 
 configure_mariadb() {
-  systemctl start mariadb >>"$INSTALL_LOG" 2>&1 || true
+  safe_service start mariadb
   run_quiet "Securing MariaDB" mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$DB_ROOT_PASS'; DELETE FROM mysql.user WHERE User=''; DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1'); DROP DATABASE IF EXISTS test; DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'; FLUSH PRIVILEGES;"
   cat >/root/.my.cnf <<EOF
 [client]
@@ -359,7 +379,7 @@ bind-address = 127.0.0.1
 skip-networking = 0
 local-infile = 0
 EOF
-  run_quiet "Restarting MariaDB" systemctl restart mariadb
+  run_quiet "Restarting MariaDB" safe_service restart mariadb
 }
 
 create_frappe_user() {
@@ -373,7 +393,7 @@ create_frappe_user() {
 
 install_bench() {
   # Install bench globally to avoid PATH/Module issues between users
-  run_quiet "Installing frappe-bench" $PYTHON_BIN -m pip install frappe-bench
+  run_quiet "Installing frappe-bench" safe_pip frappe-bench
 
   run_quiet "Initializing frappe-bench" sudo -u frappe -i bash -c "set -e; export PATH=\"\$PATH:/home/frappe/.local/bin\"; cd /home/frappe; if [ ! -d \"frappe-bench\" ]; then bench init frappe-bench --frappe-branch version-16 --python $PYTHON_BIN --skip-assets --skip-redis-config-generation; fi; if [[ \"$DB_TYPE\" == \"postgres\" ]]; then ./frappe-bench/env/bin/pip install psycopg2-binary; fi"
 }
@@ -428,8 +448,8 @@ run_quiet "Setting up production" sudo $PYTHON_BIN -m bench.cli setup production
 run_quiet "Fixing permissions" chmod o+x /home/frappe /home/frappe/frappe-bench /home/frappe/frappe-bench/sites
 
 # Final health check and services
-systemctl restart nginx >>"$INSTALL_LOG" 2>&1 || true
-systemctl restart supervisor >>"$INSTALL_LOG" 2>&1 || true
+safe_service restart nginx
+safe_service restart supervisor
 
 # Provision localhost if self-hosted
 if [[ "$SELF_HOSTED" =~ ^[Yy]$ ]]; then
