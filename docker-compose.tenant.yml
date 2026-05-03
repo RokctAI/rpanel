@@ -1,4 +1,3 @@
-version: '3.8'
 
 # RokctAI: Tenant Spoke Template
 # This file is used as a template by the Control Hub to spin up isolated tenants.
