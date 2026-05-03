@@ -1,4 +1,3 @@
-version: '3.8'
 
 # RokctAI: IoT/Edge Spoke
 # Optimized for low-RAM devices (Drones/Sensors)
