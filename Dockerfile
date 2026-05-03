@@ -52,6 +52,10 @@ RUN wget -qO /tmp/build_ecosystem.sh https://raw.githubusercontent.com/RokctAI/s
     export APP_NAME=$(cat /home/frappe/current_repo/pyproject.toml 2>/dev/null | grep -m1 'name = "' | cut -d'"' -f2 || echo "rpanel") && \
     /tmp/build_ecosystem.sh
 
+# Preserve the baked site so the entrypoint can seed an empty volume on first boot
+# (Named volume mounts shadow the image layers, so we keep a backup outside /sites)
+RUN cp -a /home/frappe/frappe-bench/sites /home/frappe/frappe-bench-image-sites
+
 # Stage 3: Control Hub (Full Image)
 FROM builder AS full
 USER root
