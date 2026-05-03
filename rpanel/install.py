@@ -80,7 +80,14 @@ def install_dependencies():
             print(f"Installing {dep}...")
             try:
                 subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", dep, "--break-system-packages"]
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        dep,
+                        "--break-system-packages",
+                    ]
                 )
                 print(f"✓ {dep} installed successfully")
             except Exception as e:

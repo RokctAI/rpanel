@@ -4,14 +4,17 @@
 import click
 import frappe
 
+
 @click.command("update-ecosystem")
-@click.option("--immediate", is_flag=True, help="Run the update immediately (CI/Manual)")
+@click.option(
+    "--immediate", is_flag=True, help="Run the update immediately (CI/Manual)"
+)
 def update_ecosystem_command(immediate=False):
     """
     Pulls latest Docker images and restarts the RPanel ecosystem.
     """
     from rpanel.hosting.update_manager import update_ecosystem
-    
+
     # We need to initialize frappe if not already initialized
     # (Though bench execute usually handles this, direct commands might need it)
     if not frappe.local.site:
@@ -24,6 +27,5 @@ def update_ecosystem_command(immediate=False):
     else:
         print(f"❌ {result.get('message')}")
 
-commands = [
-    update_ecosystem_command
-]
+
+commands = [update_ecosystem_command]

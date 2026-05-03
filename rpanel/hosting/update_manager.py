@@ -5,6 +5,7 @@ import frappe
 import subprocess
 import os
 
+
 @frappe.whitelist()
 def update_ecosystem(immediate=False):
     """
@@ -15,34 +16,58 @@ def update_ecosystem(immediate=False):
     if not immediate:
         # Production Logic: Schedule for later
         authorize_system_update()
-        return {"status": "success", "message": "Update scheduled for the next maintenance window."}
-    
+        return {
+            "status": "success",
+            "message": "Update scheduled for the next maintenance window.",
+        }
+
     # CI / Instant Update Logic
     return perform_docker_upgrade()
+
 
 def perform_docker_upgrade():
     """
     Control Hub Specific: pulls images and restarts the entire ecosystem.
     """
     print("🚀 RPanel: Starting FULL Ecosystem Upgrade...")
-    
+
     try:
         compose_file = "docker-compose.yml"
 
         if os.path.exists(compose_file):
             print(f"--- Pulling latest images for {compose_file} ---")
-            subprocess.run(["docker", "compose", "-f", compose_file, "pull"], check=True)
-            
+            subprocess.run(
+                ["docker", "compose", "-f", compose_file, "pull"], check=True
+            )
+
             print(f"--- Performing Zero-Downtime Handover ---")
-            subprocess.run(["docker", "compose", "-f", compose_file, "up", "-d", "--remove-orphans"], check=True)
-            
-            return {"status": "success", "message": "Ecosystem upgrade initiated successfully."}
+            subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "-f",
+                    compose_file,
+                    "up",
+                    "-d",
+                    "--remove-orphans",
+                ],
+                check=True,
+            )
+
+            return {
+                "status": "success",
+                "message": "Ecosystem upgrade initiated successfully.",
+            }
         else:
-            return {"status": "error", "message": f"Compose file {compose_file} not found."}
+            return {
+                "status": "error",
+                "message": f"Compose file {compose_file} not found.",
+            }
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Ecosystem Upgrade Failed")
         return {"status": "error", "message": str(e)}
+
 
 def authorize_system_update():
     """
@@ -51,15 +76,19 @@ def authorize_system_update():
     app_name = "rpanel"
     # Detect target version from GHCR or just use 'latest'
     target_version = "latest"
-    
-    if not frappe.db.exists("Update Authorization", {"app_name": app_name, "status": "Authorized"}):
-        doc = frappe.get_doc({
-            "doctype": "Update Authorization",
-            "app_name": app_name,
-            "target_version": target_version,
-            "status": "Authorized",
-            "changelog": "Automated ecosystem update",
-            "authorized_by": "System"
-        })
+
+    if not frappe.db.exists(
+        "Update Authorization", {"app_name": app_name, "status": "Authorized"}
+    ):
+        doc = frappe.get_doc(
+            {
+                "doctype": "Update Authorization",
+                "app_name": app_name,
+                "target_version": target_version,
+                "status": "Authorized",
+                "changelog": "Automated ecosystem update",
+                "authorized_by": "System",
+            }
+        )
         doc.insert(ignore_permissions=True)
         frappe.db.commit()
