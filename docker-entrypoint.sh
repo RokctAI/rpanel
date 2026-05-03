@@ -5,6 +5,16 @@ set -e
 
 # Function to setup the site based on MODE
 setup_site() {
+  # 0. First-Boot Volume Seeding
+  # When a named volume is mounted over /sites, it shadows the baked site.
+  # If the volume is empty, seed it from the image-baked copy.
+  IMAGE_BAKED_SITES="/home/frappe/frappe-bench-image-sites"
+  if [ -z "$(ls -A sites/ 2>/dev/null)" ] && [ -d "$IMAGE_BAKED_SITES" ]; then
+    echo "🌱 Seeding empty sites volume from Golden Build..."
+    cp -a "$IMAGE_BAKED_SITES/." sites/
+    echo "✅ Volume seeded from baked image."
+  fi
+
   # 1. Robust Site Discovery (Req 1)
   # Probe for any initialized site (containing site_config.json)
   BAKED_SITE=$(ls sites/*/site_config.json 2>/dev/null | head -1 | cut -d/ -f2)
