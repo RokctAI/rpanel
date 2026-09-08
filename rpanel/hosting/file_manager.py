@@ -11,9 +11,11 @@ from rpanel.hosting.utils import _safe_path
 
 
 @frappe.whitelist()
-def get_file_list(website_name: str, path: str="") -> dict:
+def get_file_list(website_name: str, path: str = "") -> dict:
     """Get list of files and directories for a website"""
-    sys.stderr.write(f"[TRACE] get_file_list trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_file_list trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")
@@ -68,7 +70,9 @@ def get_file_list(website_name: str, path: str="") -> dict:
 @frappe.whitelist()
 def download_file(website_name: str, file_path: str) -> dict:
     """Download a file from the website directory"""
-    sys.stderr.write(f"[TRACE] download_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] download_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")
@@ -104,7 +108,9 @@ def download_file(website_name: str, file_path: str) -> dict:
 @frappe.whitelist()
 def upload_file(website_name: str, path: str, filename: str, filedata: str) -> dict:
     """Upload a file to the website directory"""
-    sys.stderr.write(f"[TRACE] upload_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] upload_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")
@@ -154,7 +160,9 @@ def upload_file(website_name: str, path: str, filename: str, filedata: str) -> d
 @frappe.whitelist()
 def delete_file(website_name: str, file_path: str) -> dict:
     """Delete a file or directory"""
-    sys.stderr.write(f"[TRACE] delete_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] delete_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")
@@ -191,7 +199,9 @@ def delete_file(website_name: str, file_path: str) -> dict:
 @frappe.whitelist()
 def create_directory(website_name: str, path: str, dirname: str) -> dict:
     """Create a new directory"""
-    sys.stderr.write(f"[TRACE] create_directory trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] create_directory trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")
@@ -229,7 +239,9 @@ def create_directory(website_name: str, path: str, dirname: str) -> dict:
 @frappe.whitelist()
 def rename_file(website_name: str, old_path: str, new_name: str) -> dict:
     """Rename a file or directory"""
-    sys.stderr.write(f"[TRACE] rename_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] rename_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")
@@ -270,7 +282,9 @@ def rename_file(website_name: str, old_path: str, new_name: str) -> dict:
 @frappe.whitelist()
 def read_file(website_name: str, file_path: str) -> dict:
     """Read file content (for text files)"""
-    sys.stderr.write(f"[TRACE] read_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] read_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")
@@ -313,7 +327,9 @@ def read_file(website_name: str, file_path: str) -> dict:
 @frappe.whitelist()
 def save_file(website_name: str, file_path: str, content: str) -> dict:
     """Save file content (for text files)"""
-    sys.stderr.write(f"[TRACE] save_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] save_file trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if website_name == "local_control_site":
         if "System Manager" not in frappe.get_roles():
             frappe.throw("Access Denied")

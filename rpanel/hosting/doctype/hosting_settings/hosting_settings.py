@@ -8,6 +8,7 @@ import subprocess
 import shlex
 import os
 
+
 def _safe_path(base: str, untrusted: str) -> str:
     """Validate that resolved path stays within base directory (Layer 18 ZTNA)."""
     resolved = os.path.realpath(os.path.join(base, untrusted))
@@ -17,12 +18,13 @@ def _safe_path(base: str, untrusted: str) -> str:
     return resolved
 
 
-
 class HostingSettings(Document):
     @frappe.whitelist()
     def renew_platform_ssl(self) -> dict:
         """API endpoint: renew platform ssl."""
-        sys.stderr.write(f"[TRACE] renew_platform_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+        sys.stderr.write(
+            f"[TRACE] renew_platform_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+        )
         if not self.platform_cert_command:
             frappe.throw("Please define the Platform Cert Command first.")
 
@@ -31,7 +33,9 @@ class HostingSettings(Document):
     @frappe.whitelist()
     def renew_wildcard_ssl(self) -> dict:
         """API endpoint: renew wildcard ssl."""
-        sys.stderr.write(f"[TRACE] renew_wildcard_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+        sys.stderr.write(
+            f"[TRACE] renew_wildcard_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+        )
         if not self.wildcard_cert_command:
             frappe.throw("Please define the Wildcard Cert Command first.")
 
@@ -40,7 +44,9 @@ class HostingSettings(Document):
     @frappe.whitelist()
     def install_roundcube(self) -> dict:
         """Installs Roundcube Webmail to /var/www/roundcube"""
-        sys.stderr.write(f"[TRACE] install_roundcube trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+        sys.stderr.write(
+            f"[TRACE] install_roundcube trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+        )
         target_dir = "/var/www/roundcube"
 
         if os.path.exists(os.path.join(target_dir, "config", "config.inc.php")):
@@ -197,7 +203,9 @@ $config['skin'] = 'elastic';
 @frappe.whitelist()
 def get_system_status() -> dict:
     """Check status of system services"""
-    sys.stderr.write(f"[TRACE] get_system_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_system_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     services = ["nginx", "mysql", "exim4"]
     status = {}
 
@@ -222,7 +230,9 @@ def get_system_status() -> dict:
 @frappe.whitelist()
 def reload_nginx() -> dict:
     """Reload Nginx configuration"""
-    sys.stderr.write(f"[TRACE] reload_nginx trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] reload_nginx trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         subprocess.run(["sudo", "systemctl", "reload", "nginx"], check=True)
         return {"success": True, "message": "Nginx reloaded successfully"}
@@ -234,7 +244,9 @@ def reload_nginx() -> dict:
 @frappe.whitelist()
 def test_email(email: str) -> dict:
     """Send a test email to verify email configuration"""
-    sys.stderr.write(f"[TRACE] test_email trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] test_email trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         frappe.sendmail(
             recipients=[email],

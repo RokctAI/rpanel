@@ -21,9 +21,7 @@ class HostingClient(Document):
     def check_storage_quota(self):
         """Check if client has exceeded storage quota. Tenant context checked."""
         websites = frappe.get_all(
-            "Hosted Website",
-            filters={"client": self.name},
-            fields=["disk_usage_mb"]
+            "Hosted Website", filters={"client": self.name}, fields=["disk_usage_mb"]
         )
         total_storage = sum(w.get("disk_usage_mb") or 0 for w in websites)
 
@@ -59,7 +57,9 @@ class HostingClient(Document):
 @frappe.whitelist()
 def get_client_usage(client_name: str) -> dict:
     """Get client resource usage. Tenant context verified."""
-    sys.stderr.write(f"[TRACE] get_client_usage trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_client_usage trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     client = frappe.get_doc("Hosting Client", client_name)
 
     # Get website count
@@ -70,9 +70,7 @@ def get_client_usage(client_name: str) -> dict:
 
     # Get total storage
     websites = frappe.get_all(
-        "Hosted Website",
-        filters={"client": client_name},
-        fields=["disk_usage_mb"]
+        "Hosted Website", filters={"client": client_name}, fields=["disk_usage_mb"]
     )
     total_storage = sum(w.get("disk_usage_mb") or 0 for w in websites)
 
@@ -95,7 +93,9 @@ def create_client_portal_user(client_name: str) -> dict:
     Create portal user for client.
     Tenant context: setup portal user access constraints.
     """
-    sys.stderr.write(f"[TRACE] create_client_portal_user trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] create_client_portal_user trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     client = frappe.get_doc("Hosting Client", client_name)
 
     try:
@@ -126,7 +126,9 @@ def create_client_portal_user(client_name: str) -> dict:
 @frappe.whitelist()
 def get_client_websites(client_name: str) -> dict:
     """Get all websites for a client"""
-    sys.stderr.write(f"[TRACE] get_client_websites trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_client_websites trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     websites = frappe.get_all(
         "Hosted Website",
         filters={"client": client_name},

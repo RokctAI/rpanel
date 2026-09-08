@@ -66,7 +66,9 @@ class FirewallRule(Document):
 @frappe.whitelist()
 def get_firewall_status() -> dict:
     """Get UFW firewall status"""
-    sys.stderr.write(f"[TRACE] get_firewall_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_firewall_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         result = subprocess.run(
             ["sudo", "ufw", "status", "verbose"], capture_output=True, text=True
@@ -79,7 +81,9 @@ def get_firewall_status() -> dict:
 @frappe.whitelist()
 def enable_firewall() -> dict:
     """Enable UFW firewall"""
-    sys.stderr.write(f"[TRACE] enable_firewall trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] enable_firewall trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         subprocess.run(["sudo", "ufw", "--force", "enable"], check=True)
         return {"success": True, "message": "Firewall enabled"}
@@ -90,7 +94,9 @@ def enable_firewall() -> dict:
 @frappe.whitelist()
 def disable_firewall() -> dict:
     """Disable UFW firewall"""
-    sys.stderr.write(f"[TRACE] disable_firewall trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] disable_firewall trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         subprocess.run(["sudo", "ufw", "disable"], check=True)
         return {"success": True, "message": "Firewall disabled"}

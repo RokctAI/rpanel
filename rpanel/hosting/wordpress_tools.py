@@ -10,6 +10,7 @@ import subprocess
 import shlex
 from rpanel.hosting.mysql_utils import run_mysql_command
 
+
 def _safe_path(base: str, untrusted: str) -> str:
     """Validate that resolved path stays within base directory (Layer 18 ZTNA)."""
     resolved = os.path.realpath(os.path.join(base, untrusted))
@@ -22,7 +23,9 @@ def _safe_path(base: str, untrusted: str) -> str:
 @frappe.whitelist()
 def import_wordpress(website_name: str, source_path: str) -> dict:
     """Import WordPress site from ZIP or directory"""
-    sys.stderr.write(f"[TRACE] import_wordpress trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] import_wordpress trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:
@@ -47,7 +50,9 @@ def import_wordpress(website_name: str, source_path: str) -> dict:
 @frappe.whitelist()
 def export_wordpress(website_name: str, include_uploads: bool = True) -> dict:
     """Export WordPress site to ZIP"""
-    sys.stderr.write(f"[TRACE] export_wordpress trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] export_wordpress trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:
@@ -67,7 +72,9 @@ def export_wordpress(website_name: str, include_uploads: bool = True) -> dict:
 @frappe.whitelist()
 def search_replace_db(website_name: str, search: str, replace: str) -> dict:
     """Search and replace in WordPress database"""
-    sys.stderr.write(f"[TRACE] search_replace_db trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] search_replace_db trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:
@@ -163,7 +170,9 @@ echo "Search-replace completed via PHP Bridge\\n";
 @frappe.whitelist()
 def install_wp_plugin(website_name: str, plugin_slug: str) -> dict:
     """Install WordPress plugin"""
-    sys.stderr.write(f"[TRACE] install_wp_plugin trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] install_wp_plugin trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:
@@ -178,7 +187,9 @@ def install_wp_plugin(website_name: str, plugin_slug: str) -> dict:
 @frappe.whitelist()
 def update_wordpress(website_name: str) -> dict:
     """Update WordPress core"""
-    sys.stderr.write(f"[TRACE] update_wordpress trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] update_wordpress trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:
@@ -193,7 +204,9 @@ def update_wordpress(website_name: str) -> dict:
 @frappe.whitelist()
 def get_wp_info(website_name: str) -> dict:
     """Get WordPress installation info"""
-    sys.stderr.write(f"[TRACE] get_wp_info trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_wp_info trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:

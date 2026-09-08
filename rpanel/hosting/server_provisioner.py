@@ -25,7 +25,9 @@ def provision_server(server_name: str) -> dict:
     - UFW (firewall)
     """
 
-    sys.stderr.write(f"[TRACE] provision_server trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] provision_server trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     server = frappe.get_doc("Hosting Server", server_name)
 
     # Smart installation script - checks and installs only missing services
@@ -304,7 +306,9 @@ echo "Server is ready for hosting!"
 def check_server_services(server_name: str) -> dict:
     """Check which services are installed on the server"""
 
-    sys.stderr.write(f"[TRACE] check_server_services trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] check_server_services trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     check_script = """
     echo "Checking installed services..."
 

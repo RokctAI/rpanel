@@ -232,33 +232,37 @@ RPanel can automatically install required software on remote servers:
 ```python
 import frappe
 
-website = frappe.get_doc({
-    'doctype': 'Hosted Website',
-    'domain': 'example.com',
-    'server': 'Production Server 1',
-    'php_version': '8.2',
-    'site_type': 'CMS',
-    'cms_type': 'WordPress'
-})
+website = frappe.get_doc(
+    {
+        "doctype": "Hosted Website",
+        "domain": "example.com",
+        "server": "Production Server 1",
+        "php_version": "8.2",
+        "site_type": "CMS",
+        "cms_type": "WordPress",
+    }
+)
 website.insert()
 ```
 
 ### Enable SSL
 
 ```python
-website = frappe.get_doc('Hosted Website', 'example.com')
+website = frappe.get_doc("Hosted Website", "example.com")
 website.enable_ssl()
 ```
 
 ### Create Backup
 
 ```python
-backup = frappe.get_doc({
-    'doctype': 'Site Backup',
-    'website': 'example.com',
-    'backup_type': 'Full',
-    'storage_type': 'S3'
-})
+backup = frappe.get_doc(
+    {
+        "doctype": "Site Backup",
+        "website": "example.com",
+        "backup_type": "Full",
+        "storage_type": "S3",
+    }
+)
 backup.insert()
 backup.create_backup()
 ```

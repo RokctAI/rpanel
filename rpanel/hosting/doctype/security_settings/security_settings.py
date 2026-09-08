@@ -48,7 +48,7 @@ class SecuritySettings(Document):
 
 
 @frappe.whitelist()
-def enable_user_2fa(user: str=None) -> dict:
+def enable_user_2fa(user: str = None) -> dict:
     """
     Enable 2FA for a user and generate QR code
     Tenant context: setup session.user 2FA token generation.
@@ -59,7 +59,9 @@ def enable_user_2fa(user: str=None) -> dict:
     Returns:
             dict: QR code image (base64) and secret key
     """
-    sys.stderr.write(f"[TRACE] enable_user_2fa trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] enable_user_2fa trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if not user:
         user = frappe.session.user
 
@@ -105,7 +107,7 @@ def enable_user_2fa(user: str=None) -> dict:
 
 
 @frappe.whitelist()
-def verify_and_enable_2fa(user: str=None, otp_code: str=None) -> dict:
+def verify_and_enable_2fa(user: str = None, otp_code: str = None) -> dict:
     """
     Verify OTP code and enable 2FA for user.
     Tenant context: track session.user verification state and enable 2FA.
@@ -117,7 +119,9 @@ def verify_and_enable_2fa(user: str=None, otp_code: str=None) -> dict:
     Returns:
             dict: Success status and message
     """
-    sys.stderr.write(f"[TRACE] verify_and_enable_2fa trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] verify_and_enable_2fa trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if not user:
         user = frappe.session.user
 
@@ -151,7 +155,7 @@ def verify_and_enable_2fa(user: str=None, otp_code: str=None) -> dict:
 
 
 @frappe.whitelist()
-def disable_user_2fa(user: str=None) -> dict:
+def disable_user_2fa(user: str = None) -> dict:
     """
     Disable 2FA for a user.
     Tenant context: track session.user modification and disable 2FA.
@@ -162,7 +166,9 @@ def disable_user_2fa(user: str=None) -> dict:
     Returns:
             dict: Success status and message
     """
-    sys.stderr.write(f"[TRACE] disable_user_2fa trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] disable_user_2fa trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if not user:
         user = frappe.session.user
 
@@ -194,7 +200,9 @@ def get_2fa_status() -> dict:
     Returns:
             dict: 2FA status information
     """
-    sys.stderr.write(f"[TRACE] get_2fa_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_2fa_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     user = frappe.session.user
     settings = frappe.get_single("Security Settings")
 

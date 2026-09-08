@@ -79,10 +79,10 @@ def get_data(filters):
             "is_up",
             "status_code",
             "response_time",
-            "error_message"
+            "error_message",
         ],
         order_by="check_time desc",
-        limit=1000
+        limit=1000,
     )
 
     # Format status

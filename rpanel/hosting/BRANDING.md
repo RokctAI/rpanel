@@ -105,7 +105,7 @@ style.innerHTML = `
 ### Get Client Branding
 
 ```python
-branding = frappe.call('rpanel.hosting.branding.get_client_branding_for_portal')
+branding = frappe.call("rpanel.hosting.branding.get_client_branding_for_portal")
 ```
 
 Returns:

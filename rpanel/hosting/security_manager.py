@@ -12,7 +12,9 @@ from datetime import datetime
 @frappe.whitelist()
 def scan_for_malware(website_name: str) -> dict:
     """Scan website for malware using ClamAV"""
-    sys.stderr.write(f"[TRACE] scan_for_malware trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] scan_for_malware trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:
@@ -57,7 +59,9 @@ def scan_for_malware(website_name: str) -> dict:
 @frappe.whitelist()
 def setup_fail2ban() -> dict:
     """Setup Fail2Ban for brute force protection"""
-    sys.stderr.write(f"[TRACE] setup_fail2ban trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] setup_fail2ban trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         # Check if Fail2Ban is installed
         result = subprocess.run(["which", "fail2ban-client"], capture_output=True)
@@ -108,7 +112,9 @@ bantime = 86400
 @frappe.whitelist()
 def get_fail2ban_status() -> dict:
     """Get Fail2Ban status"""
-    sys.stderr.write(f"[TRACE] get_fail2ban_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_fail2ban_status trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         result = subprocess.run(
             ["fail2ban-client", "status"], capture_output=True, text=True
@@ -119,9 +125,11 @@ def get_fail2ban_status() -> dict:
 
 
 @frappe.whitelist()
-def block_ip(ip_address: str, duration: str=3600) -> dict:
+def block_ip(ip_address: str, duration: str = 3600) -> dict:
     """Manually block IP address"""
-    sys.stderr.write(f"[TRACE] block_ip trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] block_ip trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         # Add to UFW
         subprocess.run(["sudo", "ufw", "deny", "from", ip_address], check=True)
@@ -146,7 +154,9 @@ def block_ip(ip_address: str, duration: str=3600) -> dict:
 @frappe.whitelist()
 def unblock_ip(ip_address: str) -> dict:
     """Unblock IP address"""
-    sys.stderr.write(f"[TRACE] unblock_ip trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] unblock_ip trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         subprocess.run(
             ["sudo", "ufw", "delete", "deny", "from", ip_address], check=True
@@ -168,9 +178,11 @@ def unblock_ip(ip_address: str) -> dict:
 
 
 @frappe.whitelist()
-def get_security_logs(limit: str=100) -> dict:
+def get_security_logs(limit: str = 100) -> dict:
     """Get security audit logs"""
-    sys.stderr.write(f"[TRACE] get_security_logs trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_security_logs trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         logs = frappe.get_all(
             "Security Audit Log",

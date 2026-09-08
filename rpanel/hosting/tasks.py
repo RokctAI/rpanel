@@ -26,11 +26,8 @@ def check_ssl_expiry():
 
     websites = frappe.get_all(
         "Hosted Website",
-        filters={
-            "ssl_status": "Active",
-            "ssl_expiry_date": ["is", "set"]
-        },
-        fields=["name", "domain", "ssl_expiry_date"]
+        filters={"ssl_status": "Active", "ssl_expiry_date": ["is", "set"]},
+        fields=["name", "domain", "ssl_expiry_date"],
     )
 
     current_date = today()
@@ -77,11 +74,8 @@ def auto_renew_ssl():
 
     websites = frappe.get_all(
         "Hosted Website",
-        filters={
-            "ssl_status": "Active",
-            "ssl_expiry_date": ["is", "set"]
-        },
-        fields=["name", "domain", "ssl_expiry_date"]
+        filters={"ssl_status": "Active", "ssl_expiry_date": ["is", "set"]},
+        fields=["name", "domain", "ssl_expiry_date"],
     )
 
     current_date = today()
@@ -152,7 +146,21 @@ def check_site_health():
             protocol = "https" if site.ssl_status == "Active" else "http"
             url = f"{protocol}://{site.domain}"
 
-            response = requests.get(url, timeout=10, verify=True, headers={"X-Trace-Id": (getattr(getattr(__import__("frappe"), "local", None), "trace_id", None) or __import__("uuid").uuid4().hex)})
+            response = requests.get(
+                url,
+                timeout=10,
+                verify=True,
+                headers={
+                    "X-Trace-Id": (
+                        getattr(
+                            getattr(__import__("frappe"), "local", None),
+                            "trace_id",
+                            None,
+                        )
+                        or __import__("uuid").uuid4().hex
+                    )
+                },
+            )
 
             if response.status_code >= 500:
                 # Server error - log it

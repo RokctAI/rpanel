@@ -13,7 +13,9 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 @frappe.whitelist()
 def upload_to_google_drive(backup_name: str) -> dict:
     """Upload backup file to Google Drive"""
-    sys.stderr.write(f"[TRACE] upload_to_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] upload_to_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     backup = frappe.get_doc("Site Backup", backup_name)
     settings = frappe.get_single("Hosting Settings")
 
@@ -66,7 +68,9 @@ def upload_to_google_drive(backup_name: str) -> dict:
 @frappe.whitelist()
 def list_google_drive_backups() -> dict:
     """List all backups in Google Drive"""
-    sys.stderr.write(f"[TRACE] list_google_drive_backups trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] list_google_drive_backups trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     settings = frappe.get_single("Hosting Settings")
     credentials_file = settings.get("google_drive_credentials_file")
     folder_id = settings.get("google_drive_folder_id")
@@ -105,7 +109,9 @@ def list_google_drive_backups() -> dict:
 @frappe.whitelist()
 def download_from_google_drive(file_id: str, destination_path: str) -> dict:
     """Download backup from Google Drive"""
-    sys.stderr.write(f"[TRACE] download_from_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] download_from_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     settings = frappe.get_single("Hosting Settings")
     credentials_file = settings.get("google_drive_credentials_file")
 
@@ -134,7 +140,9 @@ def download_from_google_drive(file_id: str, destination_path: str) -> dict:
 @frappe.whitelist()
 def delete_from_google_drive(file_id: str) -> dict:
     """Delete backup from Google Drive"""
-    sys.stderr.write(f"[TRACE] delete_from_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] delete_from_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     settings = frappe.get_single("Hosting Settings")
     credentials_file = settings.get("google_drive_credentials_file")
 
@@ -155,7 +163,9 @@ def delete_from_google_drive(file_id: str) -> dict:
 @frappe.whitelist()
 def setup_google_drive() -> dict:
     """Setup Google Drive integration"""
-    sys.stderr.write(f"[TRACE] setup_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] setup_google_drive trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     settings = frappe.get_single("Hosting Settings")
     credentials_file = settings.get("google_drive_credentials_file")
 
