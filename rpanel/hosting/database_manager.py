@@ -13,7 +13,9 @@ import json
 def execute_query(database_name: str, query: str) -> dict:
     """Execute SQL query"""
     # Security: Only allow SELECT queries for safety
-    sys.stderr.write(f"[TRACE] execute_query trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] execute_query trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     frappe.only_for("System Manager")
 
     stripped = query.strip()
@@ -48,7 +50,9 @@ def execute_query(database_name: str, query: str) -> dict:
 @frappe.whitelist()
 def get_tables(database_name: str) -> dict:
     """Get list of tables in database"""
-    sys.stderr.write(f"[TRACE] get_tables trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_tables trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         if frappe.db.db_type == "postgres":
             # Query for postgres tables
@@ -72,7 +76,9 @@ def get_tables(database_name: str) -> dict:
 @frappe.whitelist()
 def get_table_structure(database_name: str, table_name: str) -> dict:
     """Get table structure"""
-    sys.stderr.write(f"[TRACE] get_table_structure trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_table_structure trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     frappe.only_for("System Manager")
 
     # Security: table_name is interpolated into SQL below, so restrict it to a
@@ -109,9 +115,11 @@ def get_table_structure(database_name: str, table_name: str) -> dict:
 
 
 @frappe.whitelist()
-def export_database(database_name: str, export_format: str="sql") -> dict:
+def export_database(database_name: str, export_format: str = "sql") -> dict:
     """Export database"""
-    sys.stderr.write(f"[TRACE] export_database trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] export_database trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         export_file = f"/tmp/{database_name}_export.{export_format}"
 
@@ -140,15 +148,22 @@ def export_database(database_name: str, export_format: str="sql") -> dict:
 @frappe.whitelist()
 def import_database(database_name: str, import_file: str) -> dict:
     """Import database from SQL file"""
-    sys.stderr.write(f"[TRACE] import_database trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] import_database trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     frappe.only_for("System Manager")
 
     # Security: only allow importing files from the site's private files dir so
     # an arbitrary caller-controlled path cannot be fed to psql/mysql.
     allowed_base = os.path.realpath(frappe.get_site_path("private", "files"))
     resolved_file = os.path.realpath(import_file)
-    if resolved_file != allowed_base and not resolved_file.startswith(allowed_base + os.sep):
-        return {"success": False, "error": "Import file must be in the site's private files directory"}
+    if resolved_file != allowed_base and not resolved_file.startswith(
+        allowed_base + os.sep
+    ):
+        return {
+            "success": False,
+            "error": "Import file must be in the site's private files directory",
+        }
     import_file = resolved_file
 
     try:
@@ -170,7 +185,9 @@ def import_database(database_name: str, import_file: str) -> dict:
 @frappe.whitelist()
 def optimize_database(database_name: str) -> dict:
     """Optimize all tables in database"""
-    sys.stderr.write(f"[TRACE] optimize_database trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] optimize_database trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     try:
         if frappe.db.db_type == "postgres":
             cmd = ["psql", "-d", database_name, "-c", "VACUUM ANALYZE"]

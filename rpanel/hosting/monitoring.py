@@ -12,11 +12,13 @@ from datetime import datetime, timedelta
 
 
 @frappe.whitelist()
-def get_resource_usage(website_name: str, period: str="24h") -> dict:
+def get_resource_usage(website_name: str, period: str = "24h") -> dict:
     """Get resource usage statistics for a website"""
 
     # Parse period
-    sys.stderr.write(f"[TRACE] get_resource_usage trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_resource_usage trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     hours = parse_period(period)
     start_time = datetime.now() - timedelta(hours=hours)
 
@@ -67,7 +69,9 @@ def get_resource_usage(website_name: str, period: str="24h") -> dict:
 @frappe.whitelist()
 def get_uptime_stats(website_name: str, period: str = "7d") -> dict:
     """Get uptime statistics for a website"""
-    sys.stderr.write(f"[TRACE] get_uptime_stats trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_uptime_stats trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     # Parse period
     hours = parse_period(period)
 
@@ -109,7 +113,9 @@ def get_uptime_stats(website_name: str, period: str = "7d") -> dict:
 @frappe.whitelist()
 def get_bandwidth_usage(website_name: str, period: str = "30d") -> dict:
     """Get bandwidth usage over time"""
-    sys.stderr.write(f"[TRACE] get_bandwidth_usage trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_bandwidth_usage trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     hours = parse_period(period)
 
     start_time = datetime.now() - timedelta(hours=hours)
@@ -135,9 +141,10 @@ def get_bandwidth_usage(website_name: str, period: str = "30d") -> dict:
 @frappe.whitelist()
 def check_disk_space(website_name: str) -> dict:
     """Check disk space usage for a website"""
-    sys.stderr.write(f"[TRACE] check_disk_space trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] check_disk_space trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
-
 
     try:
         # Get disk usage using du command (Security: Use list)
@@ -163,7 +170,9 @@ def check_disk_space(website_name: str) -> dict:
 @frappe.whitelist()
 def get_error_logs(website_name: str, limit: int = 100) -> dict:
     """Get recent error logs from Nginx"""
-    sys.stderr.write(f"[TRACE] get_error_logs trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_error_logs trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     settings = frappe.get_single("Hosting Settings")  # noqa: F841
@@ -190,7 +199,9 @@ def get_error_logs(website_name: str, limit: int = 100) -> dict:
 @frappe.whitelist()
 def set_alert_threshold(website_name: str, metric: str, threshold: float) -> dict:
     """Set alert threshold for a metric"""
-    sys.stderr.write(f"[TRACE] set_alert_threshold trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] set_alert_threshold trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     # Store in website custom fields or separate doctype
 
     website = frappe.get_doc("Hosted Website", website_name)
@@ -256,7 +267,21 @@ def check_uptime():
 
             # Make request
             start_time = time.time()
-            response = requests.get(url, timeout=10, verify=True, headers={"X-Trace-Id": (getattr(getattr(__import__("frappe"), "local", None), "trace_id", None) or __import__("uuid").uuid4().hex)})
+            response = requests.get(
+                url,
+                timeout=10,
+                verify=True,
+                headers={
+                    "X-Trace-Id": (
+                        getattr(
+                            getattr(__import__("frappe"), "local", None),
+                            "trace_id",
+                            None,
+                        )
+                        or __import__("uuid").uuid4().hex
+                    )
+                },
+            )
             response_time = (time.time() - start_time) * 1000  # Convert to ms
 
             # Create uptime check

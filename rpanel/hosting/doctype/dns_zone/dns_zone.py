@@ -168,10 +168,18 @@ class DNSZone(Document):
 
 @frappe.whitelist()
 def create_dns_record(
-    zone_name: str, record_type: str, name: str, value: str, ttl: str=3600, priority: str=None, proxied: str=False
+    zone_name: str,
+    record_type: str,
+    name: str,
+    value: str,
+    ttl: str = 3600,
+    priority: str = None,
+    proxied: str = False,
 ) -> dict:
     """Create a new DNS record"""
-    sys.stderr.write(f"[TRACE] create_dns_record trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] create_dns_record trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     zone = frappe.get_doc("DNS Zone", zone_name)
 
     zone.append(
@@ -194,7 +202,9 @@ def create_dns_record(
 @frappe.whitelist()
 def delete_dns_record(zone_name: str, record_index: str) -> dict:
     """Delete a DNS record"""
-    sys.stderr.write(f"[TRACE] delete_dns_record trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] delete_dns_record trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     zone = frappe.get_doc("DNS Zone", zone_name)
 
     if 0 <= record_index < len(zone.dns_records):
@@ -208,16 +218,20 @@ def delete_dns_record(zone_name: str, record_index: str) -> dict:
 @frappe.whitelist()
 def sync_with_cloudflare(zone_name: str) -> dict:
     """Manually sync DNS zone with Cloudflare"""
-    sys.stderr.write(f"[TRACE] sync_with_cloudflare trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] sync_with_cloudflare trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     zone = frappe.get_doc("DNS Zone", zone_name)
     zone.sync_with_cloudflare()
     return {"success": True, "last_sync": zone.last_sync}
 
 
 @frappe.whitelist()
-def check_dns_propagation(domain: str, record_type: str="A") -> dict:
+def check_dns_propagation(domain: str, record_type: str = "A") -> dict:
     """Check DNS propagation status"""
-    sys.stderr.write(f"[TRACE] check_dns_propagation trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] check_dns_propagation trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     import dns.resolver
 
     try:
@@ -232,7 +246,9 @@ def check_dns_propagation(domain: str, record_type: str="A") -> dict:
 @frappe.whitelist()
 def get_common_records() -> dict:
     """Get common DNS record templates"""
-    sys.stderr.write(f"[TRACE] get_common_records trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_common_records trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     return [
         {
             "name": "Root A Record",

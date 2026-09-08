@@ -8,6 +8,7 @@ import subprocess
 import os
 import glob
 
+
 def _safe_path(base: str, untrusted: str) -> str:
     """Validate that resolved path stays within base directory (Layer 18 ZTNA)."""
     resolved = os.path.realpath(os.path.join(base, untrusted))
@@ -17,11 +18,12 @@ def _safe_path(base: str, untrusted: str) -> str:
     return resolved
 
 
-
 @frappe.whitelist()
 def setup_phpmyadmin(website_name: str) -> dict:
     """Setup phpMyAdmin for a website"""
-    sys.stderr.write(f"[TRACE] setup_phpmyadmin trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] setup_phpmyadmin trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     frappe.only_for("System Manager")
     website = frappe.get_doc("Hosted Website", website_name)
 
@@ -94,7 +96,9 @@ $cfg['SaveDir'] = '';
 @frappe.whitelist()
 def get_phpmyadmin_url(website_name: str) -> dict:
     """Get phpMyAdmin URL for website"""
-    sys.stderr.write(f"[TRACE] get_phpmyadmin_url trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_phpmyadmin_url trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
     pma_link = os.path.join(website.site_path, "phpmyadmin")
 

@@ -122,7 +122,9 @@ def get_brand_html():
 @frappe.whitelist(allow_guest=True)
 def get_client_branding_for_portal() -> dict:
     """API endpoint to get branding for current user"""
-    sys.stderr.write(f"[TRACE] get_client_branding_for_portal trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_client_branding_for_portal trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     branding = get_client_branding()
     return branding
 

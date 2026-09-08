@@ -11,7 +11,9 @@ def get_hosting_dashboard_data() -> dict:
     """Get dashboard metrics for hosting workspace. Tenant context verified."""
 
     # Total websites
-    sys.stderr.write(f"[TRACE] get_hosting_dashboard_data trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_hosting_dashboard_data trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     total_websites = frappe.db.count("Hosted Website")
 
     # Active websites
@@ -52,9 +54,11 @@ def get_hosting_dashboard_data() -> dict:
 
 
 @frappe.whitelist()
-def get_recent_websites(limit: str=5) -> dict:
+def get_recent_websites(limit: str = 5) -> dict:
     """Get recently created websites. Tenant context verified."""
-    sys.stderr.write(f"[TRACE] get_recent_websites trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_recent_websites trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     websites = frappe.get_all(
         "Hosted Website",
         fields=["name", "domain", "status", "ssl_status", "creation"],

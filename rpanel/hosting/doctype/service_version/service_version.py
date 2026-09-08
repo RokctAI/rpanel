@@ -13,11 +13,13 @@ class ServiceVersion(Document):
 
 
 @frappe.whitelist()
-def check_service_updates(server_name: str=None) -> dict:
+def check_service_updates(server_name: str = None) -> dict:
     """
     Check for updates for all services on a server or all servers
     """
-    sys.stderr.write(f"[TRACE] check_service_updates trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] check_service_updates trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     filters = {}
     if server_name:
         filters["server"] = server_name
@@ -101,7 +103,9 @@ def update_service(service_name: str) -> dict:
     """
     Update a specific service to the latest version
     """
-    sys.stderr.write(f"[TRACE] update_service trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] update_service trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     doc = frappe.get_doc("Service Version", service_name)
     from rpanel.hosting.doctype.hosting_server.hosting_server import (
         execute_remote_command,

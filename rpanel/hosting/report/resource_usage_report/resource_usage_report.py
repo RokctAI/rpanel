@@ -108,10 +108,10 @@ def get_data(filters):
             "bandwidth_in",
             "bandwidth_out",
             "request_count",
-            "error_count"
+            "error_count",
         ],
         order_by="timestamp desc",
-        limit=1000
+        limit=1000,
     )
 
 

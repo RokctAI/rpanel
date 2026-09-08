@@ -234,7 +234,9 @@ def decrypt_backup(encrypted_file_path):
 @frappe.whitelist()
 def generate_encryption_key() -> dict:
     """Generate a new encryption key (whitelisted for UI)"""
-    sys.stderr.write(f"[TRACE] generate_encryption_key trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] generate_encryption_key trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     manager = BackupEncryptionManager()
     return manager.generate_encryption_key()
 
@@ -242,7 +244,9 @@ def generate_encryption_key() -> dict:
 @frappe.whitelist()
 def download_public_key() -> dict:
     """Download public key (whitelisted for UI)"""
-    sys.stderr.write(f"[TRACE] download_public_key trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] download_public_key trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     manager = BackupEncryptionManager()
     public_key = manager.export_public_key()
 
@@ -255,7 +259,9 @@ def download_public_key() -> dict:
 def download_private_key() -> dict:
     """Download private key (whitelisted for UI) - KEEP SECURE!"""
     # Only allow System Managers
-    sys.stderr.write(f"[TRACE] download_private_key trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] download_private_key trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     if "System Manager" not in frappe.get_roles():
         frappe.throw("Not permitted")
 

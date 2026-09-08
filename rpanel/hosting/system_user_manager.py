@@ -172,7 +172,9 @@ class SystemUserManager:
 @frappe.whitelist()
 def list_system_users() -> dict:
     """List all system users managed by rpanel. Tenant context verified."""
-    sys.stderr.write(f"[TRACE] list_system_users trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] list_system_users trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     users = frappe.get_all(
         "System User Reference",
         fields=["user_name", "count(site_name) as site_count"],
@@ -186,7 +188,9 @@ def list_system_users() -> dict:
 @frappe.whitelist()
 def get_user_sites(username: str) -> dict:
     """Get all sites using a specific system user"""
-    sys.stderr.write(f"[TRACE] get_user_sites trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] get_user_sites trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     sites = frappe.get_all(
         "System User Reference",
         filters={"user_name": username},

@@ -13,7 +13,9 @@ from datetime import datetime
 @frappe.whitelist()
 def issue_wildcard_ssl(website_name: str) -> dict:
     """Issue wildcard SSL certificate using DNS-01 challenge"""
-    sys.stderr.write(f"[TRACE] issue_wildcard_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] issue_wildcard_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
     domain = website.domain
 
@@ -59,9 +61,13 @@ def issue_wildcard_ssl(website_name: str) -> dict:
 
 
 @frappe.whitelist()
-def upload_custom_ssl(website_name: str, certificate: str, private_key: str, chain: str=None) -> dict:
+def upload_custom_ssl(
+    website_name: str, certificate: str, private_key: str, chain: str = None
+) -> dict:
     """Upload custom SSL certificate"""
-    sys.stderr.write(f"[TRACE] upload_custom_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] upload_custom_ssl trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
     domain = website.domain
 
@@ -110,7 +116,9 @@ def upload_custom_ssl(website_name: str, certificate: str, private_key: str, cha
 @frappe.whitelist()
 def check_ssl_health(website_name: str) -> dict:
     """Check SSL certificate health"""
-    sys.stderr.write(f"[TRACE] check_ssl_health trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] check_ssl_health trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:
@@ -153,7 +161,9 @@ def check_ssl_health(website_name: str) -> dict:
 @frappe.whitelist()
 def renew_ssl_certificate(website_name: str) -> dict:
     """Renew SSL certificate"""
-    sys.stderr.write(f"[TRACE] renew_ssl_certificate trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+    sys.stderr.write(
+        f"[TRACE] renew_ssl_certificate trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+    )
     website = frappe.get_doc("Hosted Website", website_name)
 
     try:

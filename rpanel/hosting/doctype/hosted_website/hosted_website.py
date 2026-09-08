@@ -132,7 +132,9 @@ class HostedWebsite(Document):
     @frappe.whitelist()
     def provision_site(self) -> dict:  # noqa: C901
         """Creates directory and basic config"""
-        sys.stderr.write(f"[TRACE] provision_site trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n")
+        sys.stderr.write(
+            f"[TRACE] provision_site trace_id={getattr(getattr(__import__('frappe'), 'local', object()), 'trace_id', 'n/a')}\n"
+        )
         if self.status != "Active":
             return {}
 
@@ -321,6 +323,7 @@ class HostedWebsite(Document):
                 "WordPress Installation Failed. Please check if WP-CLI is installed on the server."
             )
 
+
 def _safe_path(base: str, untrusted: str) -> str:
     """Validate that resolved path stays within base directory (Layer 18 ZTNA)."""
     resolved = os.path.realpath(os.path.join(base, untrusted))
@@ -329,12 +332,24 @@ def _safe_path(base: str, untrusted: str) -> str:
         raise ValueError(f"Path traversal blocked: {untrusted!r}")
     return resolved
 
-
     def generate_wp_config(self):
         import requests
 
         try:
-            salts = requests.get("https://api.wordpress.org/secret-key/1.1/salt/", timeout=10, headers={"X-Trace-Id": (getattr(getattr(__import__("frappe"), "local", None), "trace_id", None) or __import__("uuid").uuid4().hex)}).text
+            salts = requests.get(
+                "https://api.wordpress.org/secret-key/1.1/salt/",
+                timeout=10,
+                headers={
+                    "X-Trace-Id": (
+                        getattr(
+                            getattr(__import__("frappe"), "local", None),
+                            "trace_id",
+                            None,
+                        )
+                        or __import__("uuid").uuid4().hex
+                    )
+                },
+            ).text
         except requests.RequestException:
             salts = ""
             # Log warning
